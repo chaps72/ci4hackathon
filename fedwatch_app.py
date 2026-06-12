@@ -67,11 +67,11 @@ def _secret(name: str, default: str = "") -> str:
 
 
 def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
-            include_funding: bool = False):
+            include_funding: bool = False, include_news: bool = False):
     with st.spinner("Fetching federal sources..."):
         items, errors, used_sample = sources.fetch_all(
             days_back=days_back, grants_keyword=grants_keyword,
-            include_funding=include_funding)
+            include_funding=include_funding, include_news=include_news)
     if research_only:
         items, dropped = filter_relevant(items)
         st.session_state.dropped_count = len(dropped)
@@ -83,6 +83,10 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
         try:
             with st.spinner("AI-refining criticality levels..."):
                 classified = summarize.ai_classify(classified)
+            irrelevant = [i for i in classified if i.get("relevant") is False]
+            if irrelevant:
+                st.session_state.dropped_count += len(irrelevant)
+                classified = [i for i in classified if i.get("relevant") is not False]
         except Exception as exc:  # noqa: BLE001 - keyword levels still stand
             st.warning(f"AI classification unavailable, using keyword levels: {exc}")
     st.session_state.feed_items = classified
@@ -120,6 +124,11 @@ with st.sidebar:
         help="Off by default: focus on research policy and government affairs. Turn on "
              "to also pull Grants.gov and NIH funding opportunity feeds.",
     )
+    include_news = st.checkbox(
+        "Include agency news / press releases", value=False,
+        help="NSF News feed: podcasts, discovery stories, award announcements. "
+             "Off by default - not government-affairs signal.",
+    )
     grants_keyword = st.text_input("Grants.gov keyword", value="research",
                                    disabled=not include_funding)
     if summarize.claude_available():
@@ -127,7 +136,7 @@ with st.sidebar:
                     help="Claude reads each item and assigns the level - far more accurate "
                          "than keyword matching. Applied on refresh.")
     if st.button("🔄 Refresh feeds", use_container_width=True, type="primary"):
-        refresh(days_back, grants_keyword, research_only, include_funding)
+        refresh(days_back, grants_keyword, research_only, include_funding, include_news)
 
     st.divider()
     st.subheader("Watchlist keywords")
@@ -150,7 +159,7 @@ with st.sidebar:
 
 # First load
 if not st.session_state.feed_items:
-    refresh(days_back, grants_keyword, research_only, include_funding)
+    refresh(days_back, grants_keyword, research_only, include_funding, include_news)
 
 items = st.session_state.feed_items
 counts = level_counts(items)

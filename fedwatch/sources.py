@@ -171,19 +171,20 @@ def fetch_nsf_news(errors: list | None = None) -> list:
 
 
 def fetch_all(days_back: int = 14, grants_keyword: str = "research",
-              include_funding: bool = False):
+              include_funding: bool = False, include_news: bool = False):
     """Fetch every source. Returns (items, errors, used_sample_data).
 
-    By default the focus is research policy / government affairs: Federal
-    Register documents, NIH policy notices, and NSF news. Funding-opportunity
-    sources (Grants.gov, NIH NOFO feed) are fetched only when include_funding
-    is True.
+    Default focus is research policy / government affairs: Federal Register
+    documents and NIH policy notices. Funding-opportunity sources (Grants.gov,
+    NIH NOFO feed) require include_funding; agency press releases (NSF News:
+    podcasts, discovery stories, award announcements) require include_news.
     """
     errors: list[str] = []
     items = []
     items += fetch_federal_register(days_back=days_back, errors=errors)
     items += fetch_nih_notices(errors=errors)
-    items += fetch_nsf_news(errors=errors)
+    if include_news:
+        items += fetch_nsf_news(errors=errors)
     if include_funding:
         items += fetch_grants_gov(keyword=grants_keyword, errors=errors)
         items += fetch_nih_funding(errors=errors)
@@ -195,15 +196,16 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
             seen.add(item["id"])
             deduped.append(item)
 
-    if not deduped:
-        sample = list(SAMPLE_ITEMS)
+    def _mode_filter(seq: list) -> list:
         if not include_funding:
-            sample = [i for i in sample if not _is_funding_item(i)]
-        return sample, errors, True
+            seq = [i for i in seq if not _is_funding_item(i)]
+        if not include_news:
+            seq = [i for i in seq if i.get("source") != "NSF News"]
+        return seq
 
-    if not include_funding:
-        deduped = [i for i in deduped if not _is_funding_item(i)]
-    return deduped, errors, False
+    if not deduped:
+        return _mode_filter(list(SAMPLE_ITEMS)), errors, True
+    return _mode_filter(deduped), errors, False
 
 
 # Funding-opportunity announcements also appear in policy feeds (NIH notices,
