@@ -380,8 +380,12 @@ def fetch_omb_memoranda(errors: list | None = None) -> list:
             memo_id = f"M-{yy}-{num}"
             if memo_id in seen:
                 continue
-            seen.add(memo_id)
             title = re.sub(r"\s+", " ", _strip_html(anchor)).strip()
+            # Guard against nav/footer links the regex may catch: a real memo
+            # link carries the memo id or a substantive title.
+            if not re.search(r"\bM-\d{2}-\d+\b", title, re.IGNORECASE) and len(title) < 15:
+                continue
+            seen.add(memo_id)
             link = href if href.startswith("http") else f"https://www.whitehouse.gov{href}"
             items.append({
                 "id": f"omb-{memo_id}",
