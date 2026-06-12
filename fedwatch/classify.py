@@ -29,10 +29,11 @@ DEFAULT_RULES = {
         "terminat", "rescind", "rescission", "suspend", "stop work", "stop-work",
         "funding freeze", "freeze on", "immediately", "executive order",
         "cancell", "withdrawn", "revoked", "shutdown", "halt",
+        "salary cap", "pi cap",
     ],
     "HIGH": [
         "deadline", "final rule", "effective date", "compliance", "new requirement",
-        "must submit", "indirect cost", "salary cap", "policy change", "prior approval",
+        "must submit", "indirect cost", "policy change", "prior approval",
         "certification", "disclosure", "foreign influence", "security review",
         "expiration", "closing date",
     ],
@@ -42,6 +43,13 @@ DEFAULT_RULES = {
         "request for comment", "draft guidance", "listening session",
     ],
 }
+
+# Agencies whose items are always treated as CRITICAL: government-wide
+# directives (e.g., OMB) move fast and hit every award.
+CRITICAL_AGENCY_HINTS = [
+    "office of management and budget",
+    "executive office of the president",
+]
 
 
 @dataclass
@@ -56,6 +64,10 @@ class Classifier:
 
         matched = []
         level = "INFO"
+        agency = (item.get("agency") or "").lower()
+        if any(h in agency for h in CRITICAL_AGENCY_HINTS):
+            level = "CRITICAL"
+            matched.append(f"agency:{item.get('agency', '')}")
         for lvl in ("CRITICAL", "HIGH", "MODERATE"):
             hits = [kw for kw in self.rules.get(lvl, []) if kw.lower() in text]
             if hits and level == "INFO":

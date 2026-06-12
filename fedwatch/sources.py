@@ -25,10 +25,15 @@ USER_AGENT = "FedWatch-internal/0.1 (research policy awareness dashboard)"
 FEDERAL_REGISTER_TERMS = (
     '"research funding" | "research grant" | "research grants" | '
     '"federally funded research" | "scientific research" | '
-    '"research institutions" | "extramural research"'
+    '"research institutions" | "extramural research" | '
+    '"research policy" | "research security" | "research misconduct" | '
+    '"scientific integrity" | "research integrity"'
 )
 
-NIH_GUIDE_RSS = "https://grants.nih.gov/grants/guide/newsfeed/fundingopps.xml"
+# NIH Guide has separate feeds: notices.xml carries policy/administrative
+# notices (the government-affairs signal); fundingopps.xml carries NOFOs.
+NIH_GUIDE_NOTICES_RSS = "https://grants.nih.gov/grants/guide/newsfeed/notices.xml"
+NIH_GUIDE_FUNDING_RSS = "https://grants.nih.gov/grants/guide/newsfeed/fundingopps.xml"
 NSF_NEWS_RSS = "https://www.nsf.gov/rss/rss_www_news.xml"
 
 
@@ -125,7 +130,8 @@ def fetch_grants_gov(keyword: str = "research", errors: list | None = None) -> l
         return []
 
 
-def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None) -> list:
+def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None,
+               item_type: str = "Feed Item") -> list:
     try:
         resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT)
         resp.raise_for_status()
@@ -141,7 +147,7 @@ def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None) -
                 "summary": _strip_html(entry.findtext("description") or "")[:800],
                 "url": link,
                 "date": _norm_date(entry.findtext("pubDate") or ""),
-                "type": "Feed Item",
+                "type": item_type,
             })
         return items[:30]
     except Exception as e:  # noqa: BLE001
@@ -150,22 +156,37 @@ def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None) -
         return []
 
 
-def fetch_nih_guide(errors: list | None = None) -> list:
-    return _fetch_rss(NIH_GUIDE_RSS, "NIH Guide", "National Institutes of Health", errors)
+def fetch_nih_notices(errors: list | None = None) -> list:
+    return _fetch_rss(NIH_GUIDE_NOTICES_RSS, "NIH Guide", "National Institutes of Health",
+                      errors, item_type="Policy Notice")
+
+
+def fetch_nih_funding(errors: list | None = None) -> list:
+    return _fetch_rss(NIH_GUIDE_FUNDING_RSS, "NIH Guide", "National Institutes of Health",
+                      errors, item_type="Funding Opportunity")
 
 
 def fetch_nsf_news(errors: list | None = None) -> list:
     return _fetch_rss(NSF_NEWS_RSS, "NSF News", "National Science Foundation", errors)
 
 
-def fetch_all(days_back: int = 14, grants_keyword: str = "research"):
-    """Fetch every source. Returns (items, errors, used_sample_data)."""
+def fetch_all(days_back: int = 14, grants_keyword: str = "research",
+              include_funding: bool = False):
+    """Fetch every source. Returns (items, errors, used_sample_data).
+
+    By default the focus is research policy / government affairs: Federal
+    Register documents, NIH policy notices, and NSF news. Funding-opportunity
+    sources (Grants.gov, NIH NOFO feed) are fetched only when include_funding
+    is True.
+    """
     errors: list[str] = []
     items = []
     items += fetch_federal_register(days_back=days_back, errors=errors)
-    items += fetch_grants_gov(keyword=grants_keyword, errors=errors)
-    items += fetch_nih_guide(errors=errors)
+    items += fetch_nih_notices(errors=errors)
     items += fetch_nsf_news(errors=errors)
+    if include_funding:
+        items += fetch_grants_gov(keyword=grants_keyword, errors=errors)
+        items += fetch_nih_funding(errors=errors)
 
     # Dedupe by id, newest first
     seen, deduped = set(), []
@@ -175,5 +196,11 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research"):
             deduped.append(item)
 
     if not deduped:
-        return list(SAMPLE_ITEMS), errors, True
+        sample = list(SAMPLE_ITEMS)
+        if not include_funding:
+            sample = [i for i in sample if i.get("type") != "Funding Opportunity"]
+        return sample, errors, True
+
+    if not include_funding:
+        deduped = [i for i in deduped if i.get("type") != "Funding Opportunity"]
     return deduped, errors, False

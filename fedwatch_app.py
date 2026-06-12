@@ -66,9 +66,12 @@ def _secret(name: str, default: str = "") -> str:
         return os.environ.get(name, default)
 
 
-def refresh(days_back: int, grants_keyword: str, research_only: bool = True):
+def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
+            include_funding: bool = False):
     with st.spinner("Fetching federal sources..."):
-        items, errors, used_sample = sources.fetch_all(days_back=days_back, grants_keyword=grants_keyword)
+        items, errors, used_sample = sources.fetch_all(
+            days_back=days_back, grants_keyword=grants_keyword,
+            include_funding=include_funding)
     if research_only:
         items, dropped = filter_relevant(items)
         st.session_state.dropped_count = len(dropped)
@@ -100,14 +103,20 @@ with st.sidebar:
     st.caption("Internal awareness of federal research policy & funding updates")
 
     days_back = st.slider("Look back (days)", 3, 60, 14)
-    grants_keyword = st.text_input("Grants.gov keyword", value="research")
     research_only = st.checkbox(
         "Research items only", value=True,
         help="Drops non-research items (e.g., Medicare/Medicaid rules, child support "
              "program notices) that match federal feeds on words like 'funding' or 'grants'.",
     )
+    include_funding = st.checkbox(
+        "Include funding opportunities (NOFOs)", value=False,
+        help="Off by default: focus on research policy and government affairs. Turn on "
+             "to also pull Grants.gov and NIH funding opportunity feeds.",
+    )
+    grants_keyword = st.text_input("Grants.gov keyword", value="research",
+                                   disabled=not include_funding)
     if st.button("🔄 Refresh feeds", use_container_width=True, type="primary"):
-        refresh(days_back, grants_keyword, research_only)
+        refresh(days_back, grants_keyword, research_only, include_funding)
 
     st.divider()
     st.subheader("Watchlist keywords")
@@ -130,7 +139,7 @@ with st.sidebar:
 
 # First load
 if not st.session_state.feed_items:
-    refresh(days_back, grants_keyword, research_only)
+    refresh(days_back, grants_keyword, research_only, include_funding)
 
 items = st.session_state.feed_items
 counts = level_counts(items)
