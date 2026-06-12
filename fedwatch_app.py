@@ -304,8 +304,22 @@ with tab_summary:
         st.divider()
         st.markdown(st.session_state.last_summary)
         st.caption(f"Engine: {'Claude (' + summarize.MODEL + ')' if st.session_state.last_summary_engine == 'claude' else 'template'}")
-        st.download_button("⬇️ Download summary (Markdown)", st.session_state.last_summary,
-                           file_name="fedwatch_summary.md", mime="text/markdown")
+        sc1, sc2 = st.columns(2)
+        sc1.download_button("⬇️ Download summary (Markdown)", st.session_state.last_summary,
+                            file_name="fedwatch_summary.md", mime="text/markdown")
+        summary_webhook = _secret("TEAMS_WEBHOOK_URL")
+        if sc2.button("📨 Send summary to Teams", disabled=not summary_webhook,
+                      help=("Posts this summary to the Teams channel configured via the "
+                            "TEAMS_WEBHOOK_URL secret." if summary_webhook else
+                            "Set the TEAMS_WEBHOOK_URL secret (or paste a webhook in the "
+                            "Alerts tab) to enable.")):
+            try:
+                notify.send_teams_summary(
+                    summary_webhook, st.session_state.last_summary,
+                    title=f"Federal Research Update - {style} ({datetime.now().strftime('%b %d, %Y')})")
+                st.success("Summary posted to Teams.")
+            except Exception as exc:  # noqa: BLE001
+                st.error(f"Teams post failed: {exc}")
 
 # ---------- Tab 3: Email digest ----------
 with tab_email:
