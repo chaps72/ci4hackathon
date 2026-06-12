@@ -30,6 +30,10 @@ DOMAINS = {
         "uniform guidance", "2 cfr 200", "grants policy", "prior approval",
         "federal financial assistance", "notice of award", "award conditions",
         "foreign subaward", "subaward structure",
+        # vocabulary OMB actually uses in memo titles
+        "grant program", "grants program", "grantmaking", "federal grant",
+        "federal grants", "discretionary grant", "federal funding",
+        "federal assistance", "grant review", "grant award",
     ],
     "Research security & foreign influence": [
         "research security", "foreign influence", "foreign component",

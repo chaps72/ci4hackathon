@@ -83,12 +83,13 @@ def _secret(name: str, default: str = "") -> str:
 
 
 def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
-            include_funding: bool = False, include_news: bool = False):
+            include_funding: bool = False, include_news: bool = False,
+            include_press: bool = True):
     with st.spinner("Fetching federal sources..."):
         items, errors, used_sample = sources.fetch_all(
             days_back=days_back, grants_keyword=grants_keyword,
             include_funding=include_funding, include_news=include_news,
-            watchlist=DEFAULT_WATCHLIST)
+            include_press=include_press, watchlist=DEFAULT_WATCHLIST)
     use_ai = st.session_state.get("ai_levels", True) and summarize.claude_available()
     dropped: list = []
     if research_only:
@@ -158,6 +159,11 @@ with st.sidebar:
             help="Off by default: focus on research policy and government affairs. Turn on "
                  "to also pull Grants.gov and NIH funding opportunity feeds.",
         )
+        include_press = st.checkbox(
+            "Include press coverage", value=True,
+            help="Federal research policy stories from Science, Nature, Inside "
+                 "Higher Ed, and STAT News.",
+        )
         include_news = st.checkbox(
             "Include agency press releases", value=False,
             help="NSF News feed: podcasts, discovery stories, award announcements. "
@@ -170,7 +176,8 @@ with st.sidebar:
                         help="Claude reads each item and assigns the level - far more accurate "
                              "than keyword matching. Applied on refresh.")
     if st.button("Refresh feeds", use_container_width=True, type="primary"):
-        refresh(days_back, grants_keyword, research_only, include_funding, include_news)
+        refresh(days_back, grants_keyword, research_only, include_funding,
+                include_news, include_press)
 
     st.divider()
     with st.expander("Criticality levels"):
@@ -179,7 +186,8 @@ with st.sidebar:
 
 # First load
 if not st.session_state.feed_items:
-    refresh(days_back, grants_keyword, research_only, include_funding, include_news)
+    refresh(days_back, grants_keyword, research_only, include_funding,
+            include_news, include_press)
 
 items = st.session_state.feed_items
 counts = level_counts(items)
