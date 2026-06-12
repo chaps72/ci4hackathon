@@ -46,23 +46,30 @@ VETO_TITLE_MARKERS = [
     "grazing", "timber", "meat and", "conservation plan", "wildlife refuge",
     "restricted area", "airspace", "public lands", "realty",
     "coal combustion", "solid waste", "hazardous waste",
+    # High-volume routine NIH/agency notices that drown the feed
+    "patent license", "exclusive license", "government-owned invention",
+    "prospective grant of",
 ]
 
 # Feeds that only ever carry research content.
 TRUSTED_SOURCES = {"NIH Guide", "NSF News"}
 
-# Substrings matched against the agency name (lowercase).
+# Agencies relevant to Emory's portfolio (SVPR scope): NIH/HHS biomedical,
+# NSF, DOE, DOD research arms, NASA, and government-wide policy offices.
+# Matched as substrings of the agency name (feeds vary word order:
+# "Energy Department" vs "Department of Energy").
 RESEARCH_AGENCY_HINTS = [
-    "science foundation",
     "institutes of health",
-    "national institute",
-    "aeronautics and space",
-    "office of science",
+    "science foundation",
     "science and technology policy",
-    "advanced research projects",
-    "standards and technology",
-    "geological survey",
-    "oceanic and atmospheric",
+    "advanced research projects",       # DARPA, ARPA-H, ARPA-E
+    "department of energy", "energy depart",
+    "department of defense", "defense depart",
+    "army research", "naval research", "air force research",
+    "aeronautics and space",            # NASA
+    "centers for disease control",
+    "agency for healthcare research",
+    "food and drug administration",
 ]
 
 # Strict research signal terms (stems, matched case-insensitively).

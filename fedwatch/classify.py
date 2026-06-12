@@ -46,6 +46,9 @@ DEFAULT_RULES = {
         "human subjects", "common rule", "clinical trial", "animal welfare",
         "select agent", "biosafety", "dual use", "institutional review board",
         "vertebrate animals", "primate",
+        # Legislative / budget actions affecting federal research
+        "appropriation", "authorization act", "continuing resolution",
+        "budget request", "rescission package",
     ],
     "MODERATE": [
         "notice of funding opportunity", "nofo", "foa", "funding opportunity",
