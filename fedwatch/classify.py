@@ -45,10 +45,13 @@ DEFAULT_RULES = {
 }
 
 # Agencies whose items are always treated as CRITICAL: government-wide
-# directives (e.g., OMB) move fast and hit every award.
+# directives (e.g., OMB) move fast and hit every award. Matched loosely
+# because feeds vary the phrasing ("Office of Management and Budget",
+# "Management and Budget Office", ...).
 CRITICAL_AGENCY_HINTS = [
-    "office of management and budget",
+    "management and budget",
     "executive office of the president",
+    "office of the president",
 ]
 
 
@@ -60,16 +63,29 @@ class Classifier:
 
     def classify(self, item: dict) -> dict:
         """Return the item with `level`, `matched_keywords`, and `watchlist_hits` set."""
-        text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+        import re
+
+        title = (item.get("title") or "").lower()
+        text = f"{title} {item.get('summary', '')}".lower()
 
         matched = []
         level = "INFO"
         agency = (item.get("agency") or "").lower()
-        if any(h in agency for h in CRITICAL_AGENCY_HINTS):
+        if any(h in agency for h in CRITICAL_AGENCY_HINTS) or re.search(r"\bomb\b", title):
             level = "CRITICAL"
-            matched.append(f"agency:{item.get('agency', '')}")
-        for lvl in ("CRITICAL", "HIGH", "MODERATE"):
-            hits = [kw for kw in self.rules.get(lvl, []) if kw.lower() in text]
+            matched.append(f"agency:{item.get('agency') or 'OMB'}")
+
+        # CRITICAL keywords must appear in the TITLE - regulatory summaries
+        # mention words like "withdrawn" or "suspended" incidentally, which
+        # caused false criticals. A summary-only critical hit caps at HIGH.
+        crit_title = [kw for kw in self.rules.get("CRITICAL", []) if kw.lower() in title]
+        crit_summary = [kw for kw in self.rules.get("CRITICAL", []) if kw.lower() in text and kw not in crit_title]
+        if crit_title and level == "INFO":
+            level = "CRITICAL"
+        matched.extend(crit_title)
+
+        for lvl, extra in (("HIGH", crit_summary), ("MODERATE", [])):
+            hits = [kw for kw in self.rules.get(lvl, []) if kw.lower() in text] + extra
             if hits and level == "INFO":
                 level = lvl
             matched.extend(hits)

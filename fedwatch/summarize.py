@@ -85,6 +85,86 @@ def _claude_summary(items: list, style: str, extra_instructions: str) -> str:
     return next((b.text for b in response.content if b.type == "text"), "")
 
 
+AI_CLASSIFY_GUIDANCE = """\
+You are triaging federal research policy updates for a university research \
+operations team (government affairs focus). Assign each item one level:
+- CRITICAL: immediate action or major disruption. ALWAYS critical: anything \
+from OMB or the Executive Office of the President; salary cap / PI cap \
+changes; terminations, funding freezes, rescissions, stop-work orders; \
+executive orders affecting research.
+- HIGH: action likely required - new compliance/disclosure requirements, \
+final rules with effective dates, deadlines, indirect cost changes.
+- MODERATE: worth tracking - proposed rules, comment periods, RFIs, draft \
+guidance, funding opportunities.
+- INFO: routine reports, events, announcements with no action.
+Judge by what the document actually DOES, not incidental words: a NIST \
+notice that merely mentions 'withdrawn' submissions is not critical."""
+
+
+def ai_classify(items: list) -> list:
+    """Reclassify items with Claude. Returns new list; raises on failure."""
+    import json
+
+    import anthropic
+
+    if not items:
+        return items
+    client = anthropic.Anthropic()
+    payload = [
+        {"id": it["id"], "agency": it.get("agency", ""), "source": it.get("source", ""),
+         "title": it.get("title", ""), "summary": (it.get("summary") or "")[:400]}
+        for it in items
+    ]
+    schema = {
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string"},
+                        "level": {"type": "string", "enum": LEVELS},
+                    },
+                    "required": ["id", "level"],
+                    "additionalProperties": False,
+                },
+            }
+        },
+        "required": ["levels"],
+        "additionalProperties": False,
+    }
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=16000,
+        thinking={"type": "adaptive"},
+        output_config={"format": {"type": "json_schema", "schema": schema}},
+        messages=[{
+            "role": "user",
+            "content": f"{AI_CLASSIFY_GUIDANCE}\n\nItems:\n{json.dumps(payload)}",
+        }],
+    )
+    if response.stop_reason == "refusal":
+        raise RuntimeError("Model declined the request")
+    text = next(b.text for b in response.content if b.type == "text")
+    level_by_id = {r["id"]: r["level"] for r in json.loads(text)["levels"]}
+
+    out = []
+    for it in items:
+        item = dict(it)
+        ai_level = level_by_id.get(item["id"])
+        if ai_level in LEVELS:
+            item["level"] = ai_level
+            item["ai_classified"] = True
+        # Hard floors regardless of model output
+        if item.get("watchlist_hits") and LEVELS.index(item["level"]) > LEVELS.index("HIGH"):
+            item["level"] = "HIGH"
+        if any(str(m).startswith("agency:") for m in item.get("matched_keywords", [])):
+            item["level"] = "CRITICAL"
+        out.append(item)
+    return out
+
+
 def _template_summary(items: list, style: str) -> str:
     by_level = {lvl: [] for lvl in LEVELS}
     for it in items:

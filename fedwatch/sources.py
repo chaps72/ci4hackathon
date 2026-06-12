@@ -198,9 +198,25 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
     if not deduped:
         sample = list(SAMPLE_ITEMS)
         if not include_funding:
-            sample = [i for i in sample if i.get("type") != "Funding Opportunity"]
+            sample = [i for i in sample if not _is_funding_item(i)]
         return sample, errors, True
 
     if not include_funding:
-        deduped = [i for i in deduped if i.get("type") != "Funding Opportunity"]
+        deduped = [i for i in deduped if not _is_funding_item(i)]
     return deduped, errors, False
+
+
+# Funding-opportunity announcements also appear in policy feeds (NIH notices,
+# Federal Register) - in policy mode, drop them by title as well as by type.
+_FUNDING_TITLE_MARKERS = [
+    "funding opportunit", "notice of funding", "nofo", "notice of special interest",
+    "nosi", "request for applications", "rfa-", "par-", "fellowship application",
+    "small business innovation", "sbir", "sttr",
+]
+
+
+def _is_funding_item(item: dict) -> bool:
+    if item.get("type") == "Funding Opportunity":
+        return True
+    title = (item.get("title") or "").lower()
+    return any(m in title for m in _FUNDING_TITLE_MARKERS)
