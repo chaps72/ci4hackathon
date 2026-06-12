@@ -49,12 +49,13 @@ NIH_NEXUS_RSS = "https://nexus.od.nih.gov/all/feed/"
 NSF_NEWS_RSS = "https://www.nsf.gov/rss/rss_www_news.xml"
 
 # Topic screen applied to presidential documents at the source: only
-# executive actions touching the research enterprise are kept.
-_PRESDOC_TOPIC_TERMS = [
-    "research", "science", "scientific", "universit", "higher education",
-    "grant", "biomedical", "federal funding", "national institutes",
-    "laborator",
-]
+# executive actions touching the research enterprise are kept. Whole-word
+# regex - a substring screen matched "grant" inside "Granting Pardon".
+_PRESDOC_TOPIC_RE = re.compile(
+    r"\b(research|science|scientif\w*|universit\w*|higher education|"
+    r"grants?|biomedical|federal funding|national institutes|laborator\w*)\b",
+    re.IGNORECASE,
+)
 
 
 def _strip_html(text: str) -> str:
@@ -353,8 +354,8 @@ def fetch_executive_orders(days_back: int = 30, errors: list | None = None) -> l
         resp.raise_for_status()
         items = []
         for doc in resp.json().get("results", []):
-            text = f"{doc.get('title', '')} {doc.get('abstract') or ''}".lower()
-            if not any(t in text for t in _PRESDOC_TOPIC_TERMS):
+            text = f"{doc.get('title', '')} {doc.get('abstract') or ''}"
+            if not _PRESDOC_TOPIC_RE.search(text):
                 continue
             subtype = doc.get("subtype") or "Presidential Document"
             items.append({
@@ -477,13 +478,22 @@ def fetch_watchlist_targeted(watchlist: list, errors: list | None = None,
     query's phrasing or lookback window. Matches are flagged so downstream
     filters never drop them.
     """
-    terms = " | ".join(f'"{w}"' for w in watchlist if w and w.strip())
+    watch = [w.strip().lower() for w in watchlist if w and w.strip()]
+    terms = " | ".join(f'"{w}"' for w in watch)
     if not terms:
         return []
     items = fetch_federal_register(days_back=days_back, errors=errors, terms=terms)
+    # The FR API matches FULL DOCUMENT TEXT - "indirect cost" appears in the
+    # cost-analysis boilerplate of virtually every fee-setting rule (IRS user
+    # fees, SEC rules...). Keep a match only when the watched term appears in
+    # the title or abstract, where it signals the document's actual subject.
+    kept = []
     for it in items:
-        it["watchlist_targeted"] = True
-    return items
+        head = f"{it.get('title', '')} {it.get('summary', '')}".lower()
+        if any(w in head for w in watch):
+            it["watchlist_targeted"] = True
+            kept.append(it)
+    return kept
 
 
 def fetch_all(days_back: int = 14, grants_keyword: str = "research",

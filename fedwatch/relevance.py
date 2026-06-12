@@ -181,11 +181,16 @@ def is_research_relevant(item: dict) -> bool:
         return True
     if any(h in agency for h in RESEARCH_AGENCY_HINTS):
         return True
-    # Other agencies: the domain must show in the TITLE, not buried in
-    # boilerplate ("scientific research" in a permit summary).
+    # Other agencies: a SUBSTANTIVE domain must show in the TITLE. Generic
+    # action domains don't count here - any agency can "rescind" or
+    # "terminate" rules that have nothing to do with research (e.g. SEC
+    # rescinding climate disclosure rules).
+    generic_action_domains = {"Terminations, freezes & closeout", "Executive actions",
+                              "Budget & appropriations"}
     title = (item.get("title") or "").lower()
     from .topics import DOMAINS
-    return any(p in title for d in domains for p in DOMAINS[d])
+    substantive = [d for d in domains if d not in generic_action_domains]
+    return any(p in title for d in substantive for p in DOMAINS[d])
 
 
 def filter_relevant(items: list) -> tuple[list, list]:
