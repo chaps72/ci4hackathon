@@ -24,6 +24,7 @@ VETO_AGENCY_HINTS = [
     "food safety and inspection", "animal and plant health inspection",
     "agricultural marketing", "coast guard", "mine safety",
     "transportation safety", "surface transportation", "fishery",
+    "aviation", "transportation department", "department of transportation",
 ]
 
 # Title patterns that are NEVER government-affairs signal, regardless of
@@ -43,6 +44,8 @@ VETO_TITLE_MARKERS = [
     # Topic areas with no relation to the research portfolio
     "firearm", "hunting", "poultry", "livestock", "fisheries", "fishery",
     "grazing", "timber", "meat and", "conservation plan", "wildlife refuge",
+    "restricted area", "airspace", "public lands", "realty",
+    "coal combustion", "solid waste", "hazardous waste",
 ]
 
 # Feeds that only ever carry research content.
@@ -108,15 +111,24 @@ def exclusion_hits(item: dict) -> list:
     return [t for t in EXCLUDE_TERMS if t in text]
 
 
-def is_research_relevant(item: dict) -> bool:
-    # Explicitly watched topics are never filtered.
-    if item.get("watchlist_targeted"):
-        return True
+def _vetoed(item: dict) -> bool:
     title = (item.get("title") or "").lower()
     if any(m in title for m in VETO_TITLE_MARKERS):
-        return False
+        return True
     agency = (item.get("agency") or "").lower()
-    if any(h in agency for h in VETO_AGENCY_HINTS):
+    return any(h in agency for h in VETO_AGENCY_HINTS)
+
+
+def is_research_relevant(item: dict) -> bool:
+    # Pinned tracked notices are never filtered, period.
+    if item.get("type") == "Tracked Notice":
+        return True
+    # Watchlist-targeted items skip relevance scoring but NOT the vetoes -
+    # generic watch terms ("public access") match airspace/public-lands/
+    # hunting documents in full-text search.
+    if item.get("watchlist_targeted"):
+        return not _vetoed(item)
+    if _vetoed(item):
         return False
     if item.get("source") in TRUSTED_SOURCES:
         return True
