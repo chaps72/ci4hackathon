@@ -211,14 +211,14 @@ def ai_classify(items: list) -> list:
                 item["level"] = res["level"]
             item["relevant"] = bool(res["relevant"])
             item["ai_classified"] = True
-        # Hard floors regardless of model output
+        # Watchlist floor only - the model's judgment is otherwise final.
+        # (An agency-based floor here used to force every OMB/EOP item to
+        # CRITICAL+relevant, overriding the AI on discount-rate memos and
+        # pardons. Rules propose; the model disposes.)
         if item.get("watchlist_hits") or item.get("watchlist_targeted"):
             item["relevant"] = True
             if LEVELS.index(item["level"]) > LEVELS.index("HIGH"):
                 item["level"] = "HIGH"
-        if any(str(m).startswith("agency:") for m in item.get("matched_keywords", [])):
-            item["level"] = "CRITICAL"
-            item["relevant"] = True
         out.append(item)
     return out
 
