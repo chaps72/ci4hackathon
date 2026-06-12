@@ -182,7 +182,13 @@ st.markdown(
 )
 
 if st.session_state.fetch_errors and not st.session_state.used_sample:
-    with st.expander(f"⚠️ {len(st.session_state.fetch_errors)} source(s) failed to load"):
+    failed_sources = sorted({e.split(":")[0] for e in st.session_state.fetch_errors})
+    st.error(
+        f"⚠️ **Coverage degraded - {len(failed_sources)} source(s) unreachable: "
+        f"{', '.join(failed_sources)}.** Items from these sources are missing from "
+        "this feed. Details below."
+    )
+    with st.expander("Failure details"):
         for err in st.session_state.fetch_errors:
             st.text(err)
 

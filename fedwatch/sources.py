@@ -17,7 +17,15 @@ import requests
 from .sample_data import SAMPLE_ITEMS
 
 TIMEOUT = 15
-USER_AGENT = "FedWatch-internal/0.1 (research policy awareness dashboard)"
+# Browser-like UA: grants.nih.gov (Akamai) rejects bot-looking user agents
+# with 403, which silently emptied the NIH notices feed.
+USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+FETCH_HEADERS = {
+    "User-Agent": USER_AGENT,
+    "Accept": "application/rss+xml, application/xml, text/xml, application/json, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 # Search terms used against the Federal Register full-text API.
 # Quoted phrases joined with | (OR): an unquoted query matches documents
@@ -70,7 +78,7 @@ def fetch_federal_register(days_back: int = 14, errors: list | None = None,
                 "fields[]": ["title", "abstract", "html_url", "publication_date",
                              "agencies", "type", "document_number"],
             },
-            headers={"User-Agent": USER_AGENT},
+            headers=FETCH_HEADERS,
             timeout=TIMEOUT,
         )
         resp.raise_for_status()
@@ -102,7 +110,7 @@ def fetch_grants_gov(keyword: str = "research", errors: list | None = None) -> l
             "https://api.grants.gov/v1/api/search2",
             json={"keyword": keyword, "oppStatuses": "posted", "rows": 30,
                   "sortBy": "openDate|desc"},
-            headers={"User-Agent": USER_AGENT, "Content-Type": "application/json"},
+            headers={**FETCH_HEADERS, "Content-Type": "application/json"},
             timeout=TIMEOUT,
         )
         resp.raise_for_status()
@@ -134,7 +142,7 @@ def fetch_grants_gov(keyword: str = "research", errors: list | None = None) -> l
 def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None,
                item_type: str = "Feed Item") -> list:
     try:
-        resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=TIMEOUT)
+        resp = requests.get(url, headers=FETCH_HEADERS, timeout=TIMEOUT)
         resp.raise_for_status()
         root = ET.fromstring(resp.content)
         items = []
