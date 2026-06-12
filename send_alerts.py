@@ -29,7 +29,11 @@ def main() -> int:
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
     smtp_host = os.environ.get("SMTP_HOST", "")
 
-    items, errors, used_sample = sources.fetch_all(days_back=7)
+    watchlist = [w.strip() for w in os.environ.get(
+        "ALERT_WATCHLIST",
+        "indirect cost,salary cap,grant cap,pi cap,public access").split(",") if w.strip()]
+
+    items, errors, used_sample = sources.fetch_all(days_back=7, watchlist=watchlist)
     if used_sample:
         print("No live feeds reachable; not alerting on sample data.")
         for err in errors:
@@ -37,7 +41,7 @@ def main() -> int:
         return 0
 
     items, _ = filter_relevant(items)
-    items = Classifier().classify_all(items)
+    items = Classifier(watchlist=watchlist).classify_all(items)
     urgent = [i for i in items if LEVELS.index(i["level"]) <= LEVELS.index(min_level)]
 
     try:
