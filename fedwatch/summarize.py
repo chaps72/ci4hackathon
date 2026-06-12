@@ -125,11 +125,15 @@ administration. relevant=true for rules, proposed rules, executive orders, \
 OMB/agency guidance, policy notices, compliance/disclosure requirements, \
 budget actions, and RFIs on research policy or research administration.
 
+OMB/EOP memos NOT touching research, grants, or funding (DHS operations, \
+cybersecurity logging, procurement, discount rates, agency reopenings) are \
+NOT relevant.
+
 Then assign each relevant item one level:
-- CRITICAL: immediate action or major disruption. ALWAYS critical: anything \
-from OMB or the Executive Office of the President; salary cap / PI cap \
-changes; terminations, funding freezes, rescissions, stop-work orders; \
-executive orders affecting research.
+- CRITICAL: immediate action or major disruption. ALWAYS critical: OMB or \
+Executive Office actions that DO touch research/grants/funding; salary cap \
+/ PI cap changes; terminations, funding freezes, rescissions, stop-work \
+orders; executive orders affecting research.
 - HIGH: action likely required - new compliance/disclosure requirements, \
 final rules with effective dates, deadlines, indirect cost changes.
 - MODERATE: worth tracking - proposed rules, comment periods, RFIs, draft \
