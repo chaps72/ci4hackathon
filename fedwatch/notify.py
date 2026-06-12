@@ -15,8 +15,28 @@ from .emailer import EMORY_BLUE, build_html, build_plain_text
 TIMEOUT = 15
 
 
+def _post_card(webhook_url: str, title: str, text: str, app_url: str = "") -> None:
+    payload = {
+        "@type": "MessageCard",
+        "@context": "http://schema.org/extensions",
+        "themeColor": EMORY_BLUE.lstrip("#"),
+        "summary": title,
+        "title": title,
+        "sections": [{"text": text}],
+    }
+    if app_url:
+        payload["potentialAction"] = [{
+            "@type": "OpenUri",
+            "name": "Open FedWatch dashboard",
+            "targets": [{"os": "default", "uri": app_url}],
+        }]
+    resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
+    resp.raise_for_status()
+
+
 def send_teams(webhook_url: str, items: list,
-               title: str = "🔴 Critical federal research updates") -> None:
+               title: str = "🔴 Critical federal research updates",
+               app_url: str = "") -> None:
     """Post an alert card to a Teams channel via an incoming webhook."""
     if not webhook_url:
         raise ValueError("No Teams webhook URL configured")
@@ -28,35 +48,18 @@ def send_teams(webhook_url: str, items: list,
         name = it.get("title", "")
         entry = f"**[{it.get('level', '')}]** [{name}]({link})" if link else f"**[{it.get('level', '')}]** {name}"
         lines.append(f"- {entry}  \n  {it.get('agency', '')} · {it.get('date', '')}")
-    payload = {
-        "@type": "MessageCard",
-        "@context": "http://schema.org/extensions",
-        "themeColor": EMORY_BLUE.lstrip("#"),
-        "summary": title,
-        "title": title,
-        "sections": [{"text": "\n".join(lines)}],
-    }
-    resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
-    resp.raise_for_status()
+    _post_card(webhook_url, title, "\n".join(lines), app_url)
 
 
 def send_teams_summary(webhook_url: str, summary_md: str,
-                       title: str = "Federal Research Update - Executive Summary") -> None:
+                       title: str = "Federal Research Update - Executive Summary",
+                       app_url: str = "") -> None:
     """Post a generated summary (markdown) to a Teams channel."""
     if not webhook_url:
         raise ValueError("No Teams webhook URL configured")
     if not summary_md.strip():
         raise ValueError("Summary is empty")
-    payload = {
-        "@type": "MessageCard",
-        "@context": "http://schema.org/extensions",
-        "themeColor": EMORY_BLUE.lstrip("#"),
-        "summary": title,
-        "title": title,
-        "sections": [{"text": summary_md[:25000]}],
-    }
-    resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
-    resp.raise_for_status()
+    _post_card(webhook_url, title, summary_md[:25000], app_url)
 
 
 def send_email(smtp_host: str, smtp_port: int, username: str, password: str,

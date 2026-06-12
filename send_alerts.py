@@ -58,7 +58,7 @@ def main() -> int:
     title = f"🔴 {len(new)} new {min_level.lower()}+ federal research update(s)"
     sent_somewhere = False
     if webhook:
-        notify.send_teams(webhook, new, title)
+        notify.send_teams(webhook, new, title, app_url=os.environ.get("FEDWATCH_APP_URL", ""))
         print(f"Teams: sent {len(new)} item(s).")
         sent_somewhere = True
     if smtp_host:
