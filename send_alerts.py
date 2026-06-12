@@ -31,7 +31,7 @@ def main() -> int:
 
     watchlist = [w.strip() for w in os.environ.get(
         "ALERT_WATCHLIST",
-        "indirect cost,salary cap,grant cap,pi cap,public access").split(",") if w.strip()]
+        "indirect cost,salary cap,grant cap,pi cap,per principal investigator").split(",") if w.strip()]
 
     items, errors, used_sample = sources.fetch_all(days_back=7, watchlist=watchlist)
     if used_sample:

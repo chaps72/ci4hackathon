@@ -70,6 +70,11 @@ class Classifier:
         """Return the item with `level`, `matched_keywords`, and `watchlist_hits` set."""
         import re
 
+        def kw_in(kw: str, text: str) -> bool:
+            # Word-boundary prefix match: "terminat" matches "termination"
+            # but not "determination".
+            return re.search(r"\b" + re.escape(kw.lower()), text) is not None
+
         title = (item.get("title") or "").lower()
         text = f"{title} {item.get('summary', '')}".lower()
 
@@ -83,19 +88,19 @@ class Classifier:
         # CRITICAL keywords must appear in the TITLE - regulatory summaries
         # mention words like "withdrawn" or "suspended" incidentally, which
         # caused false criticals. A summary-only critical hit caps at HIGH.
-        crit_title = [kw for kw in self.rules.get("CRITICAL", []) if kw.lower() in title]
-        crit_summary = [kw for kw in self.rules.get("CRITICAL", []) if kw.lower() in text and kw not in crit_title]
+        crit_title = [kw for kw in self.rules.get("CRITICAL", []) if kw_in(kw, title)]
+        crit_summary = [kw for kw in self.rules.get("CRITICAL", []) if kw_in(kw, text) and kw not in crit_title]
         if crit_title and level == "INFO":
             level = "CRITICAL"
         matched.extend(crit_title)
 
         for lvl, extra in (("HIGH", crit_summary), ("MODERATE", [])):
-            hits = [kw for kw in self.rules.get(lvl, []) if kw.lower() in text] + extra
+            hits = [kw for kw in self.rules.get(lvl, []) if kw_in(kw, text)] + extra
             if hits and level == "INFO":
                 level = lvl
             matched.extend(hits)
 
-        watch_hits = [w for w in self.watchlist if w and w.lower() in text]
+        watch_hits = [w for w in self.watchlist if w and kw_in(w, text)]
         if watch_hits and LEVELS.index(level) > LEVELS.index("HIGH"):
             level = "HIGH"
 

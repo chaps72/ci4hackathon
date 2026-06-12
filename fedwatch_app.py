@@ -47,7 +47,7 @@ a {{ color: {EMORY_LIGHT_BLUE}; }}
 # ---------- Session state ----------
 if "watchlist" not in st.session_state:
     st.session_state.watchlist = ["indirect cost", "salary cap", "grant cap",
-                                  "pi cap", "per principal investigator", "public access"]
+                                  "pi cap", "per principal investigator"]
 if "tracked_notices" not in st.session_state:
     st.session_state.tracked_notices = ["NOT-OD-26-086"]
 if "feed_items" not in st.session_state:
