@@ -15,6 +15,17 @@ Rules, in order:
    research signals to survive.
 """
 
+# Agencies that never produce SVPR-relevant research policy. Their documents
+# match the research-terms query incidentally (wildlife "scientific research"
+# permits, poultry inspection studies, firearms/conservation rules).
+VETO_AGENCY_HINTS = [
+    "fish and wildlife", "marine fisheries", "park service", "land management",
+    "forest service", "reclamation", "alcohol, tobacco", "firearms",
+    "food safety and inspection", "animal and plant health inspection",
+    "agricultural marketing", "coast guard", "mine safety",
+    "transportation safety", "surface transportation", "fishery",
+]
+
 # Title patterns that are NEVER government-affairs signal, regardless of
 # agency: routine administrative notices that mention research incidentally.
 # Checked before every other rule.
@@ -29,6 +40,9 @@ VETO_TITLE_MARKERS = [
     "closed meeting", "sunshine act",
     # Paperwork Reduction Act boilerplate
     "agency information collection",
+    # Topic areas with no relation to the research portfolio
+    "firearm", "hunting", "poultry", "livestock", "fisheries", "fishery",
+    "grazing", "timber", "meat and", "conservation plan", "wildlife refuge",
 ]
 
 # Feeds that only ever carry research content.
@@ -100,6 +114,9 @@ def is_research_relevant(item: dict) -> bool:
         return True
     title = (item.get("title") or "").lower()
     if any(m in title for m in VETO_TITLE_MARKERS):
+        return False
+    agency = (item.get("agency") or "").lower()
+    if any(h in agency for h in VETO_AGENCY_HINTS):
         return False
     if item.get("source") in TRUSTED_SOURCES:
         return True
