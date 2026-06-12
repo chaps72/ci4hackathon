@@ -108,6 +108,15 @@ class Classifier:
                 level = lvl
             matched.extend(hits)
 
+        # SVPR topic domains: tag the item and floor the level at the
+        # domain's base severity (e.g. indirect costs / terminations /
+        # executive actions are CRITICAL even without a keyword hit).
+        from .topics import base_level, match_domains
+        domains = item.get("domains") or match_domains(item)
+        floor = base_level(domains)
+        if LEVELS.index(floor) < LEVELS.index(level):
+            level = floor
+
         watch_hits = [w for w in self.watchlist if w and kw_in(w, text)]
         if watch_hits and LEVELS.index(level) > LEVELS.index("HIGH"):
             level = "HIGH"
@@ -116,6 +125,7 @@ class Classifier:
         out["level"] = level
         out["matched_keywords"] = matched
         out["watchlist_hits"] = watch_hits
+        out["domains"] = domains
         return out
 
     def classify_all(self, items: list) -> list:

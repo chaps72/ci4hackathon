@@ -27,22 +27,34 @@ FETCH_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-# Search terms used against the Federal Register full-text API.
-# Quoted phrases joined with | (OR): an unquoted query matches documents
-# containing ANY single word ("funding" alone pulls in Medicare rules etc.).
+# Search terms used against the Federal Register full-text API - quoted
+# phrases drawn from the SVPR topic domains (fedwatch.topics). An unquoted
+# query matches documents containing ANY single word.
 FEDERAL_REGISTER_TERMS = (
-    '"research funding" | "research grant" | "research grants" | '
-    '"federally funded research" | "scientific research" | '
-    '"research institutions" | "extramural research" | '
-    '"research policy" | "research security" | "research misconduct" | '
-    '"scientific integrity" | "research integrity"'
+    '"indirect cost" | "facilities and administrative" | "salary cap" | '
+    '"uniform guidance" | "federal financial assistance" | '
+    '"research security" | "foreign subaward" | "export control" | '
+    '"human subjects" | "institutional review board" | "common rule" | '
+    '"animal welfare" | "select agent" | "research misconduct" | '
+    '"research integrity" | "scientific integrity" | "data sharing" | '
+    '"public access" | "peer review" | "federally funded research" | '
+    '"research project grants" | "extramural research"'
 )
 
 # NIH Guide has separate feeds: notices.xml carries policy/administrative
 # notices (the government-affairs signal); fundingopps.xml carries NOFOs.
 NIH_GUIDE_NOTICES_RSS = "https://grants.nih.gov/grants/guide/newsfeed/notices.xml"
 NIH_GUIDE_FUNDING_RSS = "https://grants.nih.gov/grants/guide/newsfeed/fundingopps.xml"
+NIH_NEXUS_RSS = "https://nexus.od.nih.gov/all/feed/"
 NSF_NEWS_RSS = "https://www.nsf.gov/rss/rss_www_news.xml"
+
+# Topic screen applied to presidential documents at the source: only
+# executive actions touching the research enterprise are kept.
+_PRESDOC_TOPIC_TERMS = [
+    "research", "science", "scientific", "universit", "higher education",
+    "grant", "biomedical", "federal funding", "national institutes",
+    "laborator",
+]
 
 
 def _strip_html(text: str) -> str:
@@ -317,6 +329,59 @@ def fetch_fr_key_agencies(days_back: int = 14, errors: list | None = None) -> li
         return []
 
 
+def fetch_executive_orders(days_back: int = 30, errors: list | None = None) -> list:
+    """Presidential documents (executive orders, memoranda) touching research.
+
+    Topic-screened at the source: proclamations and EOs unrelated to the
+    research enterprise are not returned.
+    """
+    since = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    try:
+        resp = requests.get(
+            "https://www.federalregister.gov/api/v1/documents.json",
+            params={
+                "conditions[type][]": "PRESDOCU",
+                "conditions[publication_date][gte]": since,
+                "per_page": 40,
+                "order": "newest",
+                "fields[]": ["title", "abstract", "html_url", "publication_date",
+                             "agencies", "type", "document_number", "subtype"],
+            },
+            headers=FETCH_HEADERS,
+            timeout=TIMEOUT,
+        )
+        resp.raise_for_status()
+        items = []
+        for doc in resp.json().get("results", []):
+            text = f"{doc.get('title', '')} {doc.get('abstract') or ''}".lower()
+            if not any(t in text for t in _PRESDOC_TOPIC_TERMS):
+                continue
+            subtype = doc.get("subtype") or "Presidential Document"
+            items.append({
+                "id": f"fr-{doc.get('document_number')}",
+                "source": "Federal Register",
+                "agency": "Executive Office of the President",
+                "title": doc.get("title", ""),
+                # Lead with the document kind so the Executive actions topic
+                # domain matches and the item floors at CRITICAL.
+                "summary": f"Presidential document ({subtype}). {doc.get('abstract') or ''}".strip(),
+                "url": doc.get("html_url", ""),
+                "date": _norm_date(doc.get("publication_date", "")),
+                "type": subtype,
+            })
+        return items
+    except Exception as e:  # noqa: BLE001
+        if errors is not None:
+            errors.append(f"Executive orders: {e}")
+        return []
+
+
+def fetch_nih_nexus(errors: list | None = None) -> list:
+    """NIH Extramural Nexus blog - OER policy implementation news."""
+    return _fetch_rss(NIH_NEXUS_RSS, "NIH Nexus", "National Institutes of Health",
+                      errors, item_type="OER Update")
+
+
 def fetch_regulations_gov(errors: list | None = None, days_back: int = 14) -> list:
     """Recent regulations.gov documents on federally funded research.
 
@@ -434,8 +499,9 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
     errors: list[str] = []
     items = []
     items += fetch_federal_register(days_back=days_back, errors=errors)
-    items += fetch_fr_key_agencies(days_back=days_back, errors=errors)
+    items += fetch_executive_orders(errors=errors)
     items += fetch_nih_notices(errors=errors)
+    items += fetch_nih_nexus(errors=errors)
     items += fetch_regulations_gov(errors=errors, days_back=days_back)
     items += fetch_omb_memoranda(errors=errors)
     if include_news:

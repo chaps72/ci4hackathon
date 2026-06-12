@@ -267,6 +267,8 @@ with tab_feed:
             st.caption(f"{it.get('agency', '')} · {it.get('source', '')} · {it.get('type', '')} · {it.get('date', '')}")
             if it.get("summary"):
                 st.write(it["summary"])
+            if it.get("domains"):
+                st.caption("Topics: " + " · ".join(it["domains"]))
             if it.get("matched_keywords"):
                 st.caption("Matched keywords: " + ", ".join(sorted(set(it["matched_keywords"]))))
             if it.get("watchlist_hits"):

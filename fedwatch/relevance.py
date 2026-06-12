@@ -52,7 +52,7 @@ VETO_TITLE_MARKERS = [
 ]
 
 # Feeds that only ever carry research content.
-TRUSTED_SOURCES = {"NIH Guide", "NSF News"}
+TRUSTED_SOURCES = {"NIH Guide", "NIH Nexus", "NSF News"}
 
 # Agencies relevant to Emory's portfolio (SVPR scope): NIH/HHS biomedical,
 # NSF, DOE, DOD research arms, NASA, and government-wide policy offices.
@@ -143,38 +143,49 @@ GOV_WIDE_TOPIC_TERMS = [
 
 
 def is_research_relevant(item: dict) -> bool:
-    """STRICT whitelist: an item is relevant only if it comes from a research
-    feed/agency, or carries explicit research-policy language in its TITLE.
+    """Topic-domain relevance: an item is in only if it touches a named SVPR
+    domain (indirect costs, terminations, research security, human subjects,
+    appropriations, ...) - the set of things Emory's research office actually
+    tracks. Agency alone is not sufficient (NIH publishes patent paperwork;
+    OMB publishes DHS memos); topic alone from a noise agency is vetoed.
 
-    Blacklisting noise topics one by one proved endless - each day's Federal
-    Register surfaces new irrelevant families. Whitelisting is the durable fix.
+    Side effect: sets item['domains'] so the UI can show WHY an item is in.
     """
+    from .topics import match_domains
+
     # Pinned tracked notices are never filtered, period.
     if item.get("type") == "Tracked Notice":
         return True
-    # Watchlist-targeted items skip relevance scoring but NOT the vetoes -
-    # generic watch terms match airspace/public-lands/hunting documents.
+    # Watchlist-targeted items skip topic scoring but NOT the vetoes.
     if item.get("watchlist_targeted"):
         return not _vetoed(item)
     if _vetoed(item):
         return False
-    if item.get("source") in TRUSTED_SOURCES:
-        return True
+
+    domains = match_domains(item)
+    item["domains"] = domains
     agency = (item.get("agency") or "").lower()
+
+    # NIH Guide policy notices: trusted feed, but still require a domain OR
+    # an OD-level policy notice number (NOT-OD-*) so routine IC notices
+    # don't pile up.
+    if item.get("source") in TRUSTED_SOURCES:
+        return bool(domains) or "not-od-" in (item.get("id") or "").lower() \
+            or "not-od-" in (item.get("title") or "").lower()
+
+    if not domains:
+        return False
+    # Government-wide offices and executive documents publish on every topic;
+    # domain match above already scoped them to the research enterprise.
+    if any(h in agency for h in GOV_WIDE_AGENCY_HINTS):
+        return True
     if any(h in agency for h in RESEARCH_AGENCY_HINTS):
         return True
+    # Other agencies: the domain must show in the TITLE, not buried in
+    # boilerplate ("scientific research" in a permit summary).
     title = (item.get("title") or "").lower()
-    if any(h in agency for h in GOV_WIDE_AGENCY_HINTS):
-        # OMB/EOP: relevant only when the action touches research/grants.
-        text = f"{title} {item.get('summary', '')}".lower()
-        return any(t in text for t in GOV_WIDE_TOPIC_TERMS)
-    # Everything else must say so in the TITLE.
-    title_hits = [t for t in STRONG_RESEARCH_TERMS + GRANT_POLICY_TERMS if t in title]
-    if not title_hits:
-        return False
-    if any(t in title for t in EXCLUDE_TERMS):
-        return False
-    return True
+    from .topics import DOMAINS
+    return any(p in title for d in domains for p in DOMAINS[d])
 
 
 def filter_relevant(items: list) -> tuple[list, list]:
