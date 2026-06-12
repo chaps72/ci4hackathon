@@ -16,7 +16,7 @@ from fedwatch.classify import (
     level_counts, sort_by_priority,
 )
 from fedwatch.deadlines import with_deadlines
-from fedwatch.relevance import filter_relevant
+from fedwatch.relevance import filter_relevant, split_vetoed
 
 st.set_page_config(page_title="FedWatch - Federal Research Updates", page_icon="🏛️", layout="wide")
 
@@ -89,23 +89,35 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
             days_back=days_back, grants_keyword=grants_keyword,
             include_funding=include_funding, include_news=include_news,
             watchlist=DEFAULT_WATCHLIST)
+    use_ai = st.session_state.get("ai_levels", True) and summarize.claude_available()
+    dropped: list = []
     if research_only:
-        items, dropped = filter_relevant(items)
-        st.session_state.dropped_count = len(dropped)
-    else:
-        st.session_state.dropped_count = 0
+        if use_ai:
+            # AI is the relevance judge: rules only remove hard-vetoed junk,
+            # Claude reads every remaining entry and decides if it fits.
+            items, dropped = split_vetoed(items)
+        else:
+            items, dropped = filter_relevant(items)
     classifier = Classifier(watchlist=DEFAULT_WATCHLIST)
     classified = classifier.classify_all(items)
-    if st.session_state.get("ai_levels", True) and summarize.claude_available():
+    if use_ai:
         try:
-            with st.spinner("AI-refining criticality levels..."):
+            with st.spinner(f"Claude is reviewing {len(classified)} entries against the "
+                            "Emory SVPR brief..."):
                 classified = summarize.ai_classify(classified)
             irrelevant = [i for i in classified if i.get("relevant") is False]
-            if irrelevant:
-                st.session_state.dropped_count += len(irrelevant)
+            if research_only and irrelevant:
+                for i in irrelevant:
+                    i["drop_reason"] = "AI judgment: not SVPR-relevant"
+                dropped += irrelevant
                 classified = [i for i in classified if i.get("relevant") is not False]
-        except Exception as exc:  # noqa: BLE001 - keyword levels still stand
-            st.warning(f"AI classification unavailable, using keyword levels: {exc}")
+        except Exception as exc:  # noqa: BLE001 - fall back to rule filtering
+            st.warning(f"AI review unavailable ({exc}); applying rule-based filter.")
+            if research_only:
+                classified, rule_dropped = filter_relevant(classified)
+                dropped += rule_dropped
+    st.session_state.dropped_items = dropped
+    st.session_state.dropped_count = len(dropped)
     st.session_state.feed_items = classified
     st.session_state.fetch_errors = errors
     st.session_state.used_sample = used_sample
@@ -257,6 +269,20 @@ with tab_feed:
         st.rerun()
     bcol2.caption(f"{len(filtered)} item(s)")
 
+    if not items:
+        if summarize.claude_available():
+            st.warning("No items passed review for this period. Try a longer look-back "
+                       "window, or check the filtered-out list below to verify nothing "
+                       "relevant was excluded.")
+        else:
+            st.warning(
+                "No items passed the rule-based filters. **The rules are intentionally "
+                "strict and will miss things — add the `ANTHROPIC_API_KEY` secret** "
+                "(Manage app → Settings → Secrets) and every entry gets reviewed by "
+                "Claude against the Emory SVPR brief instead of keyword rules. "
+                "Meanwhile, check the filtered-out list below."
+            )
+
     for it in filtered:
         unread = it["id"] not in st.session_state.read_ids
         marker = ":blue[●] " if unread else ""
@@ -285,6 +311,16 @@ with tab_feed:
         df = pd.DataFrame(filtered)[["level", "date", "agency", "source", "title", "url"]]
         st.download_button("⬇️ Export filtered items (CSV)", df.to_csv(index=False),
                            file_name="fedwatch_items.csv", mime="text/csv")
+
+    # Audit trail: everything excluded this refresh and why, so a missing
+    # item is diagnosable instead of invisible.
+    dropped_items = st.session_state.get("dropped_items") or []
+    if dropped_items:
+        st.divider()
+        with st.expander(f"🗂️ Filtered out this refresh ({len(dropped_items)}) - audit"):
+            for d in dropped_items:
+                st.caption(f"**{d.get('title', '')[:110]}** — {d.get('agency', '')} · "
+                           f"{d.get('source', '')} · _{d.get('drop_reason', 'filtered')}_")
 
 
 # ---------- Tab: Deadlines ----------
