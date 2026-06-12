@@ -16,7 +16,7 @@ from fedwatch.classify import (
     level_counts, sort_by_priority,
 )
 from fedwatch.deadlines import with_deadlines
-from fedwatch.relevance import filter_relevant, split_vetoed
+from fedwatch.relevance import filter_relevant, rescue_portfolio, split_vetoed
 
 st.set_page_config(page_title="FedWatch - Federal Research Updates", page_icon="🏛️", layout="wide")
 
@@ -98,6 +98,10 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
             items, dropped = split_vetoed(items)
         else:
             items, dropped = filter_relevant(items)
+            if not items and dropped:
+                # Never leave the feed silently empty: surface portfolio-agency
+                # items for human review rather than hiding everything.
+                items, dropped = rescue_portfolio(dropped)
     classifier = Classifier(watchlist=DEFAULT_WATCHLIST)
     classified = classifier.classify_all(items)
     if use_ai:
@@ -293,6 +297,9 @@ with tab_feed:
             st.caption(f"{it.get('agency', '')} · {it.get('source', '')} · {it.get('type', '')} · {it.get('date', '')}")
             if it.get("summary"):
                 st.write(it["summary"])
+            if it.get("needs_review"):
+                st.caption("⚠️ Shown for review: from a portfolio agency but no topic "
+                           "matched - verify relevance.")
             if it.get("domains"):
                 st.caption("Topics: " + " · ".join(it["domains"]))
             if it.get("matched_keywords"):

@@ -226,6 +226,29 @@ def fetch_nih_weekly_index(errors: list | None = None, weeks: int = 6) -> list:
         except Exception as e:  # noqa: BLE001
             if errors is not None:
                 errors.append(f"NIH Weekly Index ({week_end.strftime('%m-%d')}): {e}")
+    if not items:
+        # Fallback: the mobile index serves the current week without params.
+        try:
+            resp = requests.get("https://grants.nih.gov/grants/guide/WeeklyIndexMobile.cfm",
+                                headers=FETCH_HEADERS, timeout=TIMEOUT)
+            resp.raise_for_status()
+            for href, num, anchor in _NOTICE_LINK_RE.findall(resp.text):
+                num = num.upper()
+                if num in seen:
+                    continue
+                seen.add(num)
+                title = re.sub(r"\s+", " ", _strip_html(anchor)).strip()
+                link = href if href.startswith("http") else f"https://grants.nih.gov{href if href.startswith('/') else '/grants/guide/' + href}"
+                items.append({
+                    "id": f"nih-{num}", "source": "NIH Guide",
+                    "agency": "National Institutes of Health",
+                    "title": title or num, "summary": f"NIH Guide notice {num}.",
+                    "url": link, "date": datetime.now().strftime("%Y-%m-%d"),
+                    "type": "Policy Notice",
+                })
+        except Exception as e:  # noqa: BLE001
+            if errors is not None:
+                errors.append(f"NIH Weekly Index (mobile): {e}")
     return items
 
 

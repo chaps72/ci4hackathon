@@ -25,6 +25,7 @@ VETO_AGENCY_HINTS = [
     "agricultural marketing", "coast guard", "mine safety",
     "transportation safety", "surface transportation", "fishery",
     "aviation", "transportation department", "department of transportation",
+    "medicare", "medicaid",
 ]
 
 # Title patterns that are NEVER government-affairs signal, regardless of
@@ -70,6 +71,7 @@ RESEARCH_AGENCY_HINTS = [
     "centers for disease control",
     "agency for healthcare research",
     "food and drug administration",
+    "health and human services",        # HHS research rules (CMS is vetoed)
 ]
 
 # Strict research signal terms (stems, matched case-insensitively).
@@ -205,6 +207,24 @@ def filter_relevant(items: list) -> tuple[list, list]:
                                  else "no SVPR topic match")
             dropped.append(it)
     return kept, dropped
+
+
+def rescue_portfolio(dropped: list) -> tuple[list, list]:
+    """Rules-mode safety valve: when the strict filter rejects EVERYTHING,
+    bring back non-vetoed items from portfolio agencies so the feed is never
+    silently empty. Returned items are flagged needs_review."""
+    rescued, still_dropped = [], []
+    for it in dropped:
+        agency = (it.get("agency") or "").lower()
+        portfolio = any(h in agency for h in RESEARCH_AGENCY_HINTS)
+        if portfolio and not _vetoed(it):
+            it = dict(it)
+            it.pop("drop_reason", None)
+            it["needs_review"] = True
+            rescued.append(it)
+        else:
+            still_dropped.append(it)
+    return rescued, still_dropped
 
 
 def split_vetoed(items: list) -> tuple[list, list]:
