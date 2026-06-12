@@ -109,6 +109,15 @@ They care about federal \
 actions that affect the research enterprise: regulations, executive actions, \
 agency policy, compliance requirements, and research budget/funding POLICY.
 
+The office's own federal-updates tracking covers, concretely: indirect cost \
+rate actions and their litigation status, foreign subaward and research \
+security policy, award terminations / appeals / closeout rules, executive \
+orders and the agency guidance implementing them (e.g. clinical research \
+inclusion policy changes), grants policy / uniform guidance, compliance \
+regimes (human subjects, animal/primate, biosafety, misconduct, export \
+controls), and the federal fiscal outlook for research agencies. Items in \
+those lanes are relevant; items outside them are not.
+
 First decide relevance. relevant=false for items the SVPR would not need: \
 science press releases and discovery stories, podcasts/videos/episodes, \
 individual grant awards ('agency invests $X in...'), prizes, event and \
