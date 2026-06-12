@@ -8,6 +8,11 @@ from dataclasses import dataclass, field
 
 LEVELS = ["CRITICAL", "HIGH", "MODERATE", "INFO"]
 
+# Built-in watched terms: dedicated 90-day Federal Register search, never
+# filtered out, rank at least HIGH.
+DEFAULT_WATCHLIST = ["indirect cost", "salary cap", "grant cap", "pi cap",
+                     "per principal investigator"]
+
 LEVEL_EMOJI = {
     "CRITICAL": "🔴",
     "HIGH": "🟠",
