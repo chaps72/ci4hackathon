@@ -194,8 +194,29 @@ def is_research_relevant(item: dict) -> bool:
 
 
 def filter_relevant(items: list) -> tuple[list, list]:
-    """Split items into (relevant, dropped)."""
+    """Split items into (relevant, dropped); dropped items carry drop_reason."""
     kept, dropped = [], []
     for it in items:
-        (kept if is_research_relevant(it) else dropped).append(it)
+        if is_research_relevant(it):
+            kept.append(it)
+        else:
+            it = dict(it)
+            it["drop_reason"] = ("veto list (agency/topic)" if _vetoed(it)
+                                 else "no SVPR topic match")
+            dropped.append(it)
+    return kept, dropped
+
+
+def split_vetoed(items: list) -> tuple[list, list]:
+    """Light pass for the AI pipeline: remove only hard-vetoed junk, leaving
+    relevance judgment to the model. Dropped items carry drop_reason."""
+    kept, dropped = [], []
+    for it in items:
+        if it.get("type") == "Tracked Notice" or it.get("watchlist_targeted") \
+                or not _vetoed(it):
+            kept.append(it)
+        else:
+            it = dict(it)
+            it["drop_reason"] = "veto list (agency/topic)"
+            dropped.append(it)
     return kept, dropped
