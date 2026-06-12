@@ -119,13 +119,26 @@ def _vetoed(item: dict) -> bool:
     return any(h in agency for h in VETO_AGENCY_HINTS)
 
 
+# Agencies trusted to be relevant (whitelist) - includes government-wide
+# policy offices whose actions always matter.
+WHITELIST_AGENCY_HINTS = RESEARCH_AGENCY_HINTS + [
+    "management and budget",
+    "executive office of the president",
+]
+
+
 def is_research_relevant(item: dict) -> bool:
+    """STRICT whitelist: an item is relevant only if it comes from a research
+    feed/agency, or carries explicit research-policy language in its TITLE.
+
+    Blacklisting noise topics one by one proved endless - each day's Federal
+    Register surfaces new irrelevant families. Whitelisting is the durable fix.
+    """
     # Pinned tracked notices are never filtered, period.
     if item.get("type") == "Tracked Notice":
         return True
     # Watchlist-targeted items skip relevance scoring but NOT the vetoes -
-    # generic watch terms ("public access") match airspace/public-lands/
-    # hunting documents in full-text search.
+    # generic watch terms match airspace/public-lands/hunting documents.
     if item.get("watchlist_targeted"):
         return not _vetoed(item)
     if _vetoed(item):
@@ -133,13 +146,16 @@ def is_research_relevant(item: dict) -> bool:
     if item.get("source") in TRUSTED_SOURCES:
         return True
     agency = (item.get("agency") or "").lower()
-    if any(h in agency for h in RESEARCH_AGENCY_HINTS):
+    if any(h in agency for h in WHITELIST_AGENCY_HINTS):
         return True
-    score = research_score(item)
-    if exclusion_hits(item):
-        # Benefits-program language present: needs strong research signal to stay.
-        return score >= 3
-    return score >= 1
+    # Everything else must say so in the TITLE.
+    title = (item.get("title") or "").lower()
+    title_hits = [t for t in STRONG_RESEARCH_TERMS + GRANT_POLICY_TERMS if t in title]
+    if not title_hits:
+        return False
+    if any(t in title for t in EXCLUDE_TERMS):
+        return False
+    return True
 
 
 def filter_relevant(items: list) -> tuple[list, list]:

@@ -19,7 +19,8 @@ import os
 import sys
 
 from fedwatch import notify, sources
-from fedwatch.classify import LEVELS, Classifier, sort_by_priority
+from fedwatch.classify import DEFAULT_WATCHLIST, LEVELS, Classifier, sort_by_priority
+from fedwatch.deadlines import with_deadlines
 from fedwatch.relevance import filter_relevant
 
 
@@ -30,8 +31,7 @@ def main() -> int:
     smtp_host = os.environ.get("SMTP_HOST", "")
 
     watchlist = [w.strip() for w in os.environ.get(
-        "ALERT_WATCHLIST",
-        "indirect cost,salary cap,grant cap,pi cap,per principal investigator").split(",") if w.strip()]
+        "ALERT_WATCHLIST", ",".join(DEFAULT_WATCHLIST)).split(",") if w.strip()]
 
     items, errors, used_sample = sources.fetch_all(days_back=7, watchlist=watchlist)
     if used_sample:
@@ -50,15 +50,33 @@ def main() -> int:
     except (FileNotFoundError, ValueError):
         seen = set()
 
+    app_url = os.environ.get("FEDWATCH_APP_URL", "")
+
+    # Deadline reminders at 14 and 3 days out (deduped per item+milestone).
+    reminders = [i for i in with_deadlines(items)
+                 if i["days_left"] in (14, 3)
+                 and f"dl-{i['id']}-{i['days_left']}" not in seen]
+    if reminders and webhook:
+        notify.send_teams(
+            webhook,
+            [{**r, "title": f"Due {r['deadline']} ({r['days_left']}d): {r['title']}"} for r in reminders],
+            title=f"⏰ {len(reminders)} comment/response deadline(s) approaching",
+            app_url=app_url,
+        )
+        seen.update(f"dl-{i['id']}-{i['days_left']}" for i in reminders)
+        print(f"Teams: sent {len(reminders)} deadline reminder(s).")
+
     new = sort_by_priority([i for i in urgent if i["id"] not in seen])
     if not new:
+        with open(seen_file, "w") as f:
+            json.dump(sorted(seen), f)
         print(f"No new {min_level}+ items ({len(urgent)} already alerted).")
         return 0
 
     title = f"🔴 {len(new)} new {min_level.lower()}+ federal research update(s)"
     sent_somewhere = False
     if webhook:
-        notify.send_teams(webhook, new, title, app_url=os.environ.get("FEDWATCH_APP_URL", ""))
+        notify.send_teams(webhook, new, title, app_url=app_url)
         print(f"Teams: sent {len(new)} item(s).")
         sent_somewhere = True
     if smtp_host:

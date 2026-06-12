@@ -12,8 +12,10 @@ import os
 
 from fedwatch import emailer, notify, sources, summarize
 from fedwatch.classify import (
-    LEVELS, LEVEL_DESCRIPTIONS, LEVEL_EMOJI, Classifier, level_counts, sort_by_priority,
+    DEFAULT_WATCHLIST, LEVELS, LEVEL_DESCRIPTIONS, LEVEL_EMOJI, Classifier,
+    level_counts, sort_by_priority,
 )
+from fedwatch.deadlines import with_deadlines
 from fedwatch.relevance import filter_relevant
 
 st.set_page_config(page_title="FedWatch - Federal Research Updates", page_icon="🏛️", layout="wide")
@@ -59,11 +61,6 @@ a {{ color: {EMORY_LIGHT_BLUE}; }}
 .fw-metric .lab {{ font-size: 0.72rem; color: #6d6e71; text-transform: uppercase;
     letter-spacing: 0.07em; }}
 </style>""", unsafe_allow_html=True)
-
-# Built-in watched terms: dedicated 90-day Federal Register search, never
-# filtered out, rank at least HIGH. (Formerly a sidebar setting.)
-DEFAULT_WATCHLIST = ["indirect cost", "salary cap", "grant cap", "pi cap",
-                     "per principal investigator"]
 
 # ---------- Session state ----------
 if "feed_items" not in st.session_state:
@@ -232,8 +229,8 @@ if watch_flagged:
     st.warning(f"Watchlist matches ({len(watch_flagged)}): "
                + "; ".join(sorted({w for i in watch_flagged for w in i['watchlist_hits']})))
 
-tab_feed, tab_summary, tab_email, tab_alerts = st.tabs(
-    ["Feed", "Summaries", "Email digest", "Alerts"])
+tab_feed, tab_deadlines, tab_summary, tab_email, tab_alerts = st.tabs(
+    ["Feed", "Deadlines", "Summaries", "Email digest", "Alerts"])
 
 # ---------- Tab 1: Feed ----------
 with tab_feed:
@@ -286,6 +283,30 @@ with tab_feed:
         df = pd.DataFrame(filtered)[["level", "date", "agency", "source", "title", "url"]]
         st.download_button("⬇️ Export filtered items (CSV)", df.to_csv(index=False),
                            file_name="fedwatch_items.csv", mime="text/csv")
+
+
+# ---------- Tab: Deadlines ----------
+with tab_deadlines:
+    st.subheader("Upcoming comment & response deadlines")
+    st.caption("Due dates extracted automatically from RFIs, proposed rules, and notices. "
+               "Scheduled alerts remind the team at 14 and 3 days out.")
+    dl_items = with_deadlines(items)
+    if not dl_items:
+        st.info("No items with upcoming deadlines in the current feed.")
+    for it in dl_items:
+        days = it["days_left"]
+        urgency = "red" if days <= 3 else ("orange" if days <= 14 else "blue")
+        badge = f":{urgency}[**{days}d**]"
+        due = datetime.strptime(it["deadline"], "%Y-%m-%d").strftime("%B %d, %Y")
+        with st.expander(f"{badge} · due {due} · {it.get('title', '')[:90]}"):
+            st.markdown(f"**{it.get('title', '')}**")
+            st.caption(f"{it.get('agency', '')} · {it.get('source', '')} · "
+                       f"{LEVEL_EMOJI[it['level']]} {it['level'].title()}")
+            st.markdown(f"**Deadline: {due}** ({days} day(s) remaining)")
+            if it.get("summary"):
+                st.write(it["summary"])
+            if it.get("url"):
+                st.markdown(f"[Open source ↗]({it['url']})")
 
 # ---------- Tab 2: Summaries ----------
 with tab_summary:

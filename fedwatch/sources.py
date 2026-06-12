@@ -267,6 +267,139 @@ def fetch_nsf_news(errors: list | None = None) -> list:
     return _fetch_rss(NSF_NEWS_RSS, "NSF News", "National Science Foundation", errors)
 
 
+# Agencies whose every Federal Register document matters to an NIH-heavy
+# biomedical portfolio - swept without keyword filtering so nothing that the
+# term query misses falls through. (FR API agency slugs.)
+KEY_AGENCY_SLUGS = [
+    "national-institutes-of-health",
+    "national-science-foundation",
+    "science-and-technology-policy-office",
+    "management-and-budget-office",
+]
+
+
+def fetch_fr_key_agencies(days_back: int = 14, errors: list | None = None) -> list:
+    """All recent Federal Register documents from NIH, NSF, OSTP, and OMB."""
+    since = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    try:
+        resp = requests.get(
+            "https://www.federalregister.gov/api/v1/documents.json",
+            params={
+                "conditions[agencies][]": KEY_AGENCY_SLUGS,
+                "conditions[publication_date][gte]": since,
+                "per_page": 40,
+                "order": "newest",
+                "fields[]": ["title", "abstract", "html_url", "publication_date",
+                             "agencies", "type", "document_number"],
+            },
+            headers=FETCH_HEADERS,
+            timeout=TIMEOUT,
+        )
+        resp.raise_for_status()
+        items = []
+        for doc in resp.json().get("results", []):
+            agencies = doc.get("agencies") or []
+            agency = agencies[0].get("name", "Unknown") if agencies else "Unknown"
+            items.append({
+                "id": f"fr-{doc.get('document_number')}",
+                "source": "Federal Register",
+                "agency": agency,
+                "title": doc.get("title", ""),
+                "summary": doc.get("abstract") or "",
+                "url": doc.get("html_url", ""),
+                "date": _norm_date(doc.get("publication_date", "")),
+                "type": doc.get("type", "Document"),
+            })
+        return items
+    except Exception as e:  # noqa: BLE001
+        if errors is not None:
+            errors.append(f"Federal Register (key agencies): {e}")
+        return []
+
+
+def fetch_regulations_gov(errors: list | None = None, days_back: int = 14) -> list:
+    """Recent regulations.gov documents on federally funded research.
+
+    Uses the public v4 API; REGULATIONS_GOV_API_KEY env var if set, else the
+    rate-limited DEMO_KEY.
+    """
+    import os
+
+    api_key = os.environ.get("REGULATIONS_GOV_API_KEY", "DEMO_KEY")
+    since = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+    try:
+        resp = requests.get(
+            "https://api.regulations.gov/v4/documents",
+            params={
+                "filter[searchTerm]": '"federally funded research"',
+                "filter[postedDate][ge]": since,
+                "sort": "-postedDate",
+                "page[size]": 25,
+                "api_key": api_key,
+            },
+            headers=FETCH_HEADERS,
+            timeout=TIMEOUT,
+        )
+        resp.raise_for_status()
+        items = []
+        for doc in resp.json().get("data", []):
+            attrs = doc.get("attributes", {}) or {}
+            items.append({
+                "id": f"regs-{doc.get('id')}",
+                "source": "Regulations.gov",
+                "agency": attrs.get("agencyId", "Unknown"),
+                "title": attrs.get("title", ""),
+                "summary": (attrs.get("docketAbstract") or attrs.get("summary") or "")[:800],
+                "url": f"https://www.regulations.gov/document/{doc.get('id')}",
+                "date": _norm_date((attrs.get("postedDate") or "")[:10]),
+                "type": attrs.get("documentType", "Document"),
+            })
+        return items
+    except Exception as e:  # noqa: BLE001
+        if errors is not None:
+            errors.append(f"Regulations.gov: {e}")
+        return []
+
+
+_OMB_MEMO_RE = re.compile(
+    r'href="([^"]*?/(?:M|m)-(\d{2})-(\d{2,3})[^"]*)"[^>]*>(.*?)</a>',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def fetch_omb_memoranda(errors: list | None = None) -> list:
+    """Scrape OMB's memoranda page for recent M-memos (M-26-xx...)."""
+    try:
+        resp = requests.get(
+            "https://www.whitehouse.gov/omb/information-for-agencies/memoranda/",
+            headers=FETCH_HEADERS, timeout=TIMEOUT,
+        )
+        resp.raise_for_status()
+        items, seen = [], set()
+        for href, yy, num, anchor in _OMB_MEMO_RE.findall(resp.text):
+            memo_id = f"M-{yy}-{num}"
+            if memo_id in seen:
+                continue
+            seen.add(memo_id)
+            title = re.sub(r"\s+", " ", _strip_html(anchor)).strip()
+            link = href if href.startswith("http") else f"https://www.whitehouse.gov{href}"
+            items.append({
+                "id": f"omb-{memo_id}",
+                "source": "OMB Memoranda",
+                "agency": "Office of Management and Budget",
+                "title": title or memo_id,
+                "summary": f"OMB memorandum {memo_id}.",
+                "url": link,
+                "date": "",
+                "type": "Memorandum",
+            })
+        return items[:10]  # most recent memos listed first
+    except Exception as e:  # noqa: BLE001
+        if errors is not None:
+            errors.append(f"OMB Memoranda: {e}")
+        return []
+
+
 def fetch_watchlist_targeted(watchlist: list, errors: list | None = None,
                              days_back: int = 90) -> list:
     """Dedicated Federal Register search for the team's watchlist terms.
@@ -297,7 +430,10 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
     errors: list[str] = []
     items = []
     items += fetch_federal_register(days_back=days_back, errors=errors)
+    items += fetch_fr_key_agencies(days_back=days_back, errors=errors)
     items += fetch_nih_notices(errors=errors)
+    items += fetch_regulations_gov(errors=errors, days_back=days_back)
+    items += fetch_omb_memoranda(errors=errors)
     if include_news:
         items += fetch_nsf_news(errors=errors)
     if include_funding:
