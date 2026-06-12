@@ -166,6 +166,10 @@ def is_research_relevant(item: dict) -> bool:
 
     domains = match_domains(item)
     item["domains"] = domains
+    # Press items were already screened for federal-research relevance at
+    # the source; vetoes (checked above) still apply.
+    if item.get("type") == "Press Coverage":
+        return True
     agency = (item.get("agency") or "").lower()
 
     # NIH Guide policy notices: trusted feed, but still require a domain OR

@@ -493,6 +493,35 @@ def fetch_omb_memoranda(errors: list | None = None) -> list:
         return []
 
 
+# Press outlets research offices actually read. General feeds, so items are
+# screened for federal research policy relevance at the source.
+PRESS_FEEDS = [
+    ("https://www.science.org/rss/news_current.xml", "Science (AAAS)"),
+    ("https://www.nature.com/nature.rss", "Nature"),
+    ("https://www.insidehighered.com/rss.xml", "Inside Higher Ed"),
+    ("https://www.statnews.com/feed/", "STAT News"),
+]
+
+_PRESS_RESEARCH_RE = re.compile(
+    r"\b(research|science|scientists?|nih|nsf|universit\w+|academ\w+|biomedical)\b",
+    re.IGNORECASE)
+_PRESS_FEDERAL_RE = re.compile(
+    r"\b(nih|nsf|doe|federal|congress|white house|trump administration|"
+    r"appropriations?|funding|grants?|indirect cost|executive order|hhs|fda|cdc|"
+    r"budget|polic(y|ies))\b", re.IGNORECASE)
+
+
+def fetch_press(errors: list | None = None) -> list:
+    """Press coverage of federal research policy from major outlets."""
+    items = []
+    for url, name in PRESS_FEEDS:
+        for it in _fetch_rss(url, name, name, errors, item_type="Press Coverage"):
+            text = f"{it.get('title', '')} {it.get('summary', '')}"
+            if _PRESS_RESEARCH_RE.search(text) and _PRESS_FEDERAL_RE.search(text):
+                items.append(it)
+    return items
+
+
 def fetch_watchlist_targeted(watchlist: list, errors: list | None = None,
                              days_back: int = 90) -> list:
     """Dedicated Federal Register search for the team's watchlist terms.
@@ -521,6 +550,7 @@ def fetch_watchlist_targeted(watchlist: list, errors: list | None = None,
 
 def fetch_all(days_back: int = 14, grants_keyword: str = "research",
               include_funding: bool = False, include_news: bool = False,
+              include_press: bool = True,
               watchlist: list | None = None, tracked_notices: list | None = None):
     """Fetch every source. Returns (items, errors, used_sample_data).
 
@@ -537,6 +567,8 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
     items += fetch_nih_nexus(errors=errors)
     items += fetch_regulations_gov(errors=errors, days_back=days_back)
     items += fetch_omb_memoranda(errors=errors)
+    if include_press:
+        items += fetch_press(errors=errors)
     if include_news:
         items += fetch_nsf_news(errors=errors)
     if include_funding:
