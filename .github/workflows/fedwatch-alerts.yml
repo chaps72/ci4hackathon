@@ -1,0 +1,38 @@
+name: FedWatch critical alerts
+
+on:
+  schedule:
+    - cron: "0 13,17,21 * * 1-5"   # 9am / 1pm / 5pm ET, weekdays
+  workflow_dispatch: {}
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Restore alerted-items state
+        uses: actions/cache@v4
+        with:
+          path: .fedwatch_seen.json
+          key: fedwatch-seen-${{ github.run_id }}
+          restore-keys: fedwatch-seen-
+
+      - name: Send alerts
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          ALERT_MIN_LEVEL: CRITICAL
+        run: python send_alerts.py
