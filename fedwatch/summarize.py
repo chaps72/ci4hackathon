@@ -110,7 +110,9 @@ individual grant awards ('agency invests $X in...'), prizes, event and \
 seminar announcements, individual funding opportunities, notices about \
 non-research programs (benefits, customs, etc.), wildlife/environmental \
 permit notices (endangered species recovery permits, incidental take - \
-these authorize 'scientific research' but are not research policy), routine \
+these authorize 'scientific research' but are not research policy), \
+anything from wildlife/land/food-inspection agencies (firearms or \
+conservation rules, poultry/livestock inspection, fisheries, hunting), routine \
 advisory committee paperwork (committee renewals, meeting notices, proposal \
 review panels), Paperwork Reduction Act information-collection boilerplate, \
 and topic-specific health/program RFCs that do not touch research \
