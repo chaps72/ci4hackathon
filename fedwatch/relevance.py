@@ -15,6 +15,22 @@ Rules, in order:
    research signals to survive.
 """
 
+# Title patterns that are NEVER government-affairs signal, regardless of
+# agency: routine administrative notices that mention research incidentally.
+# Checked before every other rule.
+VETO_TITLE_MARKERS = [
+    # Wildlife/environmental permits (authorize "scientific research" - not policy)
+    "endangered species", "endangered wildlife", "recovery permit",
+    "incidental take", "marine mammal", "migratory bird", "permit application",
+    "receipt of permit",
+    # Routine federal advisory committee (FACA) paperwork
+    "committee renewal", "charter renewal", "advisory committee",
+    "proposal review panel", "notice of meeting", "open meeting",
+    "closed meeting", "sunshine act",
+    # Paperwork Reduction Act boilerplate
+    "agency information collection",
+]
+
 # Feeds that only ever carry research content.
 TRUSTED_SOURCES = {"NIH Guide", "NSF News"}
 
@@ -79,6 +95,9 @@ def exclusion_hits(item: dict) -> list:
 
 
 def is_research_relevant(item: dict) -> bool:
+    title = (item.get("title") or "").lower()
+    if any(m in title for m in VETO_TITLE_MARKERS):
+        return False
     if item.get("source") in TRUSTED_SOURCES:
         return True
     agency = (item.get("agency") or "").lower()

@@ -94,11 +94,16 @@ agency policy, compliance requirements, and research budget/funding POLICY.
 First decide relevance. relevant=false for items the SVPR would not need: \
 science press releases and discovery stories, podcasts/videos/episodes, \
 individual grant awards ('agency invests $X in...'), prizes, event and \
-seminar announcements, individual funding opportunities, and notices about \
-non-research programs (benefits, customs, etc.). relevant=true for rules, \
-proposed rules, executive orders, OMB/agency guidance, policy notices, \
-compliance/disclosure requirements, budget actions, and RFIs on research \
-policy.
+seminar announcements, individual funding opportunities, notices about \
+non-research programs (benefits, customs, etc.), wildlife/environmental \
+permit notices (endangered species recovery permits, incidental take - \
+these authorize 'scientific research' but are not research policy), routine \
+advisory committee paperwork (committee renewals, meeting notices, proposal \
+review panels), Paperwork Reduction Act information-collection boilerplate, \
+and topic-specific health/program RFCs that do not touch research \
+administration. relevant=true for rules, proposed rules, executive orders, \
+OMB/agency guidance, policy notices, compliance/disclosure requirements, \
+budget actions, and RFIs on research policy or research administration.
 
 Then assign each relevant item one level:
 - CRITICAL: immediate action or major disruption. ALWAYS critical: anything \
