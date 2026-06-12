@@ -86,8 +86,21 @@ def _claude_summary(items: list, style: str, extra_instructions: str) -> str:
 
 
 AI_CLASSIFY_GUIDANCE = """\
-You are triaging federal research policy updates for a university research \
-operations team (government affairs focus). Assign each item one level:
+You are triaging federal updates for a university Senior Vice President for \
+Research (SVPR) and the government affairs team. They care about federal \
+actions that affect the research enterprise: regulations, executive actions, \
+agency policy, compliance requirements, and research budget/funding POLICY.
+
+First decide relevance. relevant=false for items the SVPR would not need: \
+science press releases and discovery stories, podcasts/videos/episodes, \
+individual grant awards ('agency invests $X in...'), prizes, event and \
+seminar announcements, individual funding opportunities, and notices about \
+non-research programs (benefits, customs, etc.). relevant=true for rules, \
+proposed rules, executive orders, OMB/agency guidance, policy notices, \
+compliance/disclosure requirements, budget actions, and RFIs on research \
+policy.
+
+Then assign each relevant item one level:
 - CRITICAL: immediate action or major disruption. ALWAYS critical: anything \
 from OMB or the Executive Office of the President; salary cap / PI cap \
 changes; terminations, funding freezes, rescissions, stop-work orders; \
@@ -95,10 +108,11 @@ executive orders affecting research.
 - HIGH: action likely required - new compliance/disclosure requirements, \
 final rules with effective dates, deadlines, indirect cost changes.
 - MODERATE: worth tracking - proposed rules, comment periods, RFIs, draft \
-guidance, funding opportunities.
-- INFO: routine reports, events, announcements with no action.
+guidance.
+- INFO: relevant but routine - reports, minor administrative notices.
 Judge by what the document actually DOES, not incidental words: a NIST \
-notice that merely mentions 'withdrawn' submissions is not critical."""
+notice that merely mentions 'withdrawn' submissions is not critical. \
+For irrelevant items still return a level (INFO is fine)."""
 
 
 def ai_classify(items: list) -> list:
@@ -125,8 +139,9 @@ def ai_classify(items: list) -> list:
                     "properties": {
                         "id": {"type": "string"},
                         "level": {"type": "string", "enum": LEVELS},
+                        "relevant": {"type": "boolean"},
                     },
-                    "required": ["id", "level"],
+                    "required": ["id", "level", "relevant"],
                     "additionalProperties": False,
                 },
             }
@@ -147,20 +162,25 @@ def ai_classify(items: list) -> list:
     if response.stop_reason == "refusal":
         raise RuntimeError("Model declined the request")
     text = next(b.text for b in response.content if b.type == "text")
-    level_by_id = {r["id"]: r["level"] for r in json.loads(text)["levels"]}
+    result_by_id = {r["id"]: r for r in json.loads(text)["levels"]}
 
     out = []
     for it in items:
         item = dict(it)
-        ai_level = level_by_id.get(item["id"])
-        if ai_level in LEVELS:
-            item["level"] = ai_level
+        res = result_by_id.get(item["id"])
+        if res:
+            if res["level"] in LEVELS:
+                item["level"] = res["level"]
+            item["relevant"] = bool(res["relevant"])
             item["ai_classified"] = True
         # Hard floors regardless of model output
-        if item.get("watchlist_hits") and LEVELS.index(item["level"]) > LEVELS.index("HIGH"):
-            item["level"] = "HIGH"
+        if item.get("watchlist_hits"):
+            item["relevant"] = True
+            if LEVELS.index(item["level"]) > LEVELS.index("HIGH"):
+                item["level"] = "HIGH"
         if any(str(m).startswith("agency:") for m in item.get("matched_keywords", [])):
             item["level"] = "CRITICAL"
+            item["relevant"] = True
         out.append(item)
     return out
 
