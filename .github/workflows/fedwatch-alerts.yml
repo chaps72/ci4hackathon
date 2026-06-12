@@ -34,5 +34,6 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          FEDWATCH_APP_URL: ${{ secrets.FEDWATCH_APP_URL }}
           ALERT_MIN_LEVEL: HIGH
         run: python send_alerts.py

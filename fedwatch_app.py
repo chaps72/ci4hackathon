@@ -60,12 +60,12 @@ a {{ color: {EMORY_LIGHT_BLUE}; }}
     letter-spacing: 0.07em; }}
 </style>""", unsafe_allow_html=True)
 
+# Built-in watched terms: dedicated 90-day Federal Register search, never
+# filtered out, rank at least HIGH. (Formerly a sidebar setting.)
+DEFAULT_WATCHLIST = ["indirect cost", "salary cap", "grant cap", "pi cap",
+                     "per principal investigator"]
+
 # ---------- Session state ----------
-if "watchlist" not in st.session_state:
-    st.session_state.watchlist = ["indirect cost", "salary cap", "grant cap",
-                                  "pi cap", "per principal investigator"]
-if "tracked_notices" not in st.session_state:
-    st.session_state.tracked_notices = ["NOT-OD-26-086"]
 if "feed_items" not in st.session_state:
     st.session_state.feed_items = []
     st.session_state.fetch_errors = []
@@ -91,14 +91,13 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
         items, errors, used_sample = sources.fetch_all(
             days_back=days_back, grants_keyword=grants_keyword,
             include_funding=include_funding, include_news=include_news,
-            watchlist=st.session_state.watchlist,
-            tracked_notices=st.session_state.tracked_notices)
+            watchlist=DEFAULT_WATCHLIST)
     if research_only:
         items, dropped = filter_relevant(items)
         st.session_state.dropped_count = len(dropped)
     else:
         st.session_state.dropped_count = 0
-    classifier = Classifier(watchlist=st.session_state.watchlist)
+    classifier = Classifier(watchlist=DEFAULT_WATCHLIST)
     classified = classifier.classify_all(items)
     if st.session_state.get("ai_levels", True) and summarize.claude_available():
         try:
@@ -122,7 +121,7 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
                     if i["level"] == "CRITICAL" and i["id"] not in st.session_state.alerted_ids]
         if new_crit:
             try:
-                notify.send_teams(webhook, new_crit)
+                notify.send_teams(webhook, new_crit, app_url=_secret("FEDWATCH_APP_URL"))
                 st.session_state.alerted_ids.update(i["id"] for i in new_crit)
                 st.toast(f"Sent {len(new_crit)} critical alert(s) to Teams")
             except Exception as exc:  # noqa: BLE001
@@ -159,29 +158,6 @@ with st.sidebar:
                              "than keyword matching. Applied on refresh.")
     if st.button("Refresh feeds", use_container_width=True, type="primary"):
         refresh(days_back, grants_keyword, research_only, include_funding, include_news)
-
-    st.divider()
-    st.subheader("Watchlist keywords")
-    st.caption("Watched terms get a dedicated 90-day Federal Register search, are never "
-               "filtered out, and rank at least HIGH.")
-    watchlist_text = st.text_area(
-        "One keyword per line", value="\n".join(st.session_state.watchlist), height=110,
-        label_visibility="collapsed",
-    )
-    new_watchlist = [w.strip() for w in watchlist_text.splitlines() if w.strip()]
-    if new_watchlist != st.session_state.watchlist:
-        st.session_state.watchlist = new_watchlist
-        if st.session_state.feed_items:
-            classifier = Classifier(watchlist=new_watchlist)
-            st.session_state.feed_items = classifier.classify_all(st.session_state.feed_items)
-
-    st.subheader("Tracked notices")
-    st.caption("Specific NIH notice numbers fetched directly - always shown, never filtered.")
-    tracked_text = st.text_area(
-        "One notice number per line", value="\n".join(st.session_state.tracked_notices),
-        height=70, label_visibility="collapsed",
-    )
-    st.session_state.tracked_notices = [t.strip() for t in tracked_text.splitlines() if t.strip()]
 
     st.divider()
     with st.expander("Criticality levels"):
@@ -352,7 +328,8 @@ with tab_summary:
             try:
                 notify.send_teams_summary(
                     summary_webhook, st.session_state.last_summary,
-                    title=f"Federal Research Update - {style} ({datetime.now().strftime('%b %d, %Y')})")
+                    title=f"Federal Research Update - {style} ({datetime.now().strftime('%b %d, %Y')})",
+                    app_url=_secret("FEDWATCH_APP_URL"))
                 st.success("Summary posted to Teams.")
             except Exception as exc:  # noqa: BLE001
                 st.error(f"Teams post failed: {exc}")
@@ -422,7 +399,8 @@ with tab_alerts:
     t1, t2 = st.columns(2)
     if t1.button("Send to Teams now", type="primary", disabled=not webhook_url):
         try:
-            notify.send_teams(webhook_url, new_alert_items or alert_items)
+            notify.send_teams(webhook_url, new_alert_items or alert_items,
+                              app_url=_secret("FEDWATCH_APP_URL"))
             sent = new_alert_items or alert_items
             st.session_state.alerted_ids.update(i["id"] for i in sent)
             st.success(f"Sent {len(sent)} item(s) to Teams.")
