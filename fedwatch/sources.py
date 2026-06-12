@@ -165,7 +165,95 @@ def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None,
         return []
 
 
+_NOTICE_LINK_RE = re.compile(
+    r'href="([^"]*notice-files/(NOT-[A-Z0-9]+-\d{2}-\d+)\.html?)"[^>]*>(.*?)</a>',
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def fetch_nih_weekly_index(errors: list | None = None, weeks: int = 6) -> list:
+    """Scrape the NIH Guide Weekly Index pages for notices.
+
+    This is the authoritative listing of every NIH Guide notice. Used as the
+    primary notices source because NIH's documented RSS only covers funding
+    opportunities.
+    """
+    items, seen = [], set()
+    today = datetime.now()
+    friday = today - timedelta(days=(today.weekday() - 4) % 7)
+    for w in range(weeks):
+        week_end = friday - timedelta(weeks=w)
+        url = ("https://grants.nih.gov/grants/guide/WeeklyIndex.cfm"
+               f"?WeekEnding={week_end.strftime('%m-%d-%Y')}")
+        try:
+            resp = requests.get(url, headers=FETCH_HEADERS, timeout=TIMEOUT)
+            resp.raise_for_status()
+            for href, num, anchor in _NOTICE_LINK_RE.findall(resp.text):
+                num = num.upper()
+                if num in seen:
+                    continue
+                seen.add(num)
+                title = re.sub(r"\s+", " ", _strip_html(anchor)).strip()
+                if href.startswith("http"):
+                    link = href
+                elif href.startswith("/"):
+                    link = f"https://grants.nih.gov{href}"
+                else:
+                    link = f"https://grants.nih.gov/grants/guide/{href}"
+                items.append({
+                    "id": f"nih-{num}",
+                    "source": "NIH Guide",
+                    "agency": "National Institutes of Health",
+                    "title": title or num,
+                    "summary": f"NIH Guide notice {num} (week ending {week_end.strftime('%Y-%m-%d')}).",
+                    "url": link,
+                    "date": week_end.strftime("%Y-%m-%d"),
+                    "type": "Policy Notice",
+                })
+        except Exception as e:  # noqa: BLE001
+            if errors is not None:
+                errors.append(f"NIH Weekly Index ({week_end.strftime('%m-%d')}): {e}")
+    return items
+
+
+def fetch_nih_notice_pages(notice_ids: list, errors: list | None = None) -> list:
+    """Fetch specific NIH Guide notices directly by number (pinned tracking).
+
+    Guarantees designated notices appear regardless of feed behavior.
+    """
+    items = []
+    for raw in notice_ids:
+        nid = (raw or "").strip().upper().rstrip(".HTML").rstrip(".")
+        if not nid:
+            continue
+        url = f"https://grants.nih.gov/grants/guide/notice-files/{nid}.html"
+        try:
+            resp = requests.get(url, headers=FETCH_HEADERS, timeout=TIMEOUT)
+            resp.raise_for_status()
+            m = re.search(r"<title>(.*?)</title>", resp.text, re.IGNORECASE | re.DOTALL)
+            title = re.sub(r"\s+", " ", _strip_html(m.group(1))).strip() if m else nid
+            items.append({
+                "id": f"nih-{nid}",
+                "source": "NIH Guide",
+                "agency": "National Institutes of Health",
+                "title": title,
+                "summary": f"Pinned notice {nid} - tracked explicitly.",
+                "url": url,
+                "date": "",
+                "type": "Tracked Notice",
+                "watchlist_targeted": True,  # never filtered
+            })
+        except Exception as e:  # noqa: BLE001
+            if errors is not None:
+                errors.append(f"NIH notice {nid}: {e}")
+    return items
+
+
 def fetch_nih_notices(errors: list | None = None) -> list:
+    """NIH Guide notices: Weekly Index scrape first, RSS as secondary."""
+    items = fetch_nih_weekly_index(errors=errors)
+    if items:
+        return items
     return _fetch_rss(NIH_GUIDE_NOTICES_RSS, "NIH Guide", "National Institutes of Health",
                       errors, item_type="Policy Notice")
 
@@ -198,7 +286,7 @@ def fetch_watchlist_targeted(watchlist: list, errors: list | None = None,
 
 def fetch_all(days_back: int = 14, grants_keyword: str = "research",
               include_funding: bool = False, include_news: bool = False,
-              watchlist: list | None = None):
+              watchlist: list | None = None, tracked_notices: list | None = None):
     """Fetch every source. Returns (items, errors, used_sample_data).
 
     Default focus is research policy / government affairs: Federal Register
@@ -217,6 +305,7 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
         items += fetch_nih_funding(errors=errors)
 
     targeted = fetch_watchlist_targeted(watchlist or [], errors=errors)
+    targeted += fetch_nih_notice_pages(tracked_notices or [], errors=errors)
     targeted_ids = {i["id"] for i in targeted}
     items += targeted
 
