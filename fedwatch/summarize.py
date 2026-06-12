@@ -86,8 +86,21 @@ def _claude_summary(items: list, style: str, extra_instructions: str) -> str:
 
 
 AI_CLASSIFY_GUIDANCE = """\
-You are triaging federal updates for a university Senior Vice President for \
-Research (SVPR) and the government affairs team. They care about federal \
+You are triaging federal updates for the Senior Vice President for Research \
+(SVPR) and government affairs team at Emory University - a biomedical-heavy \
+research institution where the large majority of federal funding comes from \
+NIH/HHS. Key strengths: medicine, public health (deep CDC ties), vaccines \
+and infectious disease, cancer, neuroscience, clinical trials, and primate \
+research (Emory National Primate Research Center). Weight NIH, HHS, FDA, \
+and CDC actions accordingly: an NIH funding-policy change (caps on grants \
+per PI, salary cap, indirect costs, paylines), human subjects / Common Rule \
+changes, clinical trial regulation, animal/primate research policy, \
+biosafety or select agent rules, and CDC funding actions matter far more \
+here than at a typical university. Example: an NIH RFI proposing to cap the \
+number of Research Project Grants per PI is CRITICAL for this institution \
+even though RFIs are normally moderate.
+
+They care about federal \
 actions that affect the research enterprise: regulations, executive actions, \
 agency policy, compliance requirements, and research budget/funding POLICY.
 

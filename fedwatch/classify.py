@@ -29,13 +29,18 @@ DEFAULT_RULES = {
         "terminat", "rescind", "rescission", "suspend", "stop work", "stop-work",
         "funding freeze", "freeze on", "immediately", "executive order",
         "cancell", "withdrawn", "revoked", "shutdown", "halt",
-        "salary cap", "pi cap",
+        "salary cap", "pi cap", "per principal investigator", "cap the number",
+        "grants per pi", "unified funding strategy",
     ],
     "HIGH": [
         "deadline", "final rule", "effective date", "compliance", "new requirement",
         "must submit", "indirect cost", "policy change", "prior approval",
         "certification", "disclosure", "foreign influence", "security review",
         "expiration", "closing date",
+        # Biomedical-heavy portfolio (Emory): these regimes matter
+        "human subjects", "common rule", "clinical trial", "animal welfare",
+        "select agent", "biosafety", "dual use", "institutional review board",
+        "vertebrate animals", "primate",
     ],
     "MODERATE": [
         "notice of funding opportunity", "nofo", "foa", "funding opportunity",

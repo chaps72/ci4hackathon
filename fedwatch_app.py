@@ -47,7 +47,9 @@ a {{ color: {EMORY_LIGHT_BLUE}; }}
 # ---------- Session state ----------
 if "watchlist" not in st.session_state:
     st.session_state.watchlist = ["indirect cost", "salary cap", "grant cap",
-                                  "pi cap", "public access"]
+                                  "pi cap", "per principal investigator", "public access"]
+if "tracked_notices" not in st.session_state:
+    st.session_state.tracked_notices = ["NOT-OD-26-086"]
 if "feed_items" not in st.session_state:
     st.session_state.feed_items = []
     st.session_state.fetch_errors = []
@@ -73,7 +75,8 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
         items, errors, used_sample = sources.fetch_all(
             days_back=days_back, grants_keyword=grants_keyword,
             include_funding=include_funding, include_news=include_news,
-            watchlist=st.session_state.watchlist)
+            watchlist=st.session_state.watchlist,
+            tracked_notices=st.session_state.tracked_notices)
     if research_only:
         items, dropped = filter_relevant(items)
         st.session_state.dropped_count = len(dropped)
@@ -155,6 +158,14 @@ with st.sidebar:
             classifier = Classifier(watchlist=new_watchlist)
             st.session_state.feed_items = classifier.classify_all(st.session_state.feed_items)
 
+    st.subheader("Tracked notices")
+    st.caption("Specific NIH notice numbers fetched directly - always shown, never filtered.")
+    tracked_text = st.text_area(
+        "One notice number per line", value="\n".join(st.session_state.tracked_notices),
+        height=70, label_visibility="collapsed",
+    )
+    st.session_state.tracked_notices = [t.strip() for t in tracked_text.splitlines() if t.strip()]
+
     st.divider()
     with st.expander("Criticality levels"):
         for lvl in LEVELS:
@@ -175,6 +186,11 @@ if st.session_state.used_sample:
     meta += " — showing bundled sample data (live feeds unreachable from this environment)"
 if st.session_state.get("dropped_count"):
     meta += f" — {st.session_state.dropped_count} non-research item(s) filtered out"
+_src_counts = {}
+for _i in st.session_state.feed_items:
+    _src_counts[_i.get("source", "?")] = _src_counts.get(_i.get("source", "?"), 0) + 1
+if _src_counts:
+    meta += " — sources: " + ", ".join(f"{s} ({n})" for s, n in sorted(_src_counts.items()))
 st.markdown(
     f'<div class="fedwatch-header"><h1>🏛️ Federal Research Updates</h1>'
     f'<p>{_html.escape(meta)}</p></div>',
