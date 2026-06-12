@@ -46,7 +46,8 @@ a {{ color: {EMORY_LIGHT_BLUE}; }}
 
 # ---------- Session state ----------
 if "watchlist" not in st.session_state:
-    st.session_state.watchlist = ["indirect cost", "salary cap", "public access"]
+    st.session_state.watchlist = ["indirect cost", "salary cap", "grant cap",
+                                  "pi cap", "public access"]
 if "feed_items" not in st.session_state:
     st.session_state.feed_items = []
     st.session_state.fetch_errors = []
@@ -71,7 +72,8 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
     with st.spinner("Fetching federal sources..."):
         items, errors, used_sample = sources.fetch_all(
             days_back=days_back, grants_keyword=grants_keyword,
-            include_funding=include_funding, include_news=include_news)
+            include_funding=include_funding, include_news=include_news,
+            watchlist=st.session_state.watchlist)
     if research_only:
         items, dropped = filter_relevant(items)
         st.session_state.dropped_count = len(dropped)
@@ -140,7 +142,8 @@ with st.sidebar:
 
     st.divider()
     st.subheader("Watchlist keywords")
-    st.caption("Any hit bumps an item to at least HIGH and flags it for the team.")
+    st.caption("Watched terms get a dedicated 90-day Federal Register search, are never "
+               "filtered out, and rank at least HIGH.")
     watchlist_text = st.text_area(
         "One keyword per line", value="\n".join(st.session_state.watchlist), height=110,
         label_visibility="collapsed",

@@ -55,14 +55,15 @@ def _norm_date(value: str) -> str:
     return value[:10]
 
 
-def fetch_federal_register(days_back: int = 14, errors: list | None = None) -> list:
+def fetch_federal_register(days_back: int = 14, errors: list | None = None,
+                           terms: str | None = None) -> list:
     """Federal Register public API (no key required)."""
     since = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
     try:
         resp = requests.get(
             "https://www.federalregister.gov/api/v1/documents.json",
             params={
-                "conditions[term]": FEDERAL_REGISTER_TERMS,
+                "conditions[term]": terms or FEDERAL_REGISTER_TERMS,
                 "conditions[publication_date][gte]": since,
                 "per_page": 40,
                 "order": "newest",
@@ -149,7 +150,7 @@ def _fetch_rss(url: str, source: str, agency: str, errors: list | None = None,
                 "date": _norm_date(entry.findtext("pubDate") or ""),
                 "type": item_type,
             })
-        return items[:30]
+        return items
     except Exception as e:  # noqa: BLE001
         if errors is not None:
             errors.append(f"{source}: {e}")
@@ -170,8 +171,26 @@ def fetch_nsf_news(errors: list | None = None) -> list:
     return _fetch_rss(NSF_NEWS_RSS, "NSF News", "National Science Foundation", errors)
 
 
+def fetch_watchlist_targeted(watchlist: list, errors: list | None = None,
+                             days_back: int = 90) -> list:
+    """Dedicated Federal Register search for the team's watchlist terms.
+
+    Guarantees watched topics are found even when they fall outside the main
+    query's phrasing or lookback window. Matches are flagged so downstream
+    filters never drop them.
+    """
+    terms = " | ".join(f'"{w}"' for w in watchlist if w and w.strip())
+    if not terms:
+        return []
+    items = fetch_federal_register(days_back=days_back, errors=errors, terms=terms)
+    for it in items:
+        it["watchlist_targeted"] = True
+    return items
+
+
 def fetch_all(days_back: int = 14, grants_keyword: str = "research",
-              include_funding: bool = False, include_news: bool = False):
+              include_funding: bool = False, include_news: bool = False,
+              watchlist: list | None = None):
     """Fetch every source. Returns (items, errors, used_sample_data).
 
     Default focus is research policy / government affairs: Federal Register
@@ -189,18 +208,25 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
         items += fetch_grants_gov(keyword=grants_keyword, errors=errors)
         items += fetch_nih_funding(errors=errors)
 
-    # Dedupe by id, newest first
+    targeted = fetch_watchlist_targeted(watchlist or [], errors=errors)
+    targeted_ids = {i["id"] for i in targeted}
+    items += targeted
+
+    # Dedupe by id, newest first; preserve the watchlist-targeted flag
     seen, deduped = set(), []
     for item in sorted(items, key=lambda i: i.get("date", ""), reverse=True):
         if item["id"] not in seen:
             seen.add(item["id"])
+            if item["id"] in targeted_ids:
+                item["watchlist_targeted"] = True
             deduped.append(item)
 
     def _mode_filter(seq: list) -> list:
+        # Watchlist-targeted items are exempt from mode filtering.
         if not include_funding:
-            seq = [i for i in seq if not _is_funding_item(i)]
+            seq = [i for i in seq if i.get("watchlist_targeted") or not _is_funding_item(i)]
         if not include_news:
-            seq = [i for i in seq if i.get("source") != "NSF News"]
+            seq = [i for i in seq if i.get("watchlist_targeted") or i.get("source") != "NSF News"]
         return seq
 
     if not deduped:

@@ -179,7 +179,7 @@ def ai_classify(items: list) -> list:
             item["relevant"] = bool(res["relevant"])
             item["ai_classified"] = True
         # Hard floors regardless of model output
-        if item.get("watchlist_hits"):
+        if item.get("watchlist_hits") or item.get("watchlist_targeted"):
             item["relevant"] = True
             if LEVELS.index(item["level"]) > LEVELS.index("HIGH"):
                 item["level"] = "HIGH"

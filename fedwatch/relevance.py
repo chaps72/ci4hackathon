@@ -95,6 +95,9 @@ def exclusion_hits(item: dict) -> list:
 
 
 def is_research_relevant(item: dict) -> bool:
+    # Explicitly watched topics are never filtered.
+    if item.get("watchlist_targeted"):
+        return True
     title = (item.get("title") or "").lower()
     if any(m in title for m in VETO_TITLE_MARKERS):
         return False
