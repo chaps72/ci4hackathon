@@ -126,11 +126,19 @@ def _vetoed(item: dict) -> bool:
     return any(h in agency for h in VETO_AGENCY_HINTS)
 
 
-# Agencies trusted to be relevant (whitelist) - includes government-wide
-# policy offices whose actions always matter.
-WHITELIST_AGENCY_HINTS = RESEARCH_AGENCY_HINTS + [
+# Government-wide policy offices (OMB, EOP): publish on every topic -
+# DHS operations, cybersecurity logging, procurement, discount rates - so
+# they are NOT blanket-relevant. Their items must touch the research
+# enterprise. (Once relevant, classify still ranks them CRITICAL.)
+GOV_WIDE_AGENCY_HINTS = [
     "management and budget",
     "executive office of the president",
+    "office of the president",
+]
+GOV_WIDE_TOPIC_TERMS = [
+    "research", "grant", "science", "r&d", "universit", "higher education",
+    "indirect cost", "uniform guidance", "federal financial assistance",
+    "funding", "appropriation", "rescission", "salary cap",
 ]
 
 
@@ -153,10 +161,14 @@ def is_research_relevant(item: dict) -> bool:
     if item.get("source") in TRUSTED_SOURCES:
         return True
     agency = (item.get("agency") or "").lower()
-    if any(h in agency for h in WHITELIST_AGENCY_HINTS):
+    if any(h in agency for h in RESEARCH_AGENCY_HINTS):
         return True
-    # Everything else must say so in the TITLE.
     title = (item.get("title") or "").lower()
+    if any(h in agency for h in GOV_WIDE_AGENCY_HINTS):
+        # OMB/EOP: relevant only when the action touches research/grants.
+        text = f"{title} {item.get('summary', '')}".lower()
+        return any(t in text for t in GOV_WIDE_TOPIC_TERMS)
+    # Everything else must say so in the TITLE.
     title_hits = [t for t in STRONG_RESEARCH_TERMS + GRANT_POLICY_TERMS if t in title]
     if not title_hits:
         return False
