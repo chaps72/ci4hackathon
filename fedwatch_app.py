@@ -78,7 +78,14 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
     else:
         st.session_state.dropped_count = 0
     classifier = Classifier(watchlist=st.session_state.watchlist)
-    st.session_state.feed_items = classifier.classify_all(items)
+    classified = classifier.classify_all(items)
+    if st.session_state.get("ai_levels", True) and summarize.claude_available():
+        try:
+            with st.spinner("AI-refining criticality levels..."):
+                classified = summarize.ai_classify(classified)
+        except Exception as exc:  # noqa: BLE001 - keyword levels still stand
+            st.warning(f"AI classification unavailable, using keyword levels: {exc}")
+    st.session_state.feed_items = classified
     st.session_state.fetch_errors = errors
     st.session_state.used_sample = used_sample
     st.session_state.last_fetch = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -115,6 +122,10 @@ with st.sidebar:
     )
     grants_keyword = st.text_input("Grants.gov keyword", value="research",
                                    disabled=not include_funding)
+    if summarize.claude_available():
+        st.checkbox("AI criticality levels (Claude)", value=True, key="ai_levels",
+                    help="Claude reads each item and assigns the level - far more accurate "
+                         "than keyword matching. Applied on refresh.")
     if st.button("🔄 Refresh feeds", use_container_width=True, type="primary"):
         refresh(days_back, grants_keyword, research_only, include_funding)
 
