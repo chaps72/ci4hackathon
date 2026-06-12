@@ -7,9 +7,12 @@ items that show genuine research signals and drops benefits-program noise.
 Rules, in order:
 1. Items from research-only feeds (NIH Guide, NSF News) are always relevant.
 2. Items from research agencies (NSF, NIH, NASA, OSTP, ...) are relevant.
-3. Otherwise the item needs research-keyword hits, and items dominated by
-   excluded program terms (medicare, child support, ...) need strong research
-   signals to survive.
+3. Grants.gov items are scored on their TITLE only, against strict research
+   terms (every Grants.gov summary contains boilerplate like "Funding
+   opportunity ...", which must not count as a signal).
+4. Other items need research or grant-policy keyword hits, and items dominated
+   by excluded program terms (medicare, child support, ...) need strong
+   research signals to survive.
 """
 
 # Feeds that only ever carry research content.
@@ -29,18 +32,22 @@ RESEARCH_AGENCY_HINTS = [
     "oceanic and atmospheric",
 ]
 
-# Research signal terms (stems, matched case-insensitively in title + summary).
-RESEARCH_TERMS = [
+# Strict research signal terms (stems, matched case-insensitively).
+STRONG_RESEARCH_TERMS = [
     "research", "scientific", "scientist", "investigator", "laboratory",
     "university", "universities", "academic", "fellowship", "postdoctoral",
     "doctoral", "peer review", "clinical trial", "biomedical", "stem ",
     "r&d", "research and development", "principal investigator", "nih", "nsf",
-    "innovation", "technology development", "data sharing", "public access",
-    "indirect cost", "facilities and administrative",
-    # Grant-policy terms: government-wide grants actions affect research funding
-    # even when the word "research" is absent (e.g., OMB guidance, freezes).
-    "grant program", "grants policy", "uniform guidance", "notice of funding",
-    "funding opportunity", "funding freeze",
+    "science", "engineering", "data sharing",
+]
+
+# Grant-policy terms: government-wide grants actions affect research funding
+# even when the word "research" is absent (e.g., OMB guidance, freezes).
+# Counted only for policy sources (Federal Register), NOT for Grants.gov,
+# where this language is boilerplate on every opportunity.
+GRANT_POLICY_TERMS = [
+    "grant program", "grants policy", "uniform guidance", "indirect cost",
+    "facilities and administrative", "funding freeze", "public access",
 ]
 
 # Benefits/administrative program terms that signal non-research content.
@@ -50,13 +57,20 @@ EXCLUDE_TERMS = [
     "supplemental nutrition assistance", "head start", "social security benefit",
     "housing voucher", "section 8", "unemployment insurance",
     "veterans benefits", "workers' compensation", "immigration enforcement",
-    "customs", "tariff",
+    "customs", "tariff", "self-sufficiency", "homelessness assistance",
+    "refugee resettlement", "victim assistance", "juvenile justice",
 ]
 
 
 def research_score(item: dict) -> int:
-    text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
-    return sum(1 for t in RESEARCH_TERMS if t in text)
+    if item.get("source") == "Grants.gov":
+        # Title only: Grants.gov summaries are generated boilerplate.
+        text = (item.get("title") or "").lower()
+        terms = STRONG_RESEARCH_TERMS
+    else:
+        text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+        terms = STRONG_RESEARCH_TERMS + GRANT_POLICY_TERMS
+    return sum(1 for t in terms if t in text)
 
 
 def exclusion_hits(item: dict) -> list:

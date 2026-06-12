@@ -13,11 +13,17 @@ from email.message import EmailMessage
 
 from .classify import LEVELS, LEVEL_EMOJI
 
+# Emory brand palette
+EMORY_BLUE = "#012169"
+EMORY_GOLD = "#f2a900"
+EMORY_LIGHT_BLUE = "#007dba"
+EMORY_GRAY = "#6d6e71"
+
 LEVEL_COLORS = {
-    "CRITICAL": "#c0392b",
+    "CRITICAL": "#c0392b",       # keep red/orange semantics for urgency
     "HIGH": "#d35400",
-    "MODERATE": "#b7950b",
-    "INFO": "#2471a3",
+    "MODERATE": EMORY_GOLD,
+    "INFO": EMORY_LIGHT_BLUE,
 }
 
 
@@ -64,7 +70,7 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
             url = _safe_url(it.get("url", ""))
             title_html = e(it.get("title", ""))
             if url:
-                title_html = f'<a href="{e(url)}" style="color:#1a5276;">{title_html}</a>'
+                title_html = f'<a href="{e(url)}" style="color:{EMORY_BLUE};">{title_html}</a>'
             rows.append(
                 '<tr><td style="padding:6px 0 10px 12px;border-left:3px solid '
                 f'{color};font:13px Arial,sans-serif;color:#2c3e50;">'
@@ -88,12 +94,16 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td align="center" style="padding:20px;">
 <table role="presentation" width="640" cellpadding="0" cellspacing="0">
-<tr><td style="font:bold 20px Arial,sans-serif;color:#17202a;padding-bottom:4px;">{e(title)}</td></tr>
-<tr><td style="font:12px Arial,sans-serif;color:#7f8c8d;padding-bottom:12px;">
-Generated {e(datetime.now().strftime('%Y-%m-%d %H:%M'))} &middot; Internal use</td></tr>
+<tr><td style="background:{EMORY_BLUE};padding:16px 18px;border-bottom:4px solid {EMORY_GOLD};">
+<div style="font:bold 20px Georgia,'Times New Roman',serif;color:#ffffff;">{e(title)}</div>
+<div style="font:12px Arial,sans-serif;color:#d6deef;padding-top:4px;">
+Generated {e(datetime.now().strftime('%Y-%m-%d %H:%M'))} &middot; Internal use</div>
+</td></tr>
+<tr><td style="height:14px;"></td></tr>
 {summary_html}
 {''.join(rows)}
-<tr><td style="padding-top:18px;font:11px Arial,sans-serif;color:#95a5a6;">
+<tr><td style="padding-top:18px;border-top:2px solid {EMORY_GOLD};margin-top:12px;
+font:11px Arial,sans-serif;color:{EMORY_GRAY};">
 Sent by FedWatch (internal awareness tool). No tracking pixels, no external images.
 Reply to the research operations team with questions.</td></tr>
 </table></td></tr></table>

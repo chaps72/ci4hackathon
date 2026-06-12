@@ -8,7 +8,9 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-from fedwatch import emailer, sources, summarize
+import os
+
+from fedwatch import emailer, notify, sources, summarize
 from fedwatch.classify import (
     LEVELS, LEVEL_DESCRIPTIONS, LEVEL_EMOJI, Classifier, level_counts, sort_by_priority,
 )
@@ -27,6 +29,15 @@ if "feed_items" not in st.session_state:
     st.session_state.dropped_count = 0
 if "read_ids" not in st.session_state:
     st.session_state.read_ids = set()
+if "alerted_ids" not in st.session_state:
+    st.session_state.alerted_ids = set()
+
+
+def _secret(name: str, default: str = "") -> str:
+    try:
+        return st.secrets[name]
+    except (KeyError, FileNotFoundError):
+        return os.environ.get(name, default)
 
 
 def refresh(days_back: int, grants_keyword: str, research_only: bool = True):
@@ -42,6 +53,19 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True):
     st.session_state.fetch_errors = errors
     st.session_state.used_sample = used_sample
     st.session_state.last_fetch = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    # Auto-alert new critical items to Teams when enabled and configured.
+    webhook = _secret("TEAMS_WEBHOOK_URL")
+    if st.session_state.get("auto_alert") and webhook and not used_sample:
+        new_crit = [i for i in st.session_state.feed_items
+                    if i["level"] == "CRITICAL" and i["id"] not in st.session_state.alerted_ids]
+        if new_crit:
+            try:
+                notify.send_teams(webhook, new_crit)
+                st.session_state.alerted_ids.update(i["id"] for i in new_crit)
+                st.toast(f"Sent {len(new_crit)} critical alert(s) to Teams")
+            except Exception as exc:  # noqa: BLE001
+                st.warning(f"Teams alert failed: {exc}")
 
 
 # ---------- Sidebar ----------
@@ -111,7 +135,8 @@ if watch_flagged:
     st.warning(f"👁️ {len(watch_flagged)} item(s) match your watchlist: "
                + "; ".join(sorted({w for i in watch_flagged for w in i['watchlist_hits']})))
 
-tab_feed, tab_summary, tab_email = st.tabs(["📋 Notification feed", "📝 Summaries", "✉️ Email digest"])
+tab_feed, tab_summary, tab_email, tab_alerts = st.tabs(
+    ["📋 Notification feed", "📝 Summaries", "✉️ Email digest", "🔔 Alerts"])
 
 # ---------- Tab 1: Feed ----------
 with tab_feed:
@@ -236,3 +261,63 @@ with tab_email:
                            file_name="fedwatch_digest.txt", mime="text/plain")
         d3.download_button("⬇️ .eml (open in mail client)", st.session_state.email_eml,
                            file_name="fedwatch_digest.eml", mime="message/rfc822")
+
+# ---------- Tab 4: Alerts ----------
+with tab_alerts:
+    st.subheader("Critical alert notifications")
+    st.caption(
+        "Push critical/high items to Microsoft Teams or email. For fully automatic alerts "
+        "even when the app is closed, the repo includes a GitHub Actions workflow "
+        "(`.github/workflows/fedwatch-alerts.yml`) that runs 3x on weekdays - add "
+        "`TEAMS_WEBHOOK_URL` (and/or SMTP secrets) under the repo's Settings → Secrets."
+    )
+
+    alert_min = st.selectbox("Alert on items at or above", ["CRITICAL", "HIGH"], index=0)
+    alert_items = sort_by_priority(
+        [i for i in items if LEVELS.index(i["level"]) <= LEVELS.index(alert_min)])
+    new_alert_items = [i for i in alert_items if i["id"] not in st.session_state.alerted_ids]
+    st.caption(f"{len(alert_items)} matching item(s); {len(new_alert_items)} not yet alerted this session.")
+
+    st.markdown("**Microsoft Teams**")
+    webhook_default = _secret("TEAMS_WEBHOOK_URL")
+    webhook_url = st.text_input(
+        "Incoming webhook URL", value=webhook_default, type="password",
+        help="Teams channel → ⋯ → Workflows/Connectors → Incoming Webhook. "
+             "Best stored as the TEAMS_WEBHOOK_URL secret instead of pasted here.")
+    t1, t2 = st.columns(2)
+    if t1.button("Send to Teams now", type="primary", disabled=not webhook_url):
+        try:
+            notify.send_teams(webhook_url, new_alert_items or alert_items)
+            sent = new_alert_items or alert_items
+            st.session_state.alerted_ids.update(i["id"] for i in sent)
+            st.success(f"Sent {len(sent)} item(s) to Teams.")
+        except Exception as exc:  # noqa: BLE001
+            st.error(f"Teams send failed: {exc}")
+    t2.checkbox("Auto-send new critical items on every refresh", key="auto_alert",
+                disabled=not webhook_url)
+
+    st.divider()
+    st.markdown("**Email (SMTP)**")
+    smtp_host = _secret("SMTP_HOST")
+    if smtp_host:
+        st.caption(f"SMTP configured via secrets ({smtp_host}).")
+        alert_to = st.text_input("Send to", value=_secret("ALERT_EMAIL_TO"))
+        if st.button("Email these items now", disabled=not alert_to):
+            try:
+                notify.send_email(
+                    smtp_host, int(_secret("SMTP_PORT", "587")),
+                    _secret("SMTP_USERNAME"), _secret("SMTP_PASSWORD"),
+                    _secret("ALERT_EMAIL_FROM", "fedwatch@your-institution.edu"),
+                    alert_to, new_alert_items or alert_items,
+                    title=f"🔴 {alert_min.title()} federal research updates",
+                )
+                sent = new_alert_items or alert_items
+                st.session_state.alerted_ids.update(i["id"] for i in sent)
+                st.success(f"Emailed {len(sent)} item(s) to {alert_to}.")
+            except Exception as exc:  # noqa: BLE001
+                st.error(f"Email send failed: {exc}")
+    else:
+        st.caption(
+            "Not configured. Add SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, "
+            "ALERT_EMAIL_FROM to the app's secrets to enable direct sending - or use the "
+            "Email digest tab to download a .eml and send it from your mail client.")
