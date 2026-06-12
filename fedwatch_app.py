@@ -18,6 +18,32 @@ from fedwatch.relevance import filter_relevant
 
 st.set_page_config(page_title="FedWatch - Federal Research Updates", page_icon="🏛️", layout="wide")
 
+# ---------- Emory brand styling ----------
+EMORY_BLUE = "#012169"
+EMORY_GOLD = "#f2a900"
+EMORY_LIGHT_BLUE = "#007dba"
+
+st.markdown(f"""<style>
+h1, h2, h3 {{ color: {EMORY_BLUE} !important; }}
+[data-testid="stSidebar"] h1 {{ color: {EMORY_BLUE} !important; }}
+[data-testid="stSidebar"] {{ border-right: 4px solid {EMORY_GOLD}; }}
+[data-testid="stMetricValue"] {{ color: {EMORY_BLUE}; font-weight: 700; }}
+.stButton button[kind="primary"], .stDownloadButton button {{
+    background-color: {EMORY_BLUE}; color: #ffffff; border: none;
+}}
+.stButton button[kind="primary"]:hover, .stDownloadButton button:hover {{
+    background-color: {EMORY_LIGHT_BLUE}; color: #ffffff;
+}}
+.stTabs [aria-selected="true"] {{ color: {EMORY_BLUE} !important; font-weight: 600; }}
+a {{ color: {EMORY_LIGHT_BLUE}; }}
+.fedwatch-header {{
+    background: {EMORY_BLUE}; border-bottom: 6px solid {EMORY_GOLD};
+    border-radius: 8px; padding: 18px 24px 14px 24px; margin-bottom: 14px;
+}}
+.fedwatch-header h1 {{ color: #ffffff !important; margin: 0; font-family: Georgia, 'Times New Roman', serif; }}
+.fedwatch-header p {{ color: #d6deef; margin: 6px 0 0 0; font-size: 0.85rem; }}
+</style>""", unsafe_allow_html=True)
+
 # ---------- Session state ----------
 if "watchlist" not in st.session_state:
     st.session_state.watchlist = ["indirect cost", "salary cap", "public access"]
@@ -110,13 +136,18 @@ items = st.session_state.feed_items
 counts = level_counts(items)
 
 # ---------- Header / notification banner ----------
-st.title("Federal Research Updates")
+import html as _html
+
 meta = f"Last refreshed {st.session_state.last_fetch}"
 if st.session_state.used_sample:
-    meta += " - **showing bundled sample data** (live feeds unreachable from this environment)"
+    meta += " — showing bundled sample data (live feeds unreachable from this environment)"
 if st.session_state.get("dropped_count"):
-    meta += f" - {st.session_state.dropped_count} non-research item(s) filtered out"
-st.caption(meta)
+    meta += f" — {st.session_state.dropped_count} non-research item(s) filtered out"
+st.markdown(
+    f'<div class="fedwatch-header"><h1>🏛️ Federal Research Updates</h1>'
+    f'<p>{_html.escape(meta)}</p></div>',
+    unsafe_allow_html=True,
+)
 
 if st.session_state.fetch_errors and not st.session_state.used_sample:
     with st.expander(f"⚠️ {len(st.session_state.fetch_errors)} source(s) failed to load"):
