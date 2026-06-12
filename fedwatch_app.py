@@ -24,24 +24,40 @@ EMORY_GOLD = "#f2a900"
 EMORY_LIGHT_BLUE = "#007dba"
 
 st.markdown(f"""<style>
-h1, h2, h3 {{ color: {EMORY_BLUE} !important; }}
-[data-testid="stSidebar"] h1 {{ color: {EMORY_BLUE} !important; }}
-[data-testid="stSidebar"] {{ border-right: 4px solid {EMORY_GOLD}; }}
-[data-testid="stMetricValue"] {{ color: {EMORY_BLUE}; font-weight: 700; }}
+h1, h2, h3 {{ color: {EMORY_BLUE} !important; font-family: Georgia, 'Times New Roman', serif; }}
+[data-testid="stSidebar"] {{ background: #f7f8fb; border-right: 1px solid #e3e7ee; }}
+[data-testid="stSidebar"] h1 {{ color: {EMORY_BLUE} !important; font-size: 1.5rem; }}
+[data-testid="stExpander"] {{
+    border: 1px solid #e3e7ee; border-radius: 10px; background: #ffffff;
+    margin-bottom: 6px; box-shadow: 0 1px 2px rgba(1,33,105,0.04);
+}}
+[data-testid="stExpander"] summary {{ font-size: 0.92rem; }}
+[data-testid="stExpander"] summary:hover {{ color: {EMORY_LIGHT_BLUE}; }}
 .stButton button[kind="primary"], .stDownloadButton button {{
-    background-color: {EMORY_BLUE}; color: #ffffff; border: none;
+    background-color: {EMORY_BLUE}; color: #ffffff; border: none; border-radius: 6px;
 }}
 .stButton button[kind="primary"]:hover, .stDownloadButton button:hover {{
     background-color: {EMORY_LIGHT_BLUE}; color: #ffffff;
 }}
+.stTabs [data-baseweb="tab-list"] {{ gap: 4px; border-bottom: 2px solid #e3e7ee; }}
 .stTabs [aria-selected="true"] {{ color: {EMORY_BLUE} !important; font-weight: 600; }}
 a {{ color: {EMORY_LIGHT_BLUE}; }}
 .fedwatch-header {{
-    background: {EMORY_BLUE}; border-bottom: 6px solid {EMORY_GOLD};
-    border-radius: 8px; padding: 18px 24px 14px 24px; margin-bottom: 14px;
+    background: linear-gradient(135deg, {EMORY_BLUE} 0%, #02297f 100%);
+    border-bottom: 4px solid {EMORY_GOLD};
+    border-radius: 10px; padding: 16px 24px 12px 24px; margin-bottom: 16px;
 }}
-.fedwatch-header h1 {{ color: #ffffff !important; margin: 0; font-family: Georgia, 'Times New Roman', serif; }}
-.fedwatch-header p {{ color: #d6deef; margin: 6px 0 0 0; font-size: 0.85rem; }}
+.fedwatch-header h1 {{ color: #ffffff !important; margin: 0; font-size: 1.6rem;
+    font-family: Georgia, 'Times New Roman', serif; }}
+.fedwatch-header p {{ color: #c8d3ea; margin: 4px 0 0 0; font-size: 0.78rem; }}
+.fw-metric {{
+    border: 1px solid #e3e7ee; border-top: 4px solid {EMORY_BLUE};
+    border-radius: 10px; padding: 10px 16px 12px 16px; background: #ffffff;
+    box-shadow: 0 1px 2px rgba(1,33,105,0.04);
+}}
+.fw-metric .num {{ font: 700 1.7rem Georgia, serif; color: {EMORY_BLUE}; line-height: 1.2; }}
+.fw-metric .lab {{ font-size: 0.72rem; color: #6d6e71; text-transform: uppercase;
+    letter-spacing: 0.07em; }}
 </style>""", unsafe_allow_html=True)
 
 # ---------- Session state ----------
@@ -115,32 +131,33 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
 
 # ---------- Sidebar ----------
 with st.sidebar:
-    st.title("🏛️ FedWatch")
-    st.caption("Internal awareness of federal research policy & funding updates")
+    st.title("FedWatch")
+    st.caption("Federal research policy awareness · Office of the SVPR")
 
-    days_back = st.slider("Look back (days)", 3, 60, 14)
-    research_only = st.checkbox(
-        "Research items only", value=True,
-        help="Drops non-research items (e.g., Medicare/Medicaid rules, child support "
-             "program notices) that match federal feeds on words like 'funding' or 'grants'.",
-    )
-    include_funding = st.checkbox(
-        "Include funding opportunities (NOFOs)", value=False,
-        help="Off by default: focus on research policy and government affairs. Turn on "
-             "to also pull Grants.gov and NIH funding opportunity feeds.",
-    )
-    include_news = st.checkbox(
-        "Include agency news / press releases", value=False,
-        help="NSF News feed: podcasts, discovery stories, award announcements. "
-             "Off by default - not government-affairs signal.",
-    )
-    grants_keyword = st.text_input("Grants.gov keyword", value="research",
-                                   disabled=not include_funding)
-    if summarize.claude_available():
-        st.checkbox("AI criticality levels (Claude)", value=True, key="ai_levels",
-                    help="Claude reads each item and assigns the level - far more accurate "
-                         "than keyword matching. Applied on refresh.")
-    if st.button("🔄 Refresh feeds", use_container_width=True, type="primary"):
+    with st.expander("Feed settings"):
+        days_back = st.slider("Look back (days)", 3, 60, 14)
+        research_only = st.checkbox(
+            "Research items only", value=True,
+            help="Drops non-research items (e.g., Medicare/Medicaid rules, child support "
+                 "program notices) that match federal feeds on words like 'funding' or 'grants'.",
+        )
+        include_funding = st.checkbox(
+            "Include funding opportunities", value=False,
+            help="Off by default: focus on research policy and government affairs. Turn on "
+                 "to also pull Grants.gov and NIH funding opportunity feeds.",
+        )
+        include_news = st.checkbox(
+            "Include agency press releases", value=False,
+            help="NSF News feed: podcasts, discovery stories, award announcements. "
+                 "Off by default - not government-affairs signal.",
+        )
+        grants_keyword = st.text_input("Grants.gov keyword", value="research",
+                                       disabled=not include_funding)
+        if summarize.claude_available():
+            st.checkbox("AI criticality levels (Claude)", value=True, key="ai_levels",
+                        help="Claude reads each item and assigns the level - far more accurate "
+                             "than keyword matching. Applied on refresh.")
+    if st.button("Refresh feeds", use_container_width=True, type="primary"):
         refresh(days_back, grants_keyword, research_only, include_funding, include_news)
 
     st.divider()
@@ -192,7 +209,8 @@ for _i in st.session_state.feed_items:
 if _src_counts:
     meta += " — sources: " + ", ".join(f"{s} ({n})" for s, n in sorted(_src_counts.items()))
 st.markdown(
-    f'<div class="fedwatch-header"><h1>🏛️ Federal Research Updates</h1>'
+    f'<div class="fedwatch-header"><h1>FedWatch <span style="font-weight:normal;'
+    f'font-size:1.05rem;color:#c8d3ea;">| Federal Research Policy Updates</span></h1>'
     f'<p>{_html.escape(meta)}</p></div>',
     unsafe_allow_html=True,
 )
@@ -208,20 +226,38 @@ if st.session_state.fetch_errors and not st.session_state.used_sample:
         for err in st.session_state.fetch_errors:
             st.text(err)
 
-c1, c2, c3, c4 = st.columns(4)
-for col, lvl in zip((c1, c2, c3, c4), LEVELS):
-    col.metric(f"{LEVEL_EMOJI[lvl]} {lvl.title()}", counts.get(lvl, 0))
+LEVEL_ACCENT = {"CRITICAL": "#c0392b", "HIGH": "#d35400",
+                "MODERATE": EMORY_GOLD, "INFO": EMORY_LIGHT_BLUE}
+LEVEL_BADGE = {"CRITICAL": "red", "HIGH": "orange", "MODERATE": "gray", "INFO": "blue"}
+
+
+def fmt_date(d: str) -> str:
+    try:
+        return datetime.strptime(d, "%Y-%m-%d").strftime("%b %d")
+    except ValueError:
+        return d or "—"
+
+
+mcols = st.columns(4)
+for col, lvl in zip(mcols, LEVELS):
+    col.markdown(
+        f'<div class="fw-metric" style="border-top-color:{LEVEL_ACCENT[lvl]}">'
+        f'<div class="num">{counts.get(lvl, 0)}</div>'
+        f'<div class="lab">{lvl.title()}</div></div>',
+        unsafe_allow_html=True,
+    )
+st.write("")
 
 unread_urgent = [i for i in items if i["level"] in ("CRITICAL", "HIGH") and i["id"] not in st.session_state.read_ids]
 if unread_urgent:
-    st.error(f"🔔 {len(unread_urgent)} unread critical/high-priority update(s) need attention.")
+    st.error(f"{len(unread_urgent)} unread critical/high-priority update(s) need attention.")
 watch_flagged = [i for i in items if i.get("watchlist_hits")]
 if watch_flagged:
-    st.warning(f"👁️ {len(watch_flagged)} item(s) match your watchlist: "
+    st.warning(f"Watchlist matches ({len(watch_flagged)}): "
                + "; ".join(sorted({w for i in watch_flagged for w in i['watchlist_hits']})))
 
 tab_feed, tab_summary, tab_email, tab_alerts = st.tabs(
-    ["📋 Notification feed", "📝 Summaries", "✉️ Email digest", "🔔 Alerts"])
+    ["Feed", "Summaries", "Email digest", "Alerts"])
 
 # ---------- Tab 1: Feed ----------
 with tab_feed:
@@ -250,9 +286,9 @@ with tab_feed:
 
     for it in filtered:
         unread = it["id"] not in st.session_state.read_ids
-        marker = "🔵 " if unread else ""
-        label = (f"{marker}{LEVEL_EMOJI[it['level']]} [{it['level']}] {it.get('date', '')} - "
-                 f"{it.get('title', '')[:110]}")
+        marker = ":blue[●] " if unread else ""
+        badge = f":{LEVEL_BADGE[it['level']]}[**{it['level']}**]"
+        label = f"{marker}{badge} · {fmt_date(it.get('date', ''))} · {it.get('title', '')[:100]}"
         with st.expander(label):
             st.markdown(f"**{it.get('title', '')}**")
             st.caption(f"{it.get('agency', '')} · {it.get('source', '')} · {it.get('type', '')} · {it.get('date', '')}")
