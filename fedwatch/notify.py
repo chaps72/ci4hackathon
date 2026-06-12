@@ -40,6 +40,25 @@ def send_teams(webhook_url: str, items: list,
     resp.raise_for_status()
 
 
+def send_teams_summary(webhook_url: str, summary_md: str,
+                       title: str = "Federal Research Update - Executive Summary") -> None:
+    """Post a generated summary (markdown) to a Teams channel."""
+    if not webhook_url:
+        raise ValueError("No Teams webhook URL configured")
+    if not summary_md.strip():
+        raise ValueError("Summary is empty")
+    payload = {
+        "@type": "MessageCard",
+        "@context": "http://schema.org/extensions",
+        "themeColor": EMORY_BLUE.lstrip("#"),
+        "summary": title,
+        "title": title,
+        "sections": [{"text": summary_md[:25000]}],
+    }
+    resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
+    resp.raise_for_status()
+
+
 def send_email(smtp_host: str, smtp_port: int, username: str, password: str,
                sender: str, recipients: str, items: list, summary_md: str = "",
                title: str = "🔴 Critical federal research updates") -> None:
