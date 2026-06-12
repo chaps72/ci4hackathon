@@ -12,6 +12,7 @@ from fedwatch import emailer, sources, summarize
 from fedwatch.classify import (
     LEVELS, LEVEL_DESCRIPTIONS, LEVEL_EMOJI, Classifier, level_counts, sort_by_priority,
 )
+from fedwatch.relevance import filter_relevant
 
 st.set_page_config(page_title="FedWatch - Federal Research Updates", page_icon="🏛️", layout="wide")
 
@@ -23,13 +24,19 @@ if "feed_items" not in st.session_state:
     st.session_state.fetch_errors = []
     st.session_state.used_sample = False
     st.session_state.last_fetch = None
+    st.session_state.dropped_count = 0
 if "read_ids" not in st.session_state:
     st.session_state.read_ids = set()
 
 
-def refresh(days_back: int, grants_keyword: str):
+def refresh(days_back: int, grants_keyword: str, research_only: bool = True):
     with st.spinner("Fetching federal sources..."):
         items, errors, used_sample = sources.fetch_all(days_back=days_back, grants_keyword=grants_keyword)
+    if research_only:
+        items, dropped = filter_relevant(items)
+        st.session_state.dropped_count = len(dropped)
+    else:
+        st.session_state.dropped_count = 0
     classifier = Classifier(watchlist=st.session_state.watchlist)
     st.session_state.feed_items = classifier.classify_all(items)
     st.session_state.fetch_errors = errors
@@ -44,8 +51,13 @@ with st.sidebar:
 
     days_back = st.slider("Look back (days)", 3, 60, 14)
     grants_keyword = st.text_input("Grants.gov keyword", value="research")
+    research_only = st.checkbox(
+        "Research items only", value=True,
+        help="Drops non-research items (e.g., Medicare/Medicaid rules, child support "
+             "program notices) that match federal feeds on words like 'funding' or 'grants'.",
+    )
     if st.button("🔄 Refresh feeds", use_container_width=True, type="primary"):
-        refresh(days_back, grants_keyword)
+        refresh(days_back, grants_keyword, research_only)
 
     st.divider()
     st.subheader("Watchlist keywords")
@@ -68,7 +80,7 @@ with st.sidebar:
 
 # First load
 if not st.session_state.feed_items:
-    refresh(days_back, grants_keyword)
+    refresh(days_back, grants_keyword, research_only)
 
 items = st.session_state.feed_items
 counts = level_counts(items)
@@ -78,6 +90,8 @@ st.title("Federal Research Updates")
 meta = f"Last refreshed {st.session_state.last_fetch}"
 if st.session_state.used_sample:
     meta += " - **showing bundled sample data** (live feeds unreachable from this environment)"
+if st.session_state.get("dropped_count"):
+    meta += f" - {st.session_state.dropped_count} non-research item(s) filtered out"
 st.caption(meta)
 
 if st.session_state.fetch_errors and not st.session_state.used_sample:

@@ -20,7 +20,13 @@ TIMEOUT = 15
 USER_AGENT = "FedWatch-internal/0.1 (research policy awareness dashboard)"
 
 # Search terms used against the Federal Register full-text API.
-FEDERAL_REGISTER_TERMS = "research grants OR research funding OR federally funded research"
+# Quoted phrases joined with | (OR): an unquoted query matches documents
+# containing ANY single word ("funding" alone pulls in Medicare rules etc.).
+FEDERAL_REGISTER_TERMS = (
+    '"research funding" | "research grant" | "research grants" | '
+    '"federally funded research" | "scientific research" | '
+    '"research institutions" | "extramural research"'
+)
 
 NIH_GUIDE_RSS = "https://grants.nih.gov/grants/guide/newsfeed/fundingopps.xml"
 NSF_NEWS_RSS = "https://www.nsf.gov/rss/rss_www_news.xml"
