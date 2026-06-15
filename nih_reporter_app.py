@@ -160,7 +160,10 @@ with st.sidebar:
                  "week' signal.")
     rep_limit = st.slider("Max awards", 25, 500, 200, step=25)
 
-    pull = st.button("Pull awards", type="primary", use_container_width=True)
+    pull = st.button("🔍 Search awards", type="primary", use_container_width=True)
+    gen_report = st.button("📄 Generate report", use_container_width=True,
+                           help="Write an executive summary of the current awards — "
+                                "no search needed. Opens in the Report tab.")
     st.caption("🤖 Claude summaries enabled." if summarize.claude_available()
                else "ℹ️ No ANTHROPIC_API_KEY — template summaries.")
 
@@ -175,36 +178,55 @@ def run_query():
         newly_added_only=newly_added, limit=rep_limit)
 
 
-if pull:
-    with st.spinner("Querying NIH RePORTER..."):
-        awards, rep_err = run_query()
-    used_sample = False
-    if rep_err:
-        awards, used_sample = reporter.sample_awards(), True
-    st.session_state.rep_items = awards
-    st.session_state.rep_error = rep_err
-    st.session_state.rep_sample = used_sample
-    filt = []
-    if org_mode and org_name.strip():
-        filt.append(org_name.strip())
-    else:
-        filt.append("All institutions")
-    for label, val in (("PI", pi_name), ("topic", topic),
-                       ("IC", ", ".join(ic_codes)),
-                       ("mech", ", ".join(activity_codes)),
-                       ("states", ", ".join(states))):
+def query_label() -> str:
+    filt = [org_name.strip() if (org_mode and org_name.strip()) else "All institutions"]
+    for label, val in (("PI", pi_name), ("topic", topic), ("IC", ", ".join(ic_codes)),
+                       ("mech", ", ".join(activity_codes)), ("states", ", ".join(states))):
         if val:
             filt.append(f"{label}: {val}")
     filt.append(f"last {rep_days}d")
-    st.session_state.rep_query = " · ".join(filt)
+    return " · ".join(filt)
+
+
+def store_results(awards, rep_err):
+    if rep_err:
+        awards, used_sample = reporter.sample_awards(), True
+    else:
+        used_sample = False
+    st.session_state.rep_items = awards
+    st.session_state.rep_error = rep_err
+    st.session_state.rep_sample = used_sample
+    st.session_state.rep_query = query_label()
     st.session_state.pop("rep_summary", None)
+    st.session_state.pop("ask_answer", None)
+
+
+if pull:
+    with st.spinner("Querying NIH RePORTER..."):
+        awards, rep_err = run_query()
+    store_results(awards, rep_err)
+
+# Auto-load default awards on first visit so reports and Ask work immediately,
+# with no search required.
+if "rep_items" not in st.session_state:
+    with st.spinner("Loading the latest NIH awards..."):
+        awards, rep_err = run_query()
+    store_results(awards, rep_err)
+
+# One-click report from the sidebar: generate the executive summary now.
+if gen_report and st.session_state.get("rep_items"):
+    with st.spinner("Writing the executive report..."):
+        text, engine = summarize.generate_summary(
+            st.session_state.rep_items, style="Executive summary",
+            extra_instructions=(
+                "These are newly issued NIH research awards. Lead with funding totals "
+                "and notable awards, group by theme, name PIs and institutes, and note "
+                "the new vs. renewal mix. Do not invent figures."))
+    st.session_state.rep_summary = text
+    st.session_state.rep_summary_engine = engine
+    st.toast("Report ready — see the 📤 Report tab.", icon="📄")
 
 rep_items = st.session_state.get("rep_items")
-
-if rep_items is None:
-    st.info("Set your filters in the sidebar and click **Pull awards** to build "
-            "the weekly report.")
-    st.stop()
 
 if st.session_state.get("rep_sample"):
     st.warning(f"Live NIH RePORTER API unreachable from this environment "
