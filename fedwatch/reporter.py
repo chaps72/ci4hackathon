@@ -39,9 +39,9 @@ DEFAULT_ORG = "EMORY UNIVERSITY"
 MAX_LIMIT = 500  # RePORTER caps a single page at 500 records.
 
 INCLUDE_FIELDS = [
-    "ProjectNum", "CoreProjectNum", "ProjectTitle", "AbstractText", "FiscalYear",
-    "AwardAmount", "AwardNoticeDate", "ProjectStartDate", "ProjectEndDate",
-    "Organization", "PrincipalInvestigators", "ContactPiName",
+    "ProjectNum", "CoreProjectNum", "SubprojectId", "ProjectTitle", "AbstractText",
+    "FiscalYear", "AwardAmount", "AwardNoticeDate", "ProjectStartDate",
+    "ProjectEndDate", "Organization", "PrincipalInvestigators", "ContactPiName",
     "AgencyIcAdmin", "ProjectDetailUrl", "Terms",
 ]
 
@@ -170,19 +170,27 @@ def _payload(org_names, pi_name, text_query, ic_codes, activity_codes, org_state
     }
 
 
-def _pi_list(rec: dict) -> list:
-    names = []
+def _pis(rec: dict) -> list:
+    """List of PD/PIs as {name, contact}. Marks the contact PI; if the API
+    doesn't flag one (e.g. a single-PI grant), the first PI is the contact."""
+    out = []
     for p in rec.get("principal_investigators") or []:
         name = (p.get("full_name") or "").strip()
         if not name:
             name = f"{(p.get('first_name') or '').strip()} {(p.get('last_name') or '').strip()}".strip()
-        if name and name not in names:
-            names.append(name)
-    if not names:
+        if name and not any(o["name"] == name for o in out):
+            out.append({"name": name, "contact": bool(p.get("is_contact_pi"))})
+    if not out:
         contact = (rec.get("contact_pi_name") or "").strip()
         if contact:
-            names.append(contact)
-    return names
+            out.append({"name": contact, "contact": True})
+    if out and not any(p["contact"] for p in out):
+        out[0]["contact"] = True
+    return out
+
+
+def _pi_list(rec: dict) -> list:
+    return [p["name"] for p in _pis(rec)]
 
 
 def _pi_names(rec: dict) -> str:
@@ -199,7 +207,11 @@ def fmt_money(amount) -> str:
 def _normalize(rec: dict) -> dict:
     org = rec.get("organization") or {}
     ic = rec.get("agency_ic_admin") or {}
-    pi = _pi_names(rec)
+    pis = _pis(rec)
+    pis_names = [p["name"] for p in pis]
+    pi = ", ".join(pis_names)
+    contact_pi = next((p["name"] for p in pis if p["contact"]),
+                      pis_names[0] if pis_names else "")
     org_name = (org.get("org_name") or "").strip()
     amount = rec.get("award_amount")
     project_num = (rec.get("project_num") or "").strip()
@@ -242,7 +254,11 @@ def _normalize(rec: dict) -> dict:
         "project_num": project_num,
         "core_num": core_num,
         "pi": pi,
-        "pi_list": _pi_list(rec),
+        "pi_list": pis_names,
+        "pis": pis,
+        "contact_pi": contact_pi,
+        "multi_pi": len(pis) > 1,
+        "is_subproject": bool(rec.get("subproject_id")),
         "org": org_name,
         "amount": amount,
         "fiscal_year": rec.get("fiscal_year"),
@@ -429,6 +445,27 @@ def pi_award_counts(items: list) -> Counter:
         for name in names:
             counts[name] += 1
     return counts
+
+
+def pi_role_counts(items: list) -> dict:
+    """Per investigator, distinct grants split by role.
+
+    Returns ``{name: {"total": n, "contact": n, "copi": n}}`` where ``contact``
+    counts grants where the person is the contact PI and ``copi`` counts grants
+    where they are an additional PI on a multi-PI grant (co-PI / MPI). NIH
+    RePORTER publishes PD/PIs only - co-investigators are not in the data.
+    """
+    roles: dict = {}
+    for it in items:
+        core = it.get("core_num") or it.get("project_num") or it.get("id")
+        for p in it.get("pis") or []:
+            r = roles.setdefault(p["name"], {"contact": set(), "copi": set()})
+            (r["contact"] if p.get("contact") else r["copi"]).add(core)
+    out = {}
+    for name, r in roles.items():
+        out[name] = {"total": len(r["contact"] | r["copi"]),
+                     "contact": len(r["contact"]), "copi": len(r["copi"])}
+    return dict(sorted(out.items(), key=lambda kv: kv[1]["total"], reverse=True))
 
 
 def grant_count_distribution(items: list, thresholds=(1, 2, 3, 4, 5)) -> dict:
