@@ -44,6 +44,43 @@ def claude_available() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
+def custom_report(question: str, facts_md: str) -> tuple[str, str]:
+    """Answer a natural-language report request using pre-computed dataset facts.
+
+    ``facts_md`` contains exact, deterministically computed numbers (totals,
+    per-investigator grant counts, breakdowns). The model must answer using only
+    those numbers - it interprets and narrates, it does not do the arithmetic.
+    Returns (answer_markdown, engine) where engine is 'claude' or 'unavailable'.
+    """
+    if not claude_available():
+        return ("_AI custom reports need an `ANTHROPIC_API_KEY`. The exact figures "
+                "for your request are in the **Key numbers** panel above._", "unavailable")
+    import anthropic
+
+    client = anthropic.Anthropic()
+    prompt = (
+        "You are a research analytics assistant for a university Office of the "
+        "Senior Vice President for Research. Answer the user's request using ONLY "
+        "the dataset facts provided below, which were computed deterministically "
+        "from NIH RePORTER data. Do not invent or recompute numbers - quote the "
+        "figures given. If the facts do not contain enough to answer (e.g. the "
+        "pulled window is too narrow, or a needed breakdown is missing), say so "
+        "plainly and tell the user how to adjust the query (widen the look-back, "
+        "select a full fiscal year, remove filters). Give a direct answer first, "
+        "then a brief supporting explanation. Note that counts reflect only the "
+        "awards in the current result set, not an investigator's full career.\n\n"
+        f"User request:\n{question}\n\n"
+        f"Dataset facts:\n{facts_md}"
+    )
+    response = client.messages.create(
+        model=MODEL, max_tokens=2048, thinking={"type": "adaptive"},
+        messages=[{"role": "user", "content": prompt}],
+    )
+    if response.stop_reason == "refusal":
+        raise RuntimeError("Model declined the request")
+    return next((b.text for b in response.content if b.type == "text"), ""), "claude"
+
+
 def generate_summary(items: list, style: str = "Executive summary",
                      extra_instructions: str = "") -> tuple[str, str]:
     """Return (summary_markdown, engine) where engine is 'claude' or 'template'."""

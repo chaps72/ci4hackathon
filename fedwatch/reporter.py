@@ -1,27 +1,27 @@
-"""NIH RePORTER award fetcher for the weekly funding report.
+"""NIH RePORTER award fetcher and analytics for the weekly funding report.
 
 NIH RePORTER (https://api.reporter.nih.gov/) is a free, no-key API that returns
 funded NIH/HHS project records. You POST a criteria payload to the v2 search
 endpoint and get back award details (PI, organization, amount, dates, abstract).
 
-Two modes drive the weekly report:
-- ``org_names``  : recent awards to one or more organizations (default: Emory) -
-                   the office's own newly funded portfolio.
-- ``text_query`` : recent awards across all institutions matching research terms -
-                   competitive intelligence.
-The two can be combined (Emory awards in a topic area).
+This module supports a rich set of search dimensions - organization, PI name,
+research terms, administering Institute/Center (IC), activity code (R01/R21/...),
+state, award-size range, fiscal year, and a "newly added" flag - plus analytics
+helpers (aggregates, breakdowns, leaderboards) and a peer-institution comparison.
 
 Records are normalized to the same dict shape the rest of FedWatch uses
 (id/source/agency/level/title/summary/url/date), with extra structured fields
-(pi, org, amount, fiscal_year, ic, ...) for the table view, so awards plug
-straight into the existing summary and email-digest machinery.
+(pi, org, amount, ic, activity_code, app_type, state, ...) for the dashboard,
+so awards plug straight into the existing summary and email-digest machinery.
 
 Every call fails soft: it returns ``(items, error)`` and never raises, so one
 unreachable API never takes down the dashboard. The app falls back to a small
-bundled sample (``SAMPLE_AWARDS``) when the live API is unreachable, so the demo
-always works offline.
+bundled sample (``sample_awards``) when the live API is unreachable.
 """
 
+import re
+import statistics
+from collections import Counter
 from datetime import datetime, timedelta
 
 import requests
@@ -36,9 +36,8 @@ HEADERS = {
 }
 
 DEFAULT_ORG = "EMORY UNIVERSITY"
+MAX_LIMIT = 500  # RePORTER caps a single page at 500 records.
 
-# Fields requested from the API. RePORTER returns a large record by default;
-# limiting the payload keeps responses small and predictable.
 INCLUDE_FIELDS = [
     "ProjectNum", "ProjectTitle", "AbstractText", "FiscalYear",
     "AwardAmount", "AwardNoticeDate", "ProjectStartDate", "ProjectEndDate",
@@ -46,24 +45,117 @@ INCLUDE_FIELDS = [
     "AgencyIcAdmin", "ProjectDetailUrl", "Terms",
 ]
 
-# RePORTER caps a single page at 500 records.
-MAX_LIMIT = 500
+# ---------------------------------------------------------------------------
+# Search vocabularies for the UI dropdowns.
+# ---------------------------------------------------------------------------
+# Common NIH administering Institutes & Centers (abbreviation -> full name).
+IC_CHOICES = {
+    "NCI": "National Cancer Institute",
+    "NIAID": "Allergy and Infectious Diseases",
+    "NHLBI": "Heart, Lung, and Blood",
+    "NIGMS": "General Medical Sciences",
+    "NIDDK": "Diabetes, Digestive & Kidney",
+    "NINDS": "Neurological Disorders and Stroke",
+    "NIMH": "Mental Health",
+    "NIA": "Aging",
+    "NICHD": "Child Health & Human Development",
+    "NIDA": "Drug Abuse",
+    "NEI": "Eye Institute",
+    "NIAMS": "Arthritis, Musculoskeletal & Skin",
+    "NIDCR": "Dental & Craniofacial Research",
+    "NIDCD": "Deafness & Communication Disorders",
+    "NIEHS": "Environmental Health Sciences",
+    "NHGRI": "Human Genome Research",
+    "NIAAA": "Alcohol Abuse and Alcoholism",
+    "NIBIB": "Biomedical Imaging & Bioengineering",
+    "NIMHD": "Minority Health & Health Disparities",
+    "NINR": "Nursing Research",
+    "NLM": "National Library of Medicine",
+    "NCATS": "Advancing Translational Sciences",
+    "NCCIH": "Complementary & Integrative Health",
+    "FIC": "Fogarty International Center",
+    "OD": "Office of the Director",
+}
+
+# Common activity (mechanism) codes, grouped for the dropdown.
+ACTIVITY_CHOICES = {
+    "R01": "Research Project Grant",
+    "R21": "Exploratory/Developmental",
+    "R03": "Small Research Grant",
+    "R00": "Career Transition (independent)",
+    "R35": "Outstanding Investigator",
+    "R37": "MERIT Award",
+    "R15": "Academic Research Enhancement (AREA)",
+    "U01": "Research Project Cooperative Agreement",
+    "U54": "Specialized Center Cooperative",
+    "P01": "Program Project",
+    "P30": "Center Core Grant",
+    "P50": "Specialized Center",
+    "K99": "Career Transition (mentored)",
+    "K08": "Mentored Clinical Scientist",
+    "K23": "Mentored Patient-Oriented",
+    "K01": "Mentored Research Scientist",
+    "F31": "Predoctoral Fellowship",
+    "F32": "Postdoctoral Fellowship",
+    "T32": "Institutional Training Grant",
+    "DP2": "New Innovator Award",
+    "UG3": "Phased Cooperative (UG3)",
+    "UH3": "Phased Cooperative (UH3)",
+}
+
+# First character of an NIH project number encodes the application type.
+APP_TYPE = {
+    "1": "New", "2": "Renewal", "3": "Supplement", "4": "Extension",
+    "5": "Continuation", "6": "Continuation", "7": "Transfer", "9": "IC transfer",
+}
+
+_PNUM_RE = re.compile(r"^\s*(\d)?\s*([A-Za-z][A-Za-z0-9]{2})")
 
 
-def _payload(org_names, text_query, from_date, to_date, fiscal_years, offset, limit):
+def parse_project_num(project_num: str):
+    """Return (application_type_label, activity_code) parsed from a project num.
+
+    e.g. "5R01AI123456-03" -> ("Continuation", "R01");
+         "1DP2OD098765-01" -> ("New", "DP2").
+    """
+    m = _PNUM_RE.match(project_num or "")
+    if not m:
+        return "", ""
+    app = APP_TYPE.get(m.group(1) or "", "")
+    return app, (m.group(2) or "").upper()
+
+
+def _payload(org_names, pi_name, text_query, ic_codes, activity_codes, org_states,
+             award_min, award_max, from_date, to_date, fiscal_years,
+             newly_added_only, offset, limit):
     criteria: dict = {}
     if org_names:
-        criteria["org_names"] = org_names
+        criteria["org_names"] = list(org_names)
+    if pi_name:
+        criteria["pi_names"] = [{"any_name": pi_name}]
     if text_query:
         criteria["advanced_text_search"] = {
-            "operator": "and",
-            "search_field": "projecttitle,terms,abstracttext",
-            "search_text": text_query,
+            "operator": "and", "search_field": "all", "search_text": text_query,
         }
+    if ic_codes:
+        criteria["agencies"] = list(ic_codes)
+    if activity_codes:
+        criteria["activity_codes"] = list(activity_codes)
+    if org_states:
+        criteria["org_states"] = [s.upper() for s in org_states]
+    if award_min is not None or award_max is not None:
+        rng = {}
+        if award_min is not None:
+            rng["min_amount"] = int(award_min)
+        if award_max is not None:
+            rng["max_amount"] = int(award_max)
+        criteria["award_amount_range"] = rng
     if from_date and to_date:
         criteria["award_notice_date"] = {"from_date": from_date, "to_date": to_date}
     if fiscal_years:
         criteria["fiscal_years"] = list(fiscal_years)
+    if newly_added_only:
+        criteria["newly_added_projects_only"] = True
     return {
         "criteria": criteria,
         "include_fields": INCLUDE_FIELDS,
@@ -74,20 +166,23 @@ def _payload(org_names, text_query, from_date, to_date, fiscal_years, offset, li
     }
 
 
-def _pi_names(rec: dict) -> str:
-    pis = rec.get("principal_investigators") or []
+def _pi_list(rec: dict) -> list:
     names = []
-    for p in pis:
+    for p in rec.get("principal_investigators") or []:
         name = (p.get("full_name") or "").strip()
         if not name:
-            first = (p.get("first_name") or "").strip()
-            last = (p.get("last_name") or "").strip()
-            name = f"{first} {last}".strip()
-        if name:
+            name = f"{(p.get('first_name') or '').strip()} {(p.get('last_name') or '').strip()}".strip()
+        if name and name not in names:
             names.append(name)
-    if names:
-        return ", ".join(names)
-    return (rec.get("contact_pi_name") or "").strip()
+    if not names:
+        contact = (rec.get("contact_pi_name") or "").strip()
+        if contact:
+            names.append(contact)
+    return names
+
+
+def _pi_names(rec: dict) -> str:
+    return ", ".join(_pi_list(rec))
 
 
 def fmt_money(amount) -> str:
@@ -112,8 +207,8 @@ def _normalize(rec: dict) -> dict:
     url = (rec.get("project_detail_url") or "").strip()
     if not url and project_num:
         url = f"https://reporter.nih.gov/search/projects?projectNums={project_num}"
+    app_type, activity_code = parse_project_num(project_num)
 
-    # One-line summary used by the feed cards, summarizer, and email digest.
     bits = [b for b in (
         pi and f"PI: {pi}",
         org_name,
@@ -134,13 +229,15 @@ def _normalize(rec: dict) -> dict:
         "url": url,
         "date": award_date or start,
         "type": "NIH award",
-        # Structured fields for the table view / aggregates:
         "project_num": project_num,
         "pi": pi,
+        "pi_list": _pi_list(rec),
         "org": org_name,
         "amount": amount,
         "fiscal_year": rec.get("fiscal_year"),
         "ic": agency,
+        "activity_code": activity_code,
+        "app_type": app_type,
         "city": (org.get("org_city") or "").strip(),
         "state": (org.get("org_state") or "").strip(),
         "award_date": award_date,
@@ -150,8 +247,11 @@ def _normalize(rec: dict) -> dict:
     }
 
 
-def fetch_awards(org_names=None, text_query: str = "", days_back: int = 7,
-                 fiscal_years=None, limit: int = 200, use_award_window: bool = True):
+def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
+                 ic_codes=None, activity_codes=None, org_states=None,
+                 award_min=None, award_max=None, days_back: int = 7,
+                 fiscal_years=None, newly_added_only: bool = False,
+                 limit: int = 200, use_award_window: bool = True):
     """Fetch recent NIH awards. Returns ``(items, error)``; never raises.
 
     ``items`` is a list of normalized dicts (newest award first). ``error`` is
@@ -160,141 +260,232 @@ def fetch_awards(org_names=None, text_query: str = "", days_back: int = 7,
     """
     to_date = datetime.now().strftime("%Y-%m-%d")
     from_date = (datetime.now() - timedelta(days=max(days_back, 1))).strftime("%Y-%m-%d")
-    payload = _payload(
-        org_names=org_names,
-        text_query=text_query.strip(),
-        from_date=from_date if use_award_window else None,
-        to_date=to_date if use_award_window else None,
-        fiscal_years=fiscal_years,
-        offset=0,
-        limit=limit,
-    )
-    try:
-        resp = requests.post(API_URL, json=payload, headers=HEADERS, timeout=TIMEOUT)
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:  # noqa: BLE001 - fail soft, caller falls back to sample
-        return [], f"NIH RePORTER fetch failed: {exc}"
 
-    results = data.get("results") or []
-    items = [_normalize(r) for r in results]
-    # Newest award notices first; records without a date sort last.
+    def build(offset, page):
+        return _payload(
+            org_names=org_names, pi_name=pi_name.strip(),
+            text_query=text_query.strip(), ic_codes=ic_codes,
+            activity_codes=activity_codes, org_states=org_states,
+            award_min=award_min, award_max=award_max,
+            from_date=from_date if use_award_window else None,
+            to_date=to_date if use_award_window else None,
+            fiscal_years=fiscal_years, newly_added_only=newly_added_only,
+            offset=offset, limit=page)
+
+    # Page through results so large pulls (e.g. a full fiscal year for
+    # investigator-level analysis) aren't truncated at the 500-record page cap.
+    records: list = []
+    offset, total = 0, None
+    while len(records) < limit:
+        page = min(MAX_LIMIT, limit - len(records))
+        try:
+            resp = requests.post(API_URL, json=build(offset, page),
+                                 headers=HEADERS, timeout=TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # noqa: BLE001 - fail soft
+            if records:
+                break  # keep what we already have
+            return [], f"NIH RePORTER fetch failed: {exc}"
+        results = data.get("results") or []
+        records.extend(results)
+        total = (data.get("meta") or {}).get("total", total)
+        offset += len(results)
+        if not results or (total is not None and offset >= total) or offset >= 14000:
+            break
+
+    items = [_normalize(r) for r in records]
     items.sort(key=lambda i: i.get("award_date") or i.get("start") or "", reverse=True)
     return items, None
 
 
-def aggregate(items: list) -> dict:
-    """Summary stats for the report header."""
-    total = 0
-    counted = 0
-    by_ic: dict = {}
-    by_org: dict = {}
+# ---------------------------------------------------------------------------
+# Analytics
+# ---------------------------------------------------------------------------
+def _amounts(items: list) -> list:
+    out = []
     for it in items:
-        amt = it.get("amount")
         try:
-            total += int(amt)
-            counted += 1
-        except (TypeError, ValueError):
+            out.append(int(it["amount"]))
+        except (TypeError, ValueError, KeyError):
             pass
-        ic = it.get("ic") or "?"
-        by_ic[ic] = by_ic.get(ic, 0) + 1
-        org = it.get("org") or "?"
-        by_org[org] = by_org.get(org, 0) + 1
+    return out
+
+
+def _counts(items: list, key: str) -> dict:
+    out: dict = {}
+    for it in items:
+        val = it.get(key) or "—"
+        out[val] = out.get(val, 0) + 1
+    return dict(sorted(out.items(), key=lambda kv: kv[1], reverse=True))
+
+
+def aggregate(items: list) -> dict:
+    """Headline stats and breakdowns for the report."""
+    amts = _amounts(items)
+    total = sum(amts)
     return {
         "count": len(items),
         "total_amount": total,
-        "amount_known": counted,
-        "by_ic": dict(sorted(by_ic.items(), key=lambda kv: kv[1], reverse=True)),
-        "by_org": dict(sorted(by_org.items(), key=lambda kv: kv[1], reverse=True)),
+        "amount_known": len(amts),
+        "median_amount": int(statistics.median(amts)) if amts else 0,
+        "mean_amount": int(statistics.mean(amts)) if amts else 0,
+        "max_amount": max(amts) if amts else 0,
+        "by_ic": _counts(items, "ic"),
+        "by_activity": _counts(items, "activity_code"),
+        "by_app_type": _counts(items, "app_type"),
+        "by_state": _counts(items, "state"),
+        "by_fy": _counts(items, "fiscal_year"),
+        "by_org": _counts(items, "org"),
     }
+
+
+def leaderboard(items: list, key: str, n: int = 10) -> list:
+    """Top ``n`` values of ``key`` ranked by total award dollars.
+
+    Returns a list of {name, awards, total_amount} dicts.
+    """
+    rollup: dict = {}
+    for it in items:
+        name = it.get(key) or "—"
+        bucket = rollup.setdefault(name, {"awards": 0, "total_amount": 0})
+        bucket["awards"] += 1
+        try:
+            bucket["total_amount"] += int(it["amount"])
+        except (TypeError, ValueError, KeyError):
+            pass
+    rows = [{"name": k, **v} for k, v in rollup.items()]
+    rows.sort(key=lambda r: (r["total_amount"], r["awards"]), reverse=True)
+    return rows[:n]
+
+
+def pi_award_counts(items: list) -> Counter:
+    """Count awards per individual investigator (each listed PI on an award).
+
+    A multi-PI award counts once for each of its principal investigators.
+    """
+    counts: Counter = Counter()
+    for it in items:
+        names = it.get("pi_list") or ([it["pi"]] if it.get("pi") else [])
+        for name in names:
+            counts[name] += 1
+    return counts
+
+
+def grant_count_distribution(items: list, thresholds=(1, 2, 3, 4, 5)) -> dict:
+    """How many investigators hold at least N grants as PI, for each N.
+
+    Returns ``{"counts": Counter, "at_least": {N: num_investigators}}``.
+    """
+    counts = pi_award_counts(items)
+    at_least = {t: sum(1 for n in counts.values() if n >= t) for t in thresholds}
+    return {"counts": counts, "at_least": at_least}
+
+
+def compare_orgs(orgs, text_query: str = "", ic_codes=None, days_back: int = 7,
+                 fiscal_years=None, limit: int = 400):
+    """Fetch awards for several organizations and return comparable aggregates.
+
+    Returns ``(rows, errors)`` where rows is a list of
+    {org, awards, total_amount, median_amount} (live data required).
+    """
+    rows, errors = [], []
+    for org in orgs:
+        org = org.strip()
+        if not org:
+            continue
+        items, err = fetch_awards(
+            org_names=[org], text_query=text_query, ic_codes=ic_codes,
+            days_back=days_back, fiscal_years=fiscal_years, limit=limit)
+        if err:
+            errors.append(f"{org}: {err}")
+            continue
+        agg = aggregate(items)
+        rows.append({
+            "org": org,
+            "awards": agg["count"],
+            "total_amount": agg["total_amount"],
+            "median_amount": agg["median_amount"],
+        })
+    rows.sort(key=lambda r: r["total_amount"], reverse=True)
+    return rows, errors
 
 
 # ---------------------------------------------------------------------------
 # Offline sample so the report renders without network access. Figures are
-# illustrative, not real award records.
+# illustrative, not real award records. Varied IC / activity / application type
+# so every breakdown and leaderboard is populated in the demo.
 # ---------------------------------------------------------------------------
+def _s(pnum, title, abstract, amount, notice, start, end, ic, ic_name, pis, oid):
+    return {
+        "project_num": pnum, "project_title": title, "abstract_text": abstract,
+        "fiscal_year": 2026, "award_amount": amount, "award_notice_date": notice,
+        "project_start_date": start, "project_end_date": end,
+        "organization": {"org_name": "EMORY UNIVERSITY", "org_city": "ATLANTA",
+                         "org_state": "GA"},
+        "principal_investigators": [{"full_name": p} for p in pis],
+        "agency_ic_admin": {"abbreviation": ic, "name": ic_name},
+        "project_detail_url": f"https://reporter.nih.gov/project-details/{oid}",
+    }
+
+
 SAMPLE_AWARDS = [
-    {
-        "project_num": "5R01AI123456-03", "project_title":
-            "Mucosal immunity and broadly protective vaccine platforms",
-        "abstract_text": "This project develops adjuvanted intranasal vaccine "
-            "platforms to elicit durable mucosal and systemic immunity against "
-            "respiratory pathogens, with an emphasis on broadly protective antigens.",
-        "fiscal_year": 2026, "award_amount": 612340,
-        "award_notice_date": "2026-06-11", "project_start_date": "2026-07-01",
-        "project_end_date": "2027-06-30",
-        "organization": {"org_name": "EMORY UNIVERSITY", "org_city": "ATLANTA",
-                         "org_state": "GA"},
-        "principal_investigators": [{"full_name": "Rivera, Elena M"}],
-        "agency_ic_admin": {"abbreviation": "NIAID",
-                            "name": "National Institute of Allergy and Infectious Diseases"},
-        "project_detail_url": "https://reporter.nih.gov/project-details/11000001",
-    },
-    {
-        "project_num": "1R21MH234567-01", "project_title":
-            "Neural circuits of stress resilience in adolescent depression",
-        "abstract_text": "A longitudinal neuroimaging study identifying "
-            "prefrontal–limbic circuit markers that predict resilience to "
-            "depression following early-life stress.",
-        "fiscal_year": 2026, "award_amount": 421000,
-        "award_notice_date": "2026-06-10", "project_start_date": "2026-06-15",
-        "project_end_date": "2028-05-31",
-        "organization": {"org_name": "EMORY UNIVERSITY", "org_city": "ATLANTA",
-                         "org_state": "GA"},
-        "principal_investigators": [{"full_name": "Okafor, Daniel"}],
-        "agency_ic_admin": {"abbreviation": "NIMH",
-                            "name": "National Institute of Mental Health"},
-        "project_detail_url": "https://reporter.nih.gov/project-details/11000002",
-    },
-    {
-        "project_num": "5U01CA345678-02", "project_title":
-            "Liquid biopsy biomarkers for early pancreatic cancer detection",
-        "abstract_text": "Validation of a multi-analyte circulating tumor DNA and "
-            "protein panel for detecting resectable pancreatic ductal "
-            "adenocarcinoma in high-risk cohorts.",
-        "fiscal_year": 2026, "award_amount": 1284900,
-        "award_notice_date": "2026-06-09", "project_start_date": "2026-07-01",
-        "project_end_date": "2029-06-30",
-        "organization": {"org_name": "EMORY UNIVERSITY", "org_city": "ATLANTA",
-                         "org_state": "GA"},
-        "principal_investigators": [{"full_name": "Nguyen, Thanh"},
-                                    {"full_name": "Bauer, Sophia"}],
-        "agency_ic_admin": {"abbreviation": "NCI",
-                            "name": "National Cancer Institute"},
-        "project_detail_url": "https://reporter.nih.gov/project-details/11000003",
-    },
-    {
-        "project_num": "5R01HL456789-04", "project_title":
-            "Single-cell mapping of cardiac fibrosis after myocardial infarction",
-        "abstract_text": "Using single-cell and spatial transcriptomics to chart "
-            "fibroblast activation states driving adverse remodeling after heart "
-            "attack, toward anti-fibrotic targets.",
-        "fiscal_year": 2026, "award_amount": 738500,
-        "award_notice_date": "2026-06-09", "project_start_date": "2026-08-01",
-        "project_end_date": "2027-07-31",
-        "organization": {"org_name": "EMORY UNIVERSITY", "org_city": "ATLANTA",
-                         "org_state": "GA"},
-        "principal_investigators": [{"full_name": "Patel, Anika"}],
-        "agency_ic_admin": {"abbreviation": "NHLBI",
-                            "name": "National Heart, Lung, and Blood Institute"},
-        "project_detail_url": "https://reporter.nih.gov/project-details/11000004",
-    },
-    {
-        "project_num": "1R01AG567890-01", "project_title":
-            "Sleep, glymphatic clearance, and Alzheimer's disease risk",
-        "abstract_text": "Testing whether disrupted slow-wave sleep impairs "
-            "glymphatic clearance of amyloid-beta and accelerates preclinical "
-            "Alzheimer's pathology in older adults.",
-        "fiscal_year": 2026, "award_amount": 905120,
-        "award_notice_date": "2026-06-08", "project_start_date": "2026-09-01",
-        "project_end_date": "2031-08-31",
-        "organization": {"org_name": "EMORY UNIVERSITY", "org_city": "ATLANTA",
-                         "org_state": "GA"},
-        "principal_investigators": [{"full_name": "Coleman, Marcus"}],
-        "agency_ic_admin": {"abbreviation": "NIA",
-                            "name": "National Institute on Aging"},
-        "project_detail_url": "https://reporter.nih.gov/project-details/11000005",
-    },
+    _s("5R01AI123456-03", "Mucosal immunity and broadly protective vaccine platforms",
+       "Adjuvanted intranasal vaccine platforms eliciting durable mucosal and systemic "
+       "immunity against respiratory pathogens.", 612340, "2026-06-11", "2026-07-01",
+       "2027-06-30", "NIAID", "Allergy and Infectious Diseases", ["Rivera, Elena M"], 11000001),
+    _s("1R21MH234567-01", "Neural circuits of stress resilience in adolescent depression",
+       "Longitudinal neuroimaging identifying prefrontal–limbic markers predicting "
+       "resilience to depression after early-life stress.", 421000, "2026-06-10",
+       "2026-06-15", "2028-05-31", "NIMH", "Mental Health", ["Okafor, Daniel"], 11000002),
+    _s("5U01CA345678-02", "Liquid biopsy biomarkers for early pancreatic cancer detection",
+       "Validation of a circulating tumor DNA and protein panel for detecting resectable "
+       "pancreatic cancer in high-risk cohorts.", 1284900, "2026-06-09", "2026-07-01",
+       "2029-06-30", "NCI", "National Cancer Institute",
+       ["Nguyen, Thanh", "Bauer, Sophia"], 11000003),
+    _s("5R01HL456789-04", "Single-cell mapping of cardiac fibrosis after infarction",
+       "Single-cell and spatial transcriptomics charting fibroblast activation driving "
+       "adverse remodeling after heart attack.", 738500, "2026-06-09", "2026-08-01",
+       "2027-07-31", "NHLBI", "Heart, Lung, and Blood", ["Patel, Anika"], 11000004),
+    _s("1R01AG567890-01", "Sleep, glymphatic clearance, and Alzheimer's disease risk",
+       "Testing whether disrupted slow-wave sleep impairs glymphatic clearance of "
+       "amyloid-beta and accelerates preclinical Alzheimer's.", 905120, "2026-06-08",
+       "2026-09-01", "2031-08-31", "NIA", "Aging", ["Coleman, Marcus"], 11000005),
+    _s("1DP2OD678901-01", "New Innovator: programmable RNA sensors in living cells",
+       "Engineering programmable RNA sensors that detect intracellular signals and "
+       "actuate therapeutic outputs.", 1500000, "2026-06-12", "2026-09-15", "2031-09-14",
+       "OD", "Office of the Director", ["Santos, Maria"], 11000006),
+    _s("5R01NS789012-02", "Microglial control of synaptic pruning in epilepsy",
+       "Defining how microglial signaling reshapes synaptic networks during "
+       "epileptogenesis.", 567800, "2026-06-07", "2026-07-01", "2028-06-30", "NINDS",
+       "Neurological Disorders and Stroke", ["Hughes, Robert"], 11000007),
+    _s("2R01DK890123-06", "Gut microbiome metabolites and insulin resistance",
+       "Renewal: defining bacterial metabolites that modulate hepatic insulin "
+       "sensitivity in type 2 diabetes.", 681250, "2026-06-06", "2026-08-01",
+       "2031-07-31", "NIDDK", "Diabetes, Digestive & Kidney", ["Adeyemi, Grace"], 11000008),
+    _s("1K99CA901234-01", "Career transition: spatial immunology of glioblastoma",
+       "Mapping spatial immune niches in glioblastoma toward combination "
+       "immunotherapy.", 248000, "2026-06-05", "2026-07-01", "2028-06-30", "NCI",
+       "National Cancer Institute", ["Lindqvist, Karin"], 11000009),
+    _s("5R01EY012345-03", "Retinal organoids for inherited blindness gene therapy",
+       "Patient-derived retinal organoids to test base-editing rescue of inherited "
+       "photoreceptor degeneration.", 793400, "2026-06-05", "2026-08-01", "2028-07-31",
+       "NEI", "Eye Institute", ["Brooks, Daniel"], 11000010),
+    # Repeat PIs so investigator grant-count analysis is populated offline:
+    # Rivera holds 3 grants as PI; Patel holds 2.
+    _s("1R21AI234561-01", "Nanoparticle adjuvants for mucosal vaccine delivery",
+       "Engineering nanoparticle adjuvants to enhance durable mucosal immunity.",
+       389700, "2026-06-04", "2026-07-01", "2028-06-30", "NIAID",
+       "Allergy and Infectious Diseases", ["Rivera, Elena M"], 11000011),
+    _s("1U01AI234562-01", "Systems immunology of broadly neutralizing antibody induction",
+       "A cooperative study profiling B-cell trajectories toward broadly neutralizing "
+       "antibodies across vaccine cohorts.", 1042500, "2026-06-03", "2026-08-01",
+       "2031-07-31", "NIAID", "Allergy and Infectious Diseases",
+       ["Rivera, Elena M", "Okafor, Daniel"], 11000012),
+    _s("2R01HL456790-05", "Mechanotransduction in cardiac fibroblast activation",
+       "Renewal: defining how mechanical cues drive fibroblast activation in the "
+       "remodeling heart.", 702800, "2026-06-03", "2026-09-01", "2031-08-31", "NHLBI",
+       "Heart, Lung, and Blood", ["Patel, Anika"], 11000013),
 ]
 
 
