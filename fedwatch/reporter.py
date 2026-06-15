@@ -39,7 +39,7 @@ DEFAULT_ORG = "EMORY UNIVERSITY"
 MAX_LIMIT = 500  # RePORTER caps a single page at 500 records.
 
 INCLUDE_FIELDS = [
-    "ProjectNum", "ProjectTitle", "AbstractText", "FiscalYear",
+    "ProjectNum", "CoreProjectNum", "ProjectTitle", "AbstractText", "FiscalYear",
     "AwardAmount", "AwardNoticeDate", "ProjectStartDate", "ProjectEndDate",
     "Organization", "PrincipalInvestigators", "ContactPiName",
     "AgencyIcAdmin", "ProjectDetailUrl", "Terms",
@@ -212,6 +212,12 @@ def _normalize(rec: dict) -> dict:
     if not url and project_num:
         url = f"https://reporter.nih.gov/search/projects?projectNums={project_num}"
     app_type, activity_code = parse_project_num(project_num)
+    # The core project number identifies a grant across its fiscal-year records,
+    # so multi-year pulls don't count one grant several times. Derive it from the
+    # full project number when RePORTER doesn't supply it.
+    core_num = (rec.get("core_project_num") or "").strip().upper()
+    if not core_num and project_num:
+        core_num = re.sub(r"^\s*\d+", "", project_num).split("-")[0].strip().upper()
 
     bits = [b for b in (
         pi and f"PI: {pi}",
@@ -234,6 +240,7 @@ def _normalize(rec: dict) -> dict:
         "date": award_date or start,
         "type": "NIH award",
         "project_num": project_num,
+        "core_num": core_num,
         "pi": pi,
         "pi_list": _pi_list(rec),
         "org": org_name,
@@ -308,8 +315,47 @@ def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
         # Keep grants whose period is current: end date today or later (records
         # without an end date are treated as active).
         items = [it for it in items if not it.get("end") or it["end"] >= to_date]
+    # Collapse fiscal-year records to one row per distinct grant so multi-year
+    # pulls don't count a single grant (or a PI's grant) several times.
+    items = dedupe_projects(items)
     items.sort(key=lambda i: i.get("award_date") or i.get("start") or "", reverse=True)
     return items, None
+
+
+def _toint(v) -> int:
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return 0
+
+
+def dedupe_projects(items: list) -> list:
+    """Collapse RePORTER's per-fiscal-year rows to one row per distinct grant.
+
+    Grants are identified by core project number. The most recent fiscal-year
+    record represents the grant; its ``amount`` becomes the total awarded across
+    the records in the pulled window (so dollars aren't lost), and
+    ``years_in_window`` lists the fiscal years seen.
+    """
+    groups: dict = {}
+    order: list = []
+    for idx, it in enumerate(items):
+        key = it.get("core_num") or it.get("project_num") or f"_uniq{idx}"
+        groups.setdefault(key, []).append(it)
+        if len(groups[key]) == 1:
+            order.append(key)
+    out = []
+    for key in order:
+        group = groups[key]
+        rep = dict(max(group, key=lambda i: ((i.get("fiscal_year") or 0),
+                                             i.get("award_date") or "")))
+        total = sum(_toint(i.get("amount")) for i in group)
+        if total:
+            rep["amount"] = total
+        rep["years_in_window"] = sorted({i.get("fiscal_year") for i in group
+                                         if i.get("fiscal_year")})
+        out.append(rep)
+    return out
 
 
 # ---------------------------------------------------------------------------

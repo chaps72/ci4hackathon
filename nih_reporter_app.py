@@ -138,7 +138,8 @@ def build_facts(items: list) -> str:
         f"Awards in result set: {a['count']}. Total funding: {reporter.fmt_money(a['total_amount'])}. "
         f"Median award: {reporter.fmt_money(a['median_amount'])}. Largest: {reporter.fmt_money(a['max_amount'])}.",
         f"Distinct principal investigators: {len(dist['counts'])}.",
-        "Investigators by number of grants where they are listed PI (this result set):",
+        "Investigators by number of distinct grants where they are listed PI "
+        "(each grant counted once, even if it spans multiple fiscal years):",
     ]
     lines += [f"  - at least {t} grant(s) as PI: {n} investigator(s)"
               for t, n in dist["at_least"].items()]
