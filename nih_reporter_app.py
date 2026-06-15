@@ -380,60 +380,72 @@ if "pending_q" in st.session_state:
     st.session_state.ask_question = st.session_state.pop("pending_q")
 st.session_state.setdefault("ask_question", DEFAULT_QUESTION)
 
-st.write("")
-st.write("")
-# Center the search box in the middle of the screen, like a Google search box.
-_left, _center, _right = st.columns([1, 2.4, 1])
-with _center:
-    st.markdown(
-        "<h2 style='text-align:center;margin-bottom:2px;'>Ask for any report on "
-        "NIH funding</h2>", unsafe_allow_html=True)
-    st.markdown(
-        "<p style='text-align:center;color:#6d6e71;font-size:0.9rem;margin-top:0;'>"
-        "Each question searches fresh — it ignores the manual filters and pulls "
-        "exactly what you describe (e.g. “active grants only”, “last 4 fiscal "
-        f"years”, “NCI R01s”, “all institutions”). Defaults to {reporter.DEFAULT_ORG} "
-        "and the current fiscal year unless you say otherwise. Figures are computed "
-        "exactly, never invented.</p>",
-        unsafe_allow_html=True)
-    st.text_area("Your question", key="ask_question", height=90,
-                 label_visibility="collapsed",
-                 placeholder="e.g. How many investigators hold 3+ active grants as PI?")
-    ask_clicked = st.button("Generate report", type="primary", use_container_width=True)
+if not st.session_state.get("ask_answer"):
+    # ----- Start screen: centered search box + instant reports -----
+    st.write("")
+    st.write("")
+    _left, _center, _right = st.columns([1, 2.4, 1])
+    with _center:
+        st.markdown(
+            "<h2 style='text-align:center;margin-bottom:2px;'>Ask for any report on "
+            "NIH funding</h2>", unsafe_allow_html=True)
+        st.markdown(
+            "<p style='text-align:center;color:#6d6e71;font-size:0.9rem;margin-top:0;'>"
+            "Each question searches fresh — it ignores the manual filters and pulls "
+            "exactly what you describe (e.g. “active grants only”, “last 4 fiscal "
+            f"years”, “NCI R01s”, “all institutions”). Defaults to {reporter.DEFAULT_ORG} "
+            "and the current fiscal year unless you say otherwise. Figures are "
+            "computed exactly, never invented.</p>", unsafe_allow_html=True)
+        st.text_area("Your question", key="ask_question", height=90,
+                     label_visibility="collapsed",
+                     placeholder="e.g. How many investigators hold 3+ active grants as PI?")
+        ask_clicked = st.button("Generate report", type="primary",
+                                use_container_width=True)
 
-st.write("")
-st.markdown("<p style='text-align:center;font-weight:600;margin-bottom:4px;'>"
-            "Instant reports</p>", unsafe_allow_html=True)
-ex_cols = st.columns(len(EXAMPLE_REPORTS))
-for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
-    if col.button(label, use_container_width=True, key=f"ex_{label}"):
-        st.session_state.pending_q = q
-        st.session_state.run_ask = True
+    st.write("")
+    st.markdown("<p style='text-align:center;font-weight:600;margin-bottom:4px;'>"
+                "Instant reports</p>", unsafe_allow_html=True)
+    ex_cols = st.columns(len(EXAMPLE_REPORTS))
+    for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
+        if col.button(label, use_container_width=True, key=f"ex_{label}"):
+            st.session_state.pending_q = q
+            st.session_state.run_ask = True
+            st.rerun()
+
+    if ask_clicked or st.session_state.pop("run_ask", False):
+        q = st.session_state.ask_question
+        # The question drives the data: parse its scope/window, pull that, answer.
+        with st.spinner("Reading your request and pulling the matching awards..."):
+            parsed, _ = summarize.parse_query(
+                q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+            awards, err, label = ai_fetch(parsed)
+            if err:
+                awards = reporter.sample_awards()
+                st.session_state.rep_sample = True
+            else:
+                st.session_state.rep_sample = False
+            st.session_state.rep_items = awards
+            st.session_state.rep_query = label
+            st.session_state.filter_sig = filter_sig()
+        with st.spinner("Analyzing the data..."):
+            answer, engine = summarize.custom_report(q, build_facts(awards))
+        st.session_state.ask_answer = answer
+        st.session_state.ask_engine = engine
+        st.session_state.asked_question = q   # the original question, preserved
+        st.session_state.follow_thread = []   # fresh report -> fresh follow-up thread
         st.rerun()
 
-if ask_clicked or st.session_state.pop("run_ask", False):
-    q = st.session_state.ask_question
-    # The question drives the data: parse its scope/window, pull that, then answer.
-    with st.spinner("Reading your request and pulling the matching awards..."):
-        parsed, _ = summarize.parse_query(
-            q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
-        awards, err, label = ai_fetch(parsed)
-        if err:
-            awards = reporter.sample_awards()
-            st.session_state.rep_sample = True
-        else:
-            st.session_state.rep_sample = False
-        st.session_state.rep_items = awards
-        st.session_state.rep_query = label
-        st.session_state.filter_sig = filter_sig()  # don't let auto-refresh overwrite
-    with st.spinner("Analyzing the data..."):
-        answer, engine = summarize.custom_report(q, build_facts(awards))
-    st.session_state.ask_answer = answer
-    st.session_state.ask_engine = engine
-    st.session_state.follow_thread = []  # fresh report -> fresh follow-up thread
-    st.rerun()  # redraw KPIs/charts/data below to match the question's window
-
-if st.session_state.get("ask_answer"):
+else:
+    # ----- Report view: the top search box is hidden; report + follow-up lead. -----
+    head = st.columns([5, 1])
+    head[0].subheader("Your report")
+    if head[1].button("New search", use_container_width=True,
+                      help="Start over with a new question."):
+        for _k in ("ask_answer", "ask_engine", "follow_thread"):
+            st.session_state.pop(_k, None)
+        st.rerun()
+    st.caption("Question: " + st.session_state.get("asked_question",
+                                                   st.session_state.get("ask_question", "")))
     with st.container(border=True):
         st.markdown(st.session_state.ask_answer)
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
@@ -443,10 +455,10 @@ if st.session_state.get("ask_answer"):
                                st.session_state.ask_answer,
                                file_name="nih_custom_report.md", mime="text/markdown")
 
-    # ---- Follow-up: keep querying THIS result set (no new fetch) ----
-    st.markdown("**Dig deeper into these results**")
-    st.caption("Ask follow-up questions about the data above — no new search, same "
-               "result set.")
+    # ---- Follow-up: builds on the original question + the data it produced ----
+    st.markdown("### Ask a follow-up about this report")
+    st.caption("Builds on the question and the exact data above — same result set, "
+               "no new search.")
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
             "Follow-up question", label_visibility="collapsed",
@@ -454,11 +466,11 @@ if st.session_state.get("ask_answer"):
                         "Break the total down by mechanism.")
         follow_go = st.form_submit_button("Ask follow-up")
     if follow_go and follow_q.strip():
-        prior = []
-        prior.append("Q: " + st.session_state.get("ask_question", "")
-                     + "\nA: " + st.session_state.get("ask_answer", "")[:1500])
-        for t in st.session_state.get("follow_thread", [])[-3:]:
-            prior.append("Q: " + t["q"] + "\nA: " + t["a"][:1500])
+        prior = ["Original question: " + st.session_state.get(
+                     "asked_question", st.session_state.get("ask_question", "")),
+                 "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
+        for t in st.session_state.get("follow_thread", [])[-4:]:
+            prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
         with st.spinner("Analyzing these results..."):
             f_ans, f_eng = summarize.custom_report(
                 follow_q, build_facts(rep_items), prior="\n\n".join(prior))
@@ -467,7 +479,7 @@ if st.session_state.get("ask_answer"):
         st.rerun()
 
     for turn in st.session_state.get("follow_thread", []):
-        st.markdown(f"**You asked:** {turn['q']}")
+        st.markdown(f"**Follow-up:** {turn['q']}")
         with st.container(border=True):
             st.markdown(turn["a"])
 
