@@ -20,7 +20,7 @@ import streamlit as st
 from fedwatch import emailer, notify, reporter, summarize
 
 st.set_page_config(page_title="NIH RePORTER Weekly Report", page_icon="🔬",
-                   layout="wide", initial_sidebar_state="expanded")
+                   layout="wide", initial_sidebar_state="collapsed")
 
 # ---------- Brand styling ----------
 EMORY_BLUE = "#012169"
@@ -162,7 +162,9 @@ def build_facts(items: list) -> str:
 
 # ============================ Sidebar: search ============================
 with st.sidebar:
-    st.title("Build the report")
+    st.title("Manual filter search")
+    st.caption("Optional. Refine what the AI analyzes — by institution, institute, "
+               "activity code, state, fiscal year, and award size.")
     mode = st.radio(
         "Report mode",
         ["My institution's new awards", "Topic search (all institutions)"],
@@ -318,24 +320,33 @@ if not rep_items:
     st.stop()
 
 agg = reporter.aggregate(rep_items)
-st.caption("Showing: " + st.session_state.get("rep_query", ""))
 
-# ============================ Ask AI — front and center ============================
-st.subheader("Ask the data — instant reports")
-st.caption("Choose an example report or ask your own question. Answers use only "
-           "exact figures computed from the current data, so numbers are never "
-           "invented. For investigator-level questions, select fiscal years so "
-           "each PI's grants are captured.")
-
+# ============================ AI report box — the start screen ============================
+# Apply a pending example question chosen on the previous run. This must happen
+# before the text_area widget is created, or Streamlit rejects the state change.
+if "pending_q" in st.session_state:
+    st.session_state.ask_question = st.session_state.pop("pending_q")
 st.session_state.setdefault("ask_question", DEFAULT_QUESTION)
+
+st.subheader("Ask for any report on NIH funding")
+st.caption("Type a question and generate a report — or pick an instant report below. "
+           "Answers use only exact figures computed from the data, so numbers are "
+           "never invented. Prefer to browse? Open **Manual filter search** in the "
+           "left panel (the › arrow, top-left) to filter by institution, institute, "
+           "fiscal year, and more.")
+
+st.text_area("Your question", key="ask_question", height=90,
+             label_visibility="collapsed",
+             placeholder="e.g. How many investigators have 3 or more grants as PI?")
+ask_clicked = st.button("Generate report", type="primary")
+
+st.markdown("**Instant reports**")
 ex_cols = st.columns(len(EXAMPLE_REPORTS))
 for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
     if col.button(label, use_container_width=True, key=f"ex_{label}"):
-        st.session_state.ask_question = q
+        st.session_state.pending_q = q
         st.session_state.run_ask = True
-
-st.text_area("Your question", key="ask_question", height=80)
-ask_clicked = st.button("Generate report", type="primary")
+        st.rerun()
 
 if ask_clicked or st.session_state.pop("run_ask", False):
     with st.spinner("Analyzing the data..."):
@@ -347,6 +358,7 @@ if ask_clicked or st.session_state.pop("run_ask", False):
 if st.session_state.get("ask_answer"):
     with st.container(border=True):
         st.markdown(st.session_state.ask_answer)
+        st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
             st.download_button("Download answer (Markdown)",
@@ -372,6 +384,7 @@ st.divider()
 
 # ============================ The data ============================
 st.subheader("Explore the data")
+st.caption("Showing: " + st.session_state.get("rep_query", ""))
 k1, k2, k3, k4, k5 = st.columns(5)
 kpi(k1, "Awards", f"{agg['count']:,}")
 kpi(k2, "Total funding", reporter.fmt_money(agg["total_amount"]))
