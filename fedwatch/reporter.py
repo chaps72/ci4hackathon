@@ -21,6 +21,7 @@ bundled sample (``sample_awards``) when the live API is unreachable.
 
 import re
 import statistics
+from collections import Counter
 from datetime import datetime, timedelta
 
 import requests
@@ -165,15 +166,23 @@ def _payload(org_names, pi_name, text_query, ic_codes, activity_codes, org_state
     }
 
 
-def _pi_names(rec: dict) -> str:
+def _pi_list(rec: dict) -> list:
     names = []
     for p in rec.get("principal_investigators") or []:
         name = (p.get("full_name") or "").strip()
         if not name:
             name = f"{(p.get('first_name') or '').strip()} {(p.get('last_name') or '').strip()}".strip()
-        if name:
+        if name and name not in names:
             names.append(name)
-    return ", ".join(names) if names else (rec.get("contact_pi_name") or "").strip()
+    if not names:
+        contact = (rec.get("contact_pi_name") or "").strip()
+        if contact:
+            names.append(contact)
+    return names
+
+
+def _pi_names(rec: dict) -> str:
+    return ", ".join(_pi_list(rec))
 
 
 def fmt_money(amount) -> str:
@@ -222,6 +231,7 @@ def _normalize(rec: dict) -> dict:
         "type": "NIH award",
         "project_num": project_num,
         "pi": pi,
+        "pi_list": _pi_list(rec),
         "org": org_name,
         "amount": amount,
         "fiscal_year": rec.get("fiscal_year"),
@@ -250,30 +260,41 @@ def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
     """
     to_date = datetime.now().strftime("%Y-%m-%d")
     from_date = (datetime.now() - timedelta(days=max(days_back, 1))).strftime("%Y-%m-%d")
-    payload = _payload(
-        org_names=org_names,
-        pi_name=pi_name.strip(),
-        text_query=text_query.strip(),
-        ic_codes=ic_codes,
-        activity_codes=activity_codes,
-        org_states=org_states,
-        award_min=award_min,
-        award_max=award_max,
-        from_date=from_date if use_award_window else None,
-        to_date=to_date if use_award_window else None,
-        fiscal_years=fiscal_years,
-        newly_added_only=newly_added_only,
-        offset=0,
-        limit=limit,
-    )
-    try:
-        resp = requests.post(API_URL, json=payload, headers=HEADERS, timeout=TIMEOUT)
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:  # noqa: BLE001 - fail soft, caller falls back to sample
-        return [], f"NIH RePORTER fetch failed: {exc}"
 
-    items = [_normalize(r) for r in (data.get("results") or [])]
+    def build(offset, page):
+        return _payload(
+            org_names=org_names, pi_name=pi_name.strip(),
+            text_query=text_query.strip(), ic_codes=ic_codes,
+            activity_codes=activity_codes, org_states=org_states,
+            award_min=award_min, award_max=award_max,
+            from_date=from_date if use_award_window else None,
+            to_date=to_date if use_award_window else None,
+            fiscal_years=fiscal_years, newly_added_only=newly_added_only,
+            offset=offset, limit=page)
+
+    # Page through results so large pulls (e.g. a full fiscal year for
+    # investigator-level analysis) aren't truncated at the 500-record page cap.
+    records: list = []
+    offset, total = 0, None
+    while len(records) < limit:
+        page = min(MAX_LIMIT, limit - len(records))
+        try:
+            resp = requests.post(API_URL, json=build(offset, page),
+                                 headers=HEADERS, timeout=TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # noqa: BLE001 - fail soft
+            if records:
+                break  # keep what we already have
+            return [], f"NIH RePORTER fetch failed: {exc}"
+        results = data.get("results") or []
+        records.extend(results)
+        total = (data.get("meta") or {}).get("total", total)
+        offset += len(results)
+        if not results or (total is not None and offset >= total) or offset >= 14000:
+            break
+
+    items = [_normalize(r) for r in records]
     items.sort(key=lambda i: i.get("award_date") or i.get("start") or "", reverse=True)
     return items, None
 
@@ -336,6 +357,29 @@ def leaderboard(items: list, key: str, n: int = 10) -> list:
     rows = [{"name": k, **v} for k, v in rollup.items()]
     rows.sort(key=lambda r: (r["total_amount"], r["awards"]), reverse=True)
     return rows[:n]
+
+
+def pi_award_counts(items: list) -> Counter:
+    """Count awards per individual investigator (each listed PI on an award).
+
+    A multi-PI award counts once for each of its principal investigators.
+    """
+    counts: Counter = Counter()
+    for it in items:
+        names = it.get("pi_list") or ([it["pi"]] if it.get("pi") else [])
+        for name in names:
+            counts[name] += 1
+    return counts
+
+
+def grant_count_distribution(items: list, thresholds=(1, 2, 3, 4, 5)) -> dict:
+    """How many investigators hold at least N grants as PI, for each N.
+
+    Returns ``{"counts": Counter, "at_least": {N: num_investigators}}``.
+    """
+    counts = pi_award_counts(items)
+    at_least = {t: sum(1 for n in counts.values() if n >= t) for t in thresholds}
+    return {"counts": counts, "at_least": at_least}
 
 
 def compare_orgs(orgs, text_query: str = "", ic_codes=None, days_back: int = 7,
@@ -427,6 +471,21 @@ SAMPLE_AWARDS = [
        "Patient-derived retinal organoids to test base-editing rescue of inherited "
        "photoreceptor degeneration.", 793400, "2026-06-05", "2026-08-01", "2028-07-31",
        "NEI", "Eye Institute", ["Brooks, Daniel"], 11000010),
+    # Repeat PIs so investigator grant-count analysis is populated offline:
+    # Rivera holds 3 grants as PI; Patel holds 2.
+    _s("1R21AI234561-01", "Nanoparticle adjuvants for mucosal vaccine delivery",
+       "Engineering nanoparticle adjuvants to enhance durable mucosal immunity.",
+       389700, "2026-06-04", "2026-07-01", "2028-06-30", "NIAID",
+       "Allergy and Infectious Diseases", ["Rivera, Elena M"], 11000011),
+    _s("1U01AI234562-01", "Systems immunology of broadly neutralizing antibody induction",
+       "A cooperative study profiling B-cell trajectories toward broadly neutralizing "
+       "antibodies across vaccine cohorts.", 1042500, "2026-06-03", "2026-08-01",
+       "2031-07-31", "NIAID", "Allergy and Infectious Diseases",
+       ["Rivera, Elena M", "Okafor, Daniel"], 11000012),
+    _s("2R01HL456790-05", "Mechanotransduction in cardiac fibroblast activation",
+       "Renewal: defining how mechanical cues drive fibroblast activation in the "
+       "remodeling heart.", 702800, "2026-06-03", "2026-09-01", "2031-08-31", "NHLBI",
+       "Heart, Lung, and Blood", ["Patel, Anika"], 11000013),
 ]
 
 

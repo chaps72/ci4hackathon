@@ -229,8 +229,9 @@ kpi(k5, "Institutes", str(len(agg["by_ic"])),
     sub=" · ".join(list(agg["by_ic"])[:3]))
 st.write("")
 
-tab_overview, tab_awards, tab_board, tab_bench, tab_report = st.tabs(
-    ["📊 Overview", "📋 Awards", "🏆 Leaderboards", "⚖️ Benchmark", "📤 Report"])
+tab_overview, tab_awards, tab_board, tab_bench, tab_ask, tab_report = st.tabs(
+    ["📊 Overview", "📋 Awards", "🏆 Leaderboards", "⚖️ Benchmark",
+     "🧠 Ask (AI)", "📤 Report"])
 
 # ============================ Overview ============================
 with tab_overview:
@@ -351,6 +352,80 @@ with tab_bench:
         chart = pd.Series({r["org"]: r["total_amount"] for r in bench_rows},
                           name="Total $")
         st.bar_chart(chart, horizontal=True, color=EMORY_GOLD)
+
+# ============================ Ask (AI) ============================
+def build_facts(items: list) -> str:
+    a = reporter.aggregate(items)
+    dist = reporter.grant_count_distribution(items, thresholds=(1, 2, 3, 4, 5, 6))
+    exact = {}
+    for c in dist["counts"].values():
+        exact[c] = exact.get(c, 0) + 1
+    lines = [
+        f"Filters: {st.session_state.get('rep_query', '')}.",
+        f"Awards in result set: {a['count']}. Total funding: {reporter.fmt_money(a['total_amount'])}. "
+        f"Median award: {reporter.fmt_money(a['median_amount'])}. Largest: {reporter.fmt_money(a['max_amount'])}.",
+        f"Distinct principal investigators: {len(dist['counts'])}.",
+        "Investigators by number of grants where they are listed PI (this result set):",
+    ]
+    lines += [f"  - at least {t} grant(s) as PI: {n} investigator(s)"
+              for t, n in dist["at_least"].items()]
+    lines.append("Exact distribution: "
+                 + ", ".join(f"{k} grant(s): {exact[k]} PI(s)" for k in sorted(exact)))
+    lines.append("Top investigators by grant count: "
+                 + "; ".join(f"{n} ({c})" for n, c in dist["counts"].most_common(25)))
+    lines.append("Awards by IC: " + ", ".join(f"{k}: {v}" for k, v in a["by_ic"].items()))
+    lines.append("Awards by activity code: "
+                 + ", ".join(f"{k}: {v}" for k, v in a["by_activity"].items()))
+    lines.append("Awards by application type: "
+                 + ", ".join(f"{k}: {v}" for k, v in a["by_app_type"].items()))
+    if len(a["by_org"]) > 1:
+        lines.append("Awards by institution: "
+                     + ", ".join(f"{k}: {v}" for k, v in list(a["by_org"].items())[:15]))
+    return "\n".join(lines)
+
+
+with tab_ask:
+    st.subheader("Ask a question about this data")
+    st.caption("Answers use **only** exact figures computed from the current result "
+               "set. For investigator-level questions (e.g. who holds 3+ grants), "
+               "widen the look-back or pick a full fiscal year so each PI's grants "
+               "are all captured — counts reflect this pull, not full careers.")
+
+    dist = reporter.grant_count_distribution(rep_items, thresholds=(2, 3, 4, 5))
+    st.markdown("**Key numbers — investigators by grants held as PI**")
+    kq = st.columns(5)
+    kpi(kq[0], "Distinct PIs", str(len(reporter.pi_award_counts(rep_items))))
+    for col, t in zip(kq[1:], (2, 3, 4, 5)):
+        kpi(col, f"≥ {t} grants", str(dist["at_least"][t]))
+
+    counts = reporter.pi_award_counts(rep_items)
+    multi = [{"Investigator": n, "Grants as PI": c}
+             for n, c in counts.most_common() if c >= 2]
+    if multi:
+        with st.expander(f"Investigators with 2+ grants ({len(multi)})"):
+            st.dataframe(pd.DataFrame(multi), hide_index=True, use_container_width=True)
+    else:
+        st.caption("No investigator holds more than one grant in this result set — "
+                   "widen the window or pick a fiscal year.")
+
+    st.divider()
+    question = st.text_area(
+        "Your request",
+        value="How many Emory investigators have 3 or more grants where they are "
+              "PI, and how many have 4 or more? List them.",
+        height=90)
+    if st.button("🧠 Generate report", type="primary"):
+        with st.spinner("Analyzing..."):
+            answer, engine = summarize.custom_report(question, build_facts(rep_items))
+        st.session_state.ask_answer = answer
+        st.session_state.ask_engine = engine
+    if st.session_state.get("ask_answer"):
+        st.markdown(st.session_state.ask_answer)
+        if st.session_state.get("ask_engine") == "claude":
+            st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
+            st.download_button("⬇️ Download answer (Markdown)", st.session_state.ask_answer,
+                               file_name="nih_custom_report.md", mime="text/markdown")
+
 
 # ============================ Report / delivery ============================
 with tab_report:
