@@ -38,6 +38,9 @@ export ANTHROPIC_API_KEY=sk-ant-...   # optional, enables AI-written summaries
 streamlit run fedwatch_app.py
 ```
 
+The **NIH RePORTER Weekly Report** is also available as its own standalone app
+(same data, no FedWatch dashboard around it): `streamlit run nih_reporter_app.py`.
+
 The original Trial & Sample Finder app remains available: `streamlit run main.py`.
 
 ## Project layout
