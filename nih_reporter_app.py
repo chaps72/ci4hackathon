@@ -266,31 +266,39 @@ def run_query():
 
 
 def ai_fetch(parsed: dict):
-    """Fetch awards using criteria parsed from the question (question wins over
-    the manual filters). Returns (awards, error, label)."""
+    """Fetch awards using ONLY criteria parsed from the question — the manual
+    filter panel is ignored for a top-level AI query, so nothing the user didn't
+    ask for is silently applied. Returns (awards, error, label).
+
+    Defaults when the question is silent: organization = the home institution
+    (unless it names one or says 'all institutions'); time window = the current
+    fiscal year. Everything else (IC, activity code, state, award size) is only
+    applied if the question names it.
+    """
     if parsed.get("all_institutions"):
         o_names = None
     elif parsed.get("organization"):
         o_names = [parsed["organization"]]
-    elif org_mode and org_name.strip():
-        o_names = [org_name]
     else:
-        o_names = None
-    fys = parsed.get("fiscal_years") or (fiscal_years or None)
-    days = parsed.get("days_back") or rep_days
-    eff_topic = parsed.get("topic") or topic
-    eff_pi = parsed.get("pi_name") or pi_name
-    eff_ic = parsed.get("ic_codes") or (ic_codes or None)
-    eff_act = parsed.get("activity_codes") or (activity_codes or None)
-    eff_newly = bool(parsed.get("newly_added")) or newly_added
-    eff_active = bool(parsed.get("active_only")) or active_only
+        o_names = [reporter.DEFAULT_ORG]
+    fys = parsed.get("fiscal_years") or None
+    days = parsed.get("days_back")
+    eff_active = bool(parsed.get("active_only"))
+    eff_topic = parsed.get("topic") or ""
+    eff_pi = parsed.get("pi_name") or ""
+    eff_ic = parsed.get("ic_codes") or None
+    eff_act = parsed.get("activity_codes") or None
+    eff_newly = bool(parsed.get("newly_added"))
+    # No window specified -> default to the current fiscal year (bounded, useful).
+    if not fys and not days and not eff_active:
+        fys = [CURRENT_FY]
     awards, err = reporter.fetch_awards(
         org_names=o_names, pi_name=eff_pi, text_query=eff_topic,
-        ic_codes=eff_ic, activity_codes=eff_act, org_states=states or None,
-        award_min=award_min, award_max=award_max,
+        ic_codes=eff_ic, activity_codes=eff_act, org_states=None,
+        award_min=None, award_max=None,
         use_award_window=not bool(fys),
-        days_back=days, fiscal_years=fys or None, newly_added_only=eff_newly,
-        active_only=eff_active, limit=2000 if (fys or eff_active) else max(rep_limit, 200))
+        days_back=days or 7, fiscal_years=fys, newly_added_only=eff_newly,
+        active_only=eff_active, limit=2000 if (fys or eff_active) else 500)
     parts = [o_names[0] if o_names else "All institutions"]
     if eff_pi:
         parts.append(f"PI: {eff_pi}")
@@ -302,7 +310,7 @@ def ai_fetch(parsed: dict):
         parts.append("mech: " + ", ".join(eff_act))
     if fys:
         parts.append("FY " + ", ".join(str(y) for y in sorted(fys, reverse=True)))
-    elif not eff_active:
+    elif days:
         parts.append(f"last {days} days")
     if eff_active:
         parts.append("active grants only")
@@ -382,9 +390,11 @@ with _center:
         "NIH funding</h2>", unsafe_allow_html=True)
     st.markdown(
         "<p style='text-align:center;color:#6d6e71;font-size:0.9rem;margin-top:0;'>"
-        "Your question drives the data — name a window or scope and it pulls exactly "
-        "that (e.g. “active grants only”, “last 4 fiscal years”, “NCI R01s”, "
-        "“all institutions”). Figures are computed exactly, never invented.</p>",
+        "Each question searches fresh — it ignores the manual filters and pulls "
+        "exactly what you describe (e.g. “active grants only”, “last 4 fiscal "
+        f"years”, “NCI R01s”, “all institutions”). Defaults to {reporter.DEFAULT_ORG} "
+        "and the current fiscal year unless you say otherwise. Figures are computed "
+        "exactly, never invented.</p>",
         unsafe_allow_html=True)
     st.text_area("Your question", key="ask_question", height=90,
                  label_visibility="collapsed",
