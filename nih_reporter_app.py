@@ -63,7 +63,7 @@ a {{ color: {EMORY_LIGHT_BLUE}; }}
 </style>""", unsafe_allow_html=True)
 
 st.markdown(
-    '<div class="nih-header"><h1>🔬 NIH RePORTER Weekly Report</h1>'
+    '<div class="nih-header"><h1>NIH RePORTER Weekly Report</h1>'
     '<p>Recently issued NIH/HHS awards, live from the NIH RePORTER API · '
     'Office of the SVPR</p></div>', unsafe_allow_html=True)
 
@@ -100,6 +100,66 @@ def bar(series: dict, title: str, top: int = 12):
     st.bar_chart(s, horizontal=True, color=EMORY_BLUE, height=max(140, 28 * len(s)))
 
 
+# One-click example reports shown front and center (label, question).
+EXAMPLE_REPORTS = [
+    ("Investigators with 3+ grants",
+     "How many investigators have 3 or more grants where they are PI, and how "
+     "many have 4 or more? List them with their grant counts."),
+    ("Executive summary",
+     "Write an executive summary of these new NIH awards for research leadership: "
+     "funding totals, the most notable awards, key research themes, and the mix of "
+     "new vs. renewal awards."),
+    ("Largest awards",
+     "What are the largest awards in this set? List the top awards with PI, "
+     "institute, mechanism, and amount."),
+    ("Funding by institute",
+     "Break down the awards by NIH Institute/Center: counts and total funding, and "
+     "say which areas dominate."),
+    ("New vs. renewal",
+     "How many awards are new vs. renewal vs. continuation, and what does that mix "
+     "suggest about the portfolio?"),
+]
+DEFAULT_QUESTION = EXAMPLE_REPORTS[0][1]
+
+
+def build_facts(items: list) -> str:
+    """Exact, deterministically computed facts handed to the LLM for answers."""
+    a = reporter.aggregate(items)
+    dist = reporter.grant_count_distribution(items, thresholds=(1, 2, 3, 4, 5, 6))
+    exact: dict = {}
+    for c in dist["counts"].values():
+        exact[c] = exact.get(c, 0) + 1
+    lines = [
+        f"Filters: {st.session_state.get('rep_query', '')}.",
+        f"Awards in result set: {a['count']}. Total funding: {reporter.fmt_money(a['total_amount'])}. "
+        f"Median award: {reporter.fmt_money(a['median_amount'])}. Largest: {reporter.fmt_money(a['max_amount'])}.",
+        f"Distinct principal investigators: {len(dist['counts'])}.",
+        "Investigators by number of grants where they are listed PI (this result set):",
+    ]
+    lines += [f"  - at least {t} grant(s) as PI: {n} investigator(s)"
+              for t, n in dist["at_least"].items()]
+    lines.append("Exact distribution: "
+                 + ", ".join(f"{k} grant(s): {exact[k]} PI(s)" for k in sorted(exact)))
+    lines.append("Top investigators by grant count: "
+                 + "; ".join(f"{n} ({c})" for n, c in dist["counts"].most_common(25)))
+    lines.append("Awards by IC: " + ", ".join(f"{k}: {v}" for k, v in a["by_ic"].items()))
+    lines.append("Awards by activity code: "
+                 + ", ".join(f"{k}: {v}" for k, v in a["by_activity"].items()))
+    lines.append("Awards by application type: "
+                 + ", ".join(f"{k}: {v}" for k, v in a["by_app_type"].items()))
+    if len(a["by_org"]) > 1:
+        lines.append("Awards by institution: "
+                     + ", ".join(f"{k}: {v}" for k, v in list(a["by_org"].items())[:15]))
+    notable = sorted((it for it in items if it.get("amount")),
+                     key=lambda i: int(i["amount"]), reverse=True)[:15]
+    if notable:
+        lines.append("Notable awards (largest by amount):")
+        lines += [f"  - {reporter.fmt_money(it['amount'])} | {it.get('ic', '')} "
+                  f"{it.get('activity_code', '')} {it.get('app_type', '')} | "
+                  f"PI: {it.get('pi', '')} | {it.get('title', '')}" for it in notable]
+    return "\n".join(lines)
+
+
 # ============================ Sidebar: search ============================
 with st.sidebar:
     st.title("Build the report")
@@ -110,20 +170,20 @@ with st.sidebar:
              "mode scans every NIH-funded institution.")
     org_mode = mode.startswith("My institution")
 
-    with st.expander("🏛️ Institution & people", expanded=True):
+    with st.expander("Institution & people", expanded=True):
         org_name = st.text_input(
             "Organization", value=reporter.DEFAULT_ORG, disabled=not org_mode,
             help="Exact NIH RePORTER org name, e.g. 'EMORY UNIVERSITY'.")
         pi_name = st.text_input("Principal investigator", value="",
                                 placeholder="e.g. Smith, Jane")
 
-    with st.expander("🔎 Topic", expanded=not org_mode):
+    with st.expander("Research topic", expanded=not org_mode):
         topic = st.text_input(
             "Research terms", value="" if org_mode else "vaccine immunology",
             placeholder="e.g. gene therapy, Alzheimer's, CRISPR",
             help="Matched against project title, abstract, and terms.")
 
-    with st.expander("💰 Funding mechanism"):
+    with st.expander("Funding mechanism"):
         ic_codes = st.multiselect(
             "Institute / Center (IC)", options=list(reporter.IC_CHOICES.keys()),
             format_func=lambda c: f"{c} — {reporter.IC_CHOICES[c]}",
@@ -133,7 +193,7 @@ with st.sidebar:
             format_func=lambda c: f"{c} — {reporter.ACTIVITY_CHOICES[c]}",
             help="Grant mechanism, e.g. R01, R21, K99.")
 
-    with st.expander("📍 Geography & award size"):
+    with st.expander("Geography & award size"):
         states = st.multiselect(
             "Organization state(s)",
             ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI",
@@ -148,32 +208,41 @@ with st.sidebar:
         award_min = amt[0] * 1000 if amt[0] > 0 else None
         award_max = amt[1] * 1000 if amt[1] < 5000 else None
 
-    with st.expander("🗓️ Time window", expanded=True):
-        rep_days = st.slider("Look back (days)", 7, 120, 7)
+    with st.expander("Time window", expanded=True):
         fy_now = datetime.now().year
         fiscal_years = st.multiselect(
-            "Fiscal year(s)", list(range(fy_now, fy_now - 6, -1)), default=[],
-            help="Leave empty to use the award-notice date window only.")
+            "Fiscal year(s) — up to 5 back",
+            list(range(fy_now, fy_now - 6, -1)), default=[],
+            help="Select one or more fiscal years (current plus up to five prior). "
+                 "When set, the report covers those whole years and the day "
+                 "look-back below is ignored — use this for multi-year, "
+                 "investigator-level analysis.")
+        rep_days = st.slider(
+            "Or look back (days)", 7, 365, 7, disabled=bool(fiscal_years),
+            help="Used only when no fiscal year is selected.")
         newly_added = st.checkbox(
             "Newly added to RePORTER only", value=False,
-            help="Only projects recently added to the database — true 'new this "
-                 "week' signal.")
-    rep_limit = st.slider("Max awards", 25, 500, 200, step=25)
+            help="Only projects recently added to the database — a true "
+                 "'new this week' signal.")
+    # Larger ceiling so multi-year pulls aren't truncated (results are paginated).
+    rep_limit = st.slider("Max awards", 50, 2000, 200, step=50)
 
-    pull = st.button("🔍 Search awards", type="primary", use_container_width=True)
-    gen_report = st.button("📄 Generate report", use_container_width=True,
+    pull = st.button("Search awards", type="primary", use_container_width=True)
+    gen_report = st.button("Generate report", use_container_width=True,
                            help="Write an executive summary of the current awards — "
                                 "no search needed. Opens in the Report tab.")
-    st.caption("🤖 Claude summaries enabled." if summarize.claude_available()
-               else "ℹ️ No ANTHROPIC_API_KEY — template summaries.")
+    st.caption("Claude summaries enabled." if summarize.claude_available()
+               else "No ANTHROPIC_API_KEY set — using template summaries.")
 
 
 def run_query():
+    # Fiscal-year selection defines the time window and overrides the day look-back.
     return reporter.fetch_awards(
         org_names=[org_name] if (org_mode and org_name.strip()) else None,
         pi_name=pi_name, text_query=topic,
         ic_codes=ic_codes or None, activity_codes=activity_codes or None,
         org_states=states or None, award_min=award_min, award_max=award_max,
+        use_award_window=not bool(fiscal_years),
         days_back=rep_days, fiscal_years=fiscal_years or None,
         newly_added_only=newly_added, limit=rep_limit)
 
@@ -224,7 +293,7 @@ if gen_report and st.session_state.get("rep_items"):
                 "the new vs. renewal mix. Do not invent figures."))
     st.session_state.rep_summary = text
     st.session_state.rep_summary_engine = engine
-    st.toast("Report ready — see the 📤 Report tab.", icon="📄")
+    st.toast("Report ready — see the Report tab.", icon="✅")
 
 rep_items = st.session_state.get("rep_items")
 
@@ -239,9 +308,60 @@ if not rep_items:
     st.stop()
 
 agg = reporter.aggregate(rep_items)
-st.caption("Query: " + st.session_state.get("rep_query", ""))
+st.caption("Showing: " + st.session_state.get("rep_query", ""))
 
-# ---------- KPI row ----------
+# ============================ Ask AI — front and center ============================
+st.subheader("Ask the data — instant reports")
+st.caption("Choose an example report or ask your own question. Answers use only "
+           "exact figures computed from the current data, so numbers are never "
+           "invented. For investigator-level questions, select fiscal years so "
+           "each PI's grants are captured.")
+
+st.session_state.setdefault("ask_question", DEFAULT_QUESTION)
+ex_cols = st.columns(len(EXAMPLE_REPORTS))
+for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
+    if col.button(label, use_container_width=True, key=f"ex_{label}"):
+        st.session_state.ask_question = q
+        st.session_state.run_ask = True
+
+st.text_area("Your question", key="ask_question", height=80)
+ask_clicked = st.button("Generate report", type="primary")
+
+if ask_clicked or st.session_state.pop("run_ask", False):
+    with st.spinner("Analyzing the data..."):
+        answer, engine = summarize.custom_report(
+            st.session_state.ask_question, build_facts(rep_items))
+    st.session_state.ask_answer = answer
+    st.session_state.ask_engine = engine
+
+if st.session_state.get("ask_answer"):
+    with st.container(border=True):
+        st.markdown(st.session_state.ask_answer)
+        if st.session_state.get("ask_engine") == "claude":
+            st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
+            st.download_button("Download answer (Markdown)",
+                               st.session_state.ask_answer,
+                               file_name="nih_custom_report.md", mime="text/markdown")
+
+# Exact investigator grant-count numbers backing the flagship example.
+_dist = reporter.grant_count_distribution(rep_items, thresholds=(2, 3, 4, 5))
+with st.expander("Key numbers — investigators by grants held as PI"):
+    kq = st.columns(5)
+    kpi(kq[0], "Distinct PIs", str(len(reporter.pi_award_counts(rep_items))))
+    for col, t in zip(kq[1:], (2, 3, 4, 5)):
+        kpi(col, f"≥ {t} grants", str(_dist["at_least"][t]))
+    _multi = [{"Investigator": n, "Grants as PI": c}
+              for n, c in reporter.pi_award_counts(rep_items).most_common() if c >= 2]
+    if _multi:
+        st.dataframe(pd.DataFrame(_multi), hide_index=True, use_container_width=True)
+    else:
+        st.caption("No investigator holds more than one grant in this result set — "
+                   "widen the window or select more fiscal years.")
+
+st.divider()
+
+# ============================ The data ============================
+st.subheader("Explore the data")
 k1, k2, k3, k4, k5 = st.columns(5)
 kpi(k1, "Awards", f"{agg['count']:,}")
 kpi(k2, "Total funding", reporter.fmt_money(agg["total_amount"]))
@@ -251,9 +371,8 @@ kpi(k5, "Institutes", str(len(agg["by_ic"])),
     sub=" · ".join(list(agg["by_ic"])[:3]))
 st.write("")
 
-tab_overview, tab_awards, tab_board, tab_bench, tab_ask, tab_report = st.tabs(
-    ["📊 Overview", "📋 Awards", "🏆 Leaderboards", "⚖️ Benchmark",
-     "🧠 Ask (AI)", "📤 Report"])
+tab_overview, tab_awards, tab_board, tab_bench, tab_report = st.tabs(
+    ["Overview", "Awards", "Leaderboards", "Benchmark", "Report"])
 
 # ============================ Overview ============================
 with tab_overview:
@@ -288,13 +407,13 @@ with tab_awards:
             "Title": st.column_config.TextColumn(width="large"),
         })
     st.download_button(
-        "⬇️ Export awards (CSV)",
+        "Export awards (CSV)",
         df[["award_date", "ic", "activity_code", "app_type", "amount", "pi",
             "org", "state", "project_num", "fiscal_year", "title", "url"]]
         .to_csv(index=False),
         file_name="nih_reporter_awards.csv", mime="text/csv")
 
-    with st.expander(f"📄 Award detail cards ({len(rep_items)})"):
+    with st.expander(f"Award detail cards ({len(rep_items)})"):
         for it in rep_items:
             st.markdown(f"**{it.get('title', '')}**")
             meta = [b for b in (
@@ -375,84 +494,10 @@ with tab_bench:
                           name="Total $")
         st.bar_chart(chart, horizontal=True, color=EMORY_GOLD)
 
-# ============================ Ask (AI) ============================
-def build_facts(items: list) -> str:
-    a = reporter.aggregate(items)
-    dist = reporter.grant_count_distribution(items, thresholds=(1, 2, 3, 4, 5, 6))
-    exact = {}
-    for c in dist["counts"].values():
-        exact[c] = exact.get(c, 0) + 1
-    lines = [
-        f"Filters: {st.session_state.get('rep_query', '')}.",
-        f"Awards in result set: {a['count']}. Total funding: {reporter.fmt_money(a['total_amount'])}. "
-        f"Median award: {reporter.fmt_money(a['median_amount'])}. Largest: {reporter.fmt_money(a['max_amount'])}.",
-        f"Distinct principal investigators: {len(dist['counts'])}.",
-        "Investigators by number of grants where they are listed PI (this result set):",
-    ]
-    lines += [f"  - at least {t} grant(s) as PI: {n} investigator(s)"
-              for t, n in dist["at_least"].items()]
-    lines.append("Exact distribution: "
-                 + ", ".join(f"{k} grant(s): {exact[k]} PI(s)" for k in sorted(exact)))
-    lines.append("Top investigators by grant count: "
-                 + "; ".join(f"{n} ({c})" for n, c in dist["counts"].most_common(25)))
-    lines.append("Awards by IC: " + ", ".join(f"{k}: {v}" for k, v in a["by_ic"].items()))
-    lines.append("Awards by activity code: "
-                 + ", ".join(f"{k}: {v}" for k, v in a["by_activity"].items()))
-    lines.append("Awards by application type: "
-                 + ", ".join(f"{k}: {v}" for k, v in a["by_app_type"].items()))
-    if len(a["by_org"]) > 1:
-        lines.append("Awards by institution: "
-                     + ", ".join(f"{k}: {v}" for k, v in list(a["by_org"].items())[:15]))
-    return "\n".join(lines)
-
-
-with tab_ask:
-    st.subheader("Ask a question about this data")
-    st.caption("Answers use **only** exact figures computed from the current result "
-               "set. For investigator-level questions (e.g. who holds 3+ grants), "
-               "widen the look-back or pick a full fiscal year so each PI's grants "
-               "are all captured — counts reflect this pull, not full careers.")
-
-    dist = reporter.grant_count_distribution(rep_items, thresholds=(2, 3, 4, 5))
-    st.markdown("**Key numbers — investigators by grants held as PI**")
-    kq = st.columns(5)
-    kpi(kq[0], "Distinct PIs", str(len(reporter.pi_award_counts(rep_items))))
-    for col, t in zip(kq[1:], (2, 3, 4, 5)):
-        kpi(col, f"≥ {t} grants", str(dist["at_least"][t]))
-
-    counts = reporter.pi_award_counts(rep_items)
-    multi = [{"Investigator": n, "Grants as PI": c}
-             for n, c in counts.most_common() if c >= 2]
-    if multi:
-        with st.expander(f"Investigators with 2+ grants ({len(multi)})"):
-            st.dataframe(pd.DataFrame(multi), hide_index=True, use_container_width=True)
-    else:
-        st.caption("No investigator holds more than one grant in this result set — "
-                   "widen the window or pick a fiscal year.")
-
-    st.divider()
-    question = st.text_area(
-        "Your request",
-        value="How many Emory investigators have 3 or more grants where they are "
-              "PI, and how many have 4 or more? List them.",
-        height=90)
-    if st.button("🧠 Generate report", type="primary"):
-        with st.spinner("Analyzing..."):
-            answer, engine = summarize.custom_report(question, build_facts(rep_items))
-        st.session_state.ask_answer = answer
-        st.session_state.ask_engine = engine
-    if st.session_state.get("ask_answer"):
-        st.markdown(st.session_state.ask_answer)
-        if st.session_state.get("ask_engine") == "claude":
-            st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
-            st.download_button("⬇️ Download answer (Markdown)", st.session_state.ask_answer,
-                               file_name="nih_custom_report.md", mime="text/markdown")
-
-
 # ============================ Report / delivery ============================
 with tab_report:
     st.subheader("Narrative summary & delivery")
-    if st.button("📝 Generate summary", type="primary"):
+    if st.button("Generate summary", type="primary"):
         with st.spinner("Writing the weekly award summary..."):
             text, engine = summarize.generate_summary(
                 rep_items, style="Executive summary",
@@ -472,12 +517,12 @@ with tab_report:
         rep_title = "NIH RePORTER Weekly Award Report - " + datetime.now().strftime("%b %d, %Y")
 
         d1, d2, d3 = st.columns(3)
-        d1.download_button("⬇️ Summary (Markdown)", st.session_state.rep_summary,
+        d1.download_button("Summary (Markdown)", st.session_state.rep_summary,
                            file_name="nih_reporter_summary.md", mime="text/markdown")
-        d2.download_button("⬇️ HTML digest",
+        d2.download_button("HTML digest",
                            emailer.build_html(rep_items, st.session_state.rep_summary, rep_title),
                            file_name="nih_reporter_digest.html", mime="text/html")
-        d3.download_button("⬇️ Email (.eml)",
+        d3.download_button("Email (.eml)",
                            emailer.build_eml(rep_items, st.session_state.rep_summary, rep_title),
                            file_name="nih_reporter_digest.eml", mime="message/rfc822")
 
@@ -486,14 +531,14 @@ with tab_report:
         teams_hook = _secret("TEAMS_WEBHOOK_URL")
         slack_hook = _secret("SLACK_WEBHOOK_URL")
         p1, p2 = st.columns(2)
-        if p1.button("📨 Post to Teams", disabled=not teams_hook,
+        if p1.button("Post to Teams", disabled=not teams_hook,
                      help="Set TEAMS_WEBHOOK_URL in secrets to enable."):
             try:
                 notify.send_teams_summary(teams_hook, st.session_state.rep_summary, title=rep_title)
                 st.success("Posted to Teams.")
             except Exception as exc:  # noqa: BLE001
                 st.error(f"Teams post failed: {exc}")
-        if p2.button("💬 Post to Slack", disabled=not slack_hook,
+        if p2.button("Post to Slack", disabled=not slack_hook,
                      help="Set SLACK_WEBHOOK_URL in secrets to enable."):
             try:
                 notify.send_slack(slack_hook, st.session_state.rep_summary, title=rep_title)
