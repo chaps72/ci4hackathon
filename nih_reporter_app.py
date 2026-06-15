@@ -231,6 +231,10 @@ with st.sidebar:
     gen_report = st.button("Generate report", use_container_width=True,
                            help="Write an executive summary of the current awards — "
                                 "no search needed. Opens in the Report tab.")
+    if st.button("Reset filters", use_container_width=True,
+                 help="Clear all filters and return to the default view."):
+        st.session_state.clear()
+        st.rerun()
     st.caption("Claude summaries enabled." if summarize.claude_available()
                else "No ANTHROPIC_API_KEY set — using template summaries.")
 
@@ -253,8 +257,18 @@ def query_label() -> str:
                        ("mech", ", ".join(activity_codes)), ("states", ", ".join(states))):
         if val:
             filt.append(f"{label}: {val}")
-    filt.append(f"last {rep_days}d")
+    # The time window is fiscal years when selected, otherwise the day look-back.
+    if fiscal_years:
+        filt.append("FY " + ", ".join(str(y) for y in sorted(fiscal_years, reverse=True)))
+    else:
+        filt.append(f"last {rep_days} days")
     return " · ".join(filt)
+
+
+def filter_sig():
+    return (org_mode, org_name, pi_name, topic, tuple(ic_codes), tuple(activity_codes),
+            tuple(states), award_min, award_max, rep_days, tuple(sorted(fiscal_years)),
+            newly_added, rep_limit)
 
 
 def store_results(awards, rep_err):
@@ -266,19 +280,15 @@ def store_results(awards, rep_err):
     st.session_state.rep_error = rep_err
     st.session_state.rep_sample = used_sample
     st.session_state.rep_query = query_label()
+    st.session_state.filter_sig = filter_sig()
     st.session_state.pop("rep_summary", None)
     st.session_state.pop("ask_answer", None)
 
 
-if pull:
+# Fetch whenever the filters change (or on first load / explicit Search), so the
+# Ask panel and reports always reflect the current sidebar — no stale data.
+if pull or "rep_items" not in st.session_state or st.session_state.get("filter_sig") != filter_sig():
     with st.spinner("Querying NIH RePORTER..."):
-        awards, rep_err = run_query()
-    store_results(awards, rep_err)
-
-# Auto-load default awards on first visit so reports and Ask work immediately,
-# with no search required.
-if "rep_items" not in st.session_state:
-    with st.spinner("Loading the latest NIH awards..."):
         awards, rep_err = run_query()
     store_results(awards, rep_err)
 
