@@ -153,8 +153,14 @@ notice that merely mentions 'withdrawn' submissions is not critical. \
 For irrelevant items still return a level (INFO is fine)."""
 
 
-def ai_classify(items: list) -> list:
-    """Reclassify items with Claude. Returns new list; raises on failure."""
+def ai_classify(items: list, batch_size: int = 20) -> list:
+    """Reclassify items with Claude in small batches.
+
+    Resilient by design: each batch is independent, and if a batch fails
+    (parse error, refusal, timeout) its items are KEPT and flagged
+    needs_review rather than dropped - a model hiccup must never empty the
+    feed. Returns all items; never raises.
+    """
     import json
 
     import anthropic
@@ -162,11 +168,6 @@ def ai_classify(items: list) -> list:
     if not items:
         return items
     client = anthropic.Anthropic()
-    payload = [
-        {"id": it["id"], "agency": it.get("agency", ""), "source": it.get("source", ""),
-         "title": it.get("title", ""), "summary": (it.get("summary") or "")[:400]}
-        for it in items
-    ]
     schema = {
         "type": "object",
         "properties": {
@@ -187,20 +188,33 @@ def ai_classify(items: list) -> list:
         "required": ["levels"],
         "additionalProperties": False,
     }
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=16000,
-        thinking={"type": "adaptive"},
-        output_config={"format": {"type": "json_schema", "schema": schema}},
-        messages=[{
-            "role": "user",
-            "content": f"{AI_CLASSIFY_GUIDANCE}\n\nItems:\n{json.dumps(payload)}",
-        }],
-    )
-    if response.stop_reason == "refusal":
-        raise RuntimeError("Model declined the request")
-    text = next(b.text for b in response.content if b.type == "text")
-    result_by_id = {r["id"]: r for r in json.loads(text)["levels"]}
+
+    result_by_id: dict = {}
+    failed_ids: set = set()
+    for start in range(0, len(items), batch_size):
+        batch = items[start:start + batch_size]
+        payload = [
+            {"id": it["id"], "agency": it.get("agency", ""), "source": it.get("source", ""),
+             "title": it.get("title", ""), "summary": (it.get("summary") or "")[:400]}
+            for it in batch
+        ]
+        try:
+            response = client.messages.create(
+                model=MODEL,
+                max_tokens=8000,
+                output_config={"format": {"type": "json_schema", "schema": schema}},
+                messages=[{
+                    "role": "user",
+                    "content": f"{AI_CLASSIFY_GUIDANCE}\n\nItems:\n{json.dumps(payload)}",
+                }],
+            )
+            if response.stop_reason == "refusal":
+                raise RuntimeError("model declined")
+            text = next(b.text for b in response.content if b.type == "text")
+            for r in json.loads(text)["levels"]:
+                result_by_id[r["id"]] = r
+        except Exception:  # noqa: BLE001 - keep this batch, judge the rest
+            failed_ids.update(it["id"] for it in batch)
 
     out = []
     for it in items:
@@ -211,16 +225,18 @@ def ai_classify(items: list) -> list:
                 item["level"] = res["level"]
             item["relevant"] = bool(res["relevant"])
             item["ai_classified"] = True
+        elif item["id"] in failed_ids:
+            # Unjudged due to a batch failure: keep it, flag for review.
+            item["relevant"] = True
+            item["needs_review"] = True
         # Watchlist floor only - the model's judgment is otherwise final.
-        # (An agency-based floor here used to force every OMB/EOP item to
-        # CRITICAL+relevant, overriding the AI on discount-rate memos and
-        # pardons. Rules propose; the model disposes.)
         if item.get("watchlist_hits") or item.get("watchlist_targeted"):
             item["relevant"] = True
             if LEVELS.index(item["level"]) > LEVELS.index("HIGH"):
                 item["level"] = "HIGH"
         out.append(item)
     return out
+
 
 
 def _template_summary(items: list, style: str) -> str:
