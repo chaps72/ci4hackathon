@@ -38,8 +38,34 @@ export ANTHROPIC_API_KEY=sk-ant-...   # optional, enables AI-written summaries
 streamlit run fedwatch_app.py
 ```
 
-The **NIH RePORTER Weekly Report** is also available as its own standalone app
-(same data, no FedWatch dashboard around it): `streamlit run nih_reporter_app.py`.
+### NIH RePORTER Weekly Report (standalone)
+
+A professional, self-contained app for recently issued NIH/HHS awards — no
+FedWatch dashboard around it:
+
+```bash
+streamlit run nih_reporter_app.py
+```
+
+- **Search dimensions:** organization, principal investigator, research terms,
+  administering Institute/Center (IC), activity code (R01/R21/K99/…), state,
+  award-size range, fiscal year(s), look-back window, and a "newly added" flag.
+  Toggle between one institution's new awards and a topic search across all
+  institutions.
+- **Analytics tabs:** Overview (breakdowns by IC, activity code, application type
+  — new vs. renewal vs. continuation — and institution/fiscal year), an Awards
+  table with currency formatting and RePORTER links, Leaderboards (top PIs /
+  institutions / mechanisms by funding), and peer-institution **Benchmarking**.
+- **Delivery:** AI/template executive summary, CSV / HTML / `.eml` export, and
+  one-click posting to **Microsoft Teams** or **Slack**.
+- Fails soft to bundled sample awards when the live API is unreachable.
+
+**Scheduled auto-report:** `nih_weekly_report.py` (run by the
+`.github/workflows/nih-weekly-report.yml` GitHub Action every Monday) pulls the
+week's awards and delivers the digest to Teams / Slack / email with no clicks.
+Configure with repo **Variables** (`NIH_ORG`, `NIH_TOPIC`, `NIH_DAYS`, `NIH_IC`)
+and **Secrets** (`TEAMS_WEBHOOK_URL`, `SLACK_WEBHOOK_URL`, `ANTHROPIC_API_KEY`,
+SMTP `*`).
 
 The original Trial & Sample Finder app remains available: `streamlit run main.py`.
 
@@ -47,9 +73,12 @@ The original Trial & Sample Finder app remains available: `streamlit run main.py
 
 ```
 fedwatch_app.py          Streamlit dashboard (feed / summaries / email tabs)
+nih_reporter_app.py      Standalone NIH RePORTER weekly report (search / analytics / delivery)
+nih_weekly_report.py     Scheduled NIH report sender (Teams / Slack / email)
 fedwatch/
   sources.py             Fetchers for Federal Register, Grants.gov, NIH, NSF (fail-soft)
-  reporter.py            NIH RePORTER award fetcher + aggregates for the weekly report
+  reporter.py            NIH RePORTER fetcher, search, analytics, peer benchmarking
+  notify.py              Teams / Slack / SMTP senders
   classify.py            Keyword-rule criticality classifier + watchlist
   summarize.py           Claude API summaries with template fallback
   emailer.py             Sanitized HTML / plain-text / .eml digest builder

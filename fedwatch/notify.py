@@ -62,6 +62,25 @@ def send_teams_summary(webhook_url: str, summary_md: str,
     _post_card(webhook_url, title, summary_md[:25000], app_url)
 
 
+def send_slack(webhook_url: str, summary_md: str,
+               title: str = "NIH RePORTER Weekly Report") -> None:
+    """Post a generated summary to a Slack channel via an incoming webhook."""
+    if not webhook_url:
+        raise ValueError("No Slack webhook URL configured")
+    if not summary_md.strip():
+        raise ValueError("Summary is empty")
+    payload = {
+        "blocks": [
+            {"type": "header",
+             "text": {"type": "plain_text", "text": title[:150], "emoji": True}},
+            {"type": "section",
+             "text": {"type": "mrkdwn", "text": summary_md[:2900]}},
+        ]
+    }
+    resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
+    resp.raise_for_status()
+
+
 def send_email(smtp_host: str, smtp_port: int, username: str, password: str,
                sender: str, recipients: str, items: list, summary_md: str = "",
                title: str = "🔴 Critical federal research updates") -> None:
