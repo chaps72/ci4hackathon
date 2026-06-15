@@ -160,83 +160,83 @@ def build_facts(items: list) -> str:
     return "\n".join(lines)
 
 
-# ============================ Sidebar: search ============================
-with st.sidebar:
-    st.title("Manual filter search")
-    st.caption("Optional. Refine what the AI analyzes — by institution, institute, "
-               "activity code, state, fiscal year, and award size.")
-    mode = st.radio(
-        "Report mode",
-        ["My institution's new awards", "Topic search (all institutions)"],
-        help="Institution mode focuses on one organization's new awards; topic "
-             "mode scans every NIH-funded institution.")
-    org_mode = mode.startswith("My institution")
+# ============================ Filter state ============================
+# Filters are hidden by default; the AI question leads. The actual filter widgets
+# render in a collapsed "Manual filter search" panel at the bottom of the page and
+# write to these f_* keys. We read the current values here (with defaults) so the
+# data fetch below always reflects them.
+FY_NOW = datetime.now().year
+FY_OPTIONS = list(range(FY_NOW, FY_NOW - 6, -1))
+STATE_OPTIONS = [
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
+    "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT",
+    "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI",
+    "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC", "PR"]
 
-    with st.expander("Institution & people", expanded=True):
-        org_name = st.text_input(
-            "Organization", value=reporter.DEFAULT_ORG, disabled=not org_mode,
-            help="Exact NIH RePORTER org name, e.g. 'EMORY UNIVERSITY'.")
-        pi_name = st.text_input("Principal investigator", value="",
-                                placeholder="e.g. Smith, Jane")
+# A reset stages a flag, then clears the widget-managed keys here (before any
+# widget is instantiated, which Streamlit requires).
+if st.session_state.pop("_reset_filters", False):
+    for _k in ("f_mode", "f_org", "f_pi", "f_topic", "f_ic", "f_act", "f_states",
+               "f_amt", "f_days", "f_fy", "f_newly", "f_limit", "rep_items",
+               "ask_answer", "rep_summary"):
+        st.session_state.pop(_k, None)
 
-    with st.expander("Research topic", expanded=not org_mode):
-        topic = st.text_input(
-            "Research terms", value="" if org_mode else "vaccine immunology",
-            placeholder="e.g. gene therapy, Alzheimer's, CRISPR",
-            help="Matched against project title, abstract, and terms.")
+mode = st.session_state.get("f_mode", "My institution's new awards")
+org_mode = mode.startswith("My institution")
+org_name = st.session_state.get("f_org", reporter.DEFAULT_ORG)
+pi_name = st.session_state.get("f_pi", "")
+topic = st.session_state.get("f_topic", "")
+ic_codes = st.session_state.get("f_ic", [])
+activity_codes = st.session_state.get("f_act", [])
+states = st.session_state.get("f_states", [])
+amt = st.session_state.get("f_amt", (0, 5000))
+award_min = amt[0] * 1000 if amt[0] > 0 else None
+award_max = amt[1] * 1000 if amt[1] < 5000 else None
+rep_days = st.session_state.get("f_days", 7)
+fiscal_years = st.session_state.get("f_fy", [])
+newly_added = st.session_state.get("f_newly", False)
+rep_limit = st.session_state.get("f_limit", 200)
 
-    with st.expander("Funding mechanism"):
-        ic_codes = st.multiselect(
-            "Institute / Center (IC)", options=list(reporter.IC_CHOICES.keys()),
-            format_func=lambda c: f"{c} — {reporter.IC_CHOICES[c]}",
-            help="Administering NIH Institute or Center.")
-        activity_codes = st.multiselect(
-            "Activity code", options=list(reporter.ACTIVITY_CHOICES.keys()),
-            format_func=lambda c: f"{c} — {reporter.ACTIVITY_CHOICES[c]}",
-            help="Grant mechanism, e.g. R01, R21, K99.")
 
-    with st.expander("Geography & award size"):
-        states = st.multiselect(
-            "Organization state(s)",
-            ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI",
-             "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI",
-             "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC",
-             "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT",
-             "VT", "VA", "WA", "WV", "WI", "WY", "DC", "PR"],
-            disabled=org_mode,
-            help="Most useful in topic mode; institution mode is already one org.")
-        amt = st.slider("Award size ($K)", 0, 5000, (0, 5000), step=50,
-                        help="Filter by total award amount. 5000 = no upper limit.")
-        award_min = amt[0] * 1000 if amt[0] > 0 else None
-        award_max = amt[1] * 1000 if amt[1] < 5000 else None
-
-    with st.expander("Time window", expanded=True):
-        fy_now = datetime.now().year
-        fiscal_years = st.multiselect(
-            "Fiscal year(s) — up to 5 back",
-            list(range(fy_now, fy_now - 6, -1)), default=[],
-            help="Select one or more fiscal years (current plus up to five prior). "
-                 "When set, the report covers those whole years and the day "
-                 "look-back below is ignored — use this for multi-year, "
-                 "investigator-level analysis.")
-        rep_days = st.slider(
-            "Or look back (days)", 7, 365, 7, disabled=bool(fiscal_years),
-            help="Used only when no fiscal year is selected.")
-        newly_added = st.checkbox(
-            "Newly added to RePORTER only", value=False,
-            help="Only projects recently added to the database — a true "
-                 "'new this week' signal.")
-    # Larger ceiling so multi-year pulls aren't truncated (results are paginated).
-    rep_limit = st.slider("Max awards", 50, 2000, 200, step=50)
-
-    pull = st.button("Search awards", type="primary", use_container_width=True)
-    gen_report = st.button("Generate report", use_container_width=True,
-                           help="Write an executive summary of the current awards — "
-                                "no search needed. Opens in the Report tab.")
-    if st.button("Reset filters", use_container_width=True,
-                 help="Clear all filters and return to the default view."):
-        st.session_state.clear()
-        st.rerun()
+def render_filters():
+    """The optional manual filter panel, rendered at the bottom of the page."""
+    st.divider()
+    with st.expander("Manual filter search (optional)", expanded=False):
+        st.caption("Refine what the AI analyzes. Changes update the report "
+                   "automatically — no need to re-run.")
+        m = st.session_state.get("f_mode", "My institution's new awards")
+        inst_mode = m.startswith("My institution")
+        c1, c2 = st.columns(2)
+        c1.radio("Search mode",
+                 ["My institution's new awards", "Topic search (all institutions)"],
+                 key="f_mode")
+        c2.text_input("Organization", value=reporter.DEFAULT_ORG, key="f_org",
+                      disabled=not inst_mode)
+        c1.text_input("Principal investigator", key="f_pi",
+                      placeholder="e.g. Smith, Jane")
+        c2.text_input("Research terms", key="f_topic",
+                      placeholder="e.g. gene therapy, Alzheimer's, CRISPR")
+        c1.multiselect("Institute / Center (IC)",
+                       options=list(reporter.IC_CHOICES.keys()),
+                       format_func=lambda c: f"{c} — {reporter.IC_CHOICES[c]}",
+                       key="f_ic")
+        c2.multiselect("Activity code",
+                       options=list(reporter.ACTIVITY_CHOICES.keys()),
+                       format_func=lambda c: f"{c} — {reporter.ACTIVITY_CHOICES[c]}",
+                       key="f_act")
+        c1.multiselect("Organization state(s)", STATE_OPTIONS, key="f_states",
+                       disabled=inst_mode)
+        c2.multiselect("Fiscal year(s) — up to 5 back", FY_OPTIONS, key="f_fy",
+                       help="Select fiscal years for multi-year, investigator-level "
+                            "analysis. Overrides the day look-back.")
+        c1.slider("Award size ($K)", 0, 5000, (0, 5000), step=50, key="f_amt")
+        c2.slider("Or look back (days)", 7, 365, 7, key="f_days",
+                  disabled=bool(st.session_state.get("f_fy")))
+        c1.checkbox("Newly added to RePORTER only", key="f_newly")
+        c2.slider("Max awards", 50, 2000, 200, step=50, key="f_limit")
+        if st.button("Reset to defaults"):
+            st.session_state["_reset_filters"] = True
+            st.rerun()
     st.caption("Claude summaries enabled." if summarize.claude_available()
                else "No ANTHROPIC_API_KEY set — using template summaries.")
 
@@ -287,25 +287,12 @@ def store_results(awards, rep_err):
     st.session_state.pop("ask_answer", None)
 
 
-# Fetch whenever the filters change (or on first load / explicit Search), so the
-# Ask panel and reports always reflect the current sidebar — no stale data.
-if pull or "rep_items" not in st.session_state or st.session_state.get("filter_sig") != filter_sig():
-    with st.spinner("Querying NIH RePORTER..."):
+# Fetch whenever the filters change (or on first load), so the AI answers and
+# reports always reflect the current filters — no stale data, no button needed.
+if "rep_items" not in st.session_state or st.session_state.get("filter_sig") != filter_sig():
+    with st.spinner("Loading NIH awards..."):
         awards, rep_err = run_query()
     store_results(awards, rep_err)
-
-# One-click report from the sidebar: generate the executive summary now.
-if gen_report and st.session_state.get("rep_items"):
-    with st.spinner("Writing the executive report..."):
-        text, engine = summarize.generate_summary(
-            st.session_state.rep_items, style="Executive summary",
-            extra_instructions=(
-                "These are newly issued NIH research awards. Lead with funding totals "
-                "and notable awards, group by theme, name PIs and institutes, and note "
-                "the new vs. renewal mix. Do not invent figures."))
-    st.session_state.rep_summary = text
-    st.session_state.rep_summary_engine = engine
-    st.toast("Report ready — see the Report tab.", icon="✅")
 
 rep_items = st.session_state.get("rep_items")
 
@@ -573,3 +560,7 @@ with tab_report:
                        "Streamlit secrets to enable channel posting.")
     else:
         st.info("Generate a summary to enable downloads and channel posting.")
+
+
+# ============================ Manual filters (optional, at the bottom) ============================
+render_filters()
