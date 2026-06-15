@@ -150,7 +150,7 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         return heuristic, "heuristic"
 
 
-def custom_report(question: str, facts_md: str) -> tuple[str, str]:
+def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, str]:
     """Answer a natural-language report request using pre-computed dataset facts.
 
     ``facts_md`` contains exact, deterministically computed numbers (totals,
@@ -164,6 +164,9 @@ def custom_report(question: str, facts_md: str) -> tuple[str, str]:
     import anthropic
 
     client = anthropic.Anthropic()
+    context = (f"\n\nEarlier in this conversation about the SAME dataset:\n{prior}\n"
+               "Answer the new question below, staying consistent with that."
+               if prior else "")
     prompt = (
         "You are a research analytics assistant for a university Office of the "
         "Senior Vice President for Research. Answer the user's request using ONLY "
@@ -174,7 +177,8 @@ def custom_report(question: str, facts_md: str) -> tuple[str, str]:
         "plainly and tell the user how to adjust the query (widen the look-back, "
         "select a full fiscal year, remove filters). Give a direct answer first, "
         "then a brief supporting explanation. Note that counts reflect only the "
-        "awards in the current result set, not an investigator's full career.\n\n"
+        "awards in the current result set, not an investigator's full career."
+        f"{context}\n\n"
         f"User request:\n{question}\n\n"
         f"Dataset facts:\n{facts_md}"
     )

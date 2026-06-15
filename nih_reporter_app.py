@@ -156,7 +156,7 @@ def build_facts(items: list) -> str:
         lines.append("Awards by institution: "
                      + ", ".join(f"{k}: {v}" for k, v in list(a["by_org"].items())[:15]))
     notable = sorted((it for it in items if it.get("amount")),
-                     key=lambda i: int(i["amount"]), reverse=True)[:15]
+                     key=lambda i: int(i["amount"]), reverse=True)[:30]
     if notable:
         lines.append("Notable awards (largest by amount):")
         lines += [f"  - {reporter.fmt_money(it['amount'])} | {it.get('ic', '')} "
@@ -341,6 +341,7 @@ def store_results(awards, rep_err):
     st.session_state.filter_sig = filter_sig()
     st.session_state.pop("rep_summary", None)
     st.session_state.pop("ask_answer", None)
+    st.session_state.pop("follow_thread", None)
 
 
 # Fetch whenever the filters change (or on first load), so the AI answers and
@@ -419,6 +420,7 @@ if ask_clicked or st.session_state.pop("run_ask", False):
         answer, engine = summarize.custom_report(q, build_facts(awards))
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
+    st.session_state.follow_thread = []  # fresh report -> fresh follow-up thread
     st.rerun()  # redraw KPIs/charts/data below to match the question's window
 
 if st.session_state.get("ask_answer"):
@@ -430,6 +432,34 @@ if st.session_state.get("ask_answer"):
             st.download_button("Download answer (Markdown)",
                                st.session_state.ask_answer,
                                file_name="nih_custom_report.md", mime="text/markdown")
+
+    # ---- Follow-up: keep querying THIS result set (no new fetch) ----
+    st.markdown("**Dig deeper into these results**")
+    st.caption("Ask follow-up questions about the data above — no new search, same "
+               "result set.")
+    with st.form("followup_form", clear_on_submit=True):
+        follow_q = st.text_input(
+            "Follow-up question", label_visibility="collapsed",
+            placeholder="e.g. Of those, which are at the School of Medicine? "
+                        "Break the total down by mechanism.")
+        follow_go = st.form_submit_button("Ask follow-up")
+    if follow_go and follow_q.strip():
+        prior = []
+        prior.append("Q: " + st.session_state.get("ask_question", "")
+                     + "\nA: " + st.session_state.get("ask_answer", "")[:1500])
+        for t in st.session_state.get("follow_thread", [])[-3:]:
+            prior.append("Q: " + t["q"] + "\nA: " + t["a"][:1500])
+        with st.spinner("Analyzing these results..."):
+            f_ans, f_eng = summarize.custom_report(
+                follow_q, build_facts(rep_items), prior="\n\n".join(prior))
+        st.session_state.setdefault("follow_thread", []).append(
+            {"q": follow_q, "a": f_ans, "engine": f_eng})
+        st.rerun()
+
+    for turn in st.session_state.get("follow_thread", []):
+        st.markdown(f"**You asked:** {turn['q']}")
+        with st.container(border=True):
+            st.markdown(turn["a"])
 
 # Exact investigator grant-count numbers backing the flagship example.
 _dist = reporter.grant_count_distribution(rep_items, thresholds=(2, 3, 4, 5))
