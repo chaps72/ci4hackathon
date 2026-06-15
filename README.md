@@ -11,7 +11,14 @@ executive summaries, and email-safe digests.
   - Grants.gov Search2 API (new funding opportunities)
   - NIH Guide RSS (notices and funding opportunities)
   - NSF News RSS
+  - **NIH RePORTER API** (funded NIH/HHS awards) — see the weekly award report below.
   - Falls back to bundled sample data when feeds are unreachable, so the demo always works.
+- **NIH RePORTER weekly award report** (its own tab): pulls recently issued NIH awards
+  straight from the live [NIH RePORTER API](https://api.reporter.nih.gov/) (no key
+  required). Toggle between **your institution's new awards** (defaults to Emory) and a
+  **topic/keyword search across all institutions**. Shows funding totals, per-institute
+  counts, per-award detail, CSV export, an AI/template-written summary, and a downloadable
+  `.eml` digest. Fails soft to bundled sample awards when the API is unreachable.
 - **Classifies every item by criticality level**: 🔴 Critical, 🟠 High, 🟡 Moderate, 🔵 Info —
   using transparent, editable keyword rules. A team **watchlist** (e.g., "indirect cost",
   "salary cap") bumps matching items to at least HIGH and flags them.
@@ -39,6 +46,7 @@ The original Trial & Sample Finder app remains available: `streamlit run main.py
 fedwatch_app.py          Streamlit dashboard (feed / summaries / email tabs)
 fedwatch/
   sources.py             Fetchers for Federal Register, Grants.gov, NIH, NSF (fail-soft)
+  reporter.py            NIH RePORTER award fetcher + aggregates for the weekly report
   classify.py            Keyword-rule criticality classifier + watchlist
   summarize.py           Claude API summaries with template fallback
   emailer.py             Sanitized HTML / plain-text / .eml digest builder

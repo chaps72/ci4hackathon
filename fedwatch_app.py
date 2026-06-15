@@ -10,7 +10,7 @@ import streamlit as st
 
 import os
 
-from fedwatch import emailer, notify, sources, summarize
+from fedwatch import emailer, notify, reporter, sources, summarize
 from fedwatch.classify import (
     DEFAULT_WATCHLIST, LEVELS, LEVEL_DESCRIPTIONS, LEVEL_EMOJI, Classifier,
     level_counts, sort_by_priority,
@@ -253,8 +253,8 @@ if watch_flagged:
     st.warning(f"Watchlist matches ({len(watch_flagged)}): "
                + "; ".join(sorted({w for i in watch_flagged for w in i['watchlist_hits']})))
 
-tab_feed, tab_deadlines, tab_summary, tab_email, tab_alerts = st.tabs(
-    ["Feed", "Deadlines", "Summaries", "Email digest", "Alerts"])
+tab_feed, tab_reporter, tab_deadlines, tab_summary, tab_email, tab_alerts = st.tabs(
+    ["Feed", "NIH RePORTER", "Deadlines", "Summaries", "Email digest", "Alerts"])
 
 # ---------- Tab 1: Feed ----------
 with tab_feed:
@@ -336,6 +336,143 @@ with tab_feed:
             for d in dropped_items:
                 st.caption(f"**{d.get('title', '')[:110]}** — {d.get('agency', '')} · "
                            f"{d.get('source', '')} · _{d.get('drop_reason', 'filtered')}_")
+
+
+# ---------- Tab: NIH RePORTER weekly report ----------
+with tab_reporter:
+    st.subheader("NIH RePORTER — weekly award report")
+    st.caption(
+        "Pulls recently issued NIH/HHS awards straight from the live NIH RePORTER "
+        "API (no key required). Track your institution's newly funded portfolio, or "
+        "scan awards across all institutions by research topic."
+    )
+
+    mode = st.radio(
+        "Report mode", ["My institution's new awards", "Topic search (all institutions)"],
+        horizontal=True, key="rep_mode",
+        help="Switch between Emory's own new awards and a keyword scan across every "
+             "NIH-funded institution.",
+    )
+    org_mode = mode.startswith("My institution")
+
+    rc1, rc2, rc3 = st.columns([2, 2, 1])
+    org_name = rc1.text_input(
+        "Organization", value=reporter.DEFAULT_ORG,
+        disabled=not org_mode,
+        help="Exact NIH RePORTER org name, e.g. 'EMORY UNIVERSITY'.")
+    topic = rc2.text_input(
+        "Research terms", value="" if org_mode else "vaccine immunology",
+        placeholder="e.g. gene therapy, Alzheimer's, CRISPR",
+        help="Matched against project title, terms, and abstract. Optional in "
+             "institution mode to narrow the portfolio to a topic.")
+    rep_days = rc3.slider("Look back (days)", 7, 90, 7, key="rep_days")
+
+    fy_now = datetime.now().year
+    rc4, rc5 = st.columns([2, 3])
+    fiscal_years = rc4.multiselect(
+        "Fiscal year(s)", list(range(fy_now, fy_now - 6, -1)), default=[],
+        help="Leave empty to use the award-notice date window only.")
+    rep_limit = rc5.slider("Max awards", 25, 500, 200, step=25, key="rep_limit")
+
+    if st.button("Pull awards", type="primary", key="rep_pull"):
+        with st.spinner("Querying NIH RePORTER..."):
+            awards, rep_err = reporter.fetch_awards(
+                org_names=[org_name] if (org_mode and org_name.strip()) else None,
+                text_query=topic,
+                days_back=rep_days,
+                fiscal_years=fiscal_years or None,
+                limit=rep_limit,
+            )
+        used_sample = False
+        if rep_err:
+            # Live API unreachable (e.g. no network) — fall back to the bundled
+            # sample so the report always renders.
+            awards = reporter.sample_awards()
+            used_sample = True
+        st.session_state.rep_items = awards
+        st.session_state.rep_error = rep_err
+        st.session_state.rep_sample = used_sample
+        st.session_state.rep_query = (
+            (f"{org_name} · " if org_mode else "All institutions · ")
+            + (topic.strip() or "all topics")
+            + f" · last {rep_days}d")
+        st.session_state.pop("rep_summary", None)
+
+    rep_items = st.session_state.get("rep_items")
+    if rep_items is None:
+        st.info("Set your filters and click **Pull awards** to build the weekly report.")
+    elif not rep_items:
+        st.warning("No NIH awards matched in this window. Try a longer look-back, "
+                   "broader terms, or add a fiscal year.")
+    else:
+        if st.session_state.get("rep_sample"):
+            st.warning(f"Live NIH RePORTER API unreachable from this environment "
+                       f"({st.session_state.get('rep_error')}); showing bundled "
+                       "sample awards so the report still renders.")
+        agg = reporter.aggregate(rep_items)
+        st.caption("Query: " + st.session_state.get("rep_query", ""))
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Awards", agg["count"])
+        m2.metric("Total funding", reporter.fmt_money(agg["total_amount"]))
+        m3.metric("Funding ICs", len(agg["by_ic"]))
+        if agg["by_ic"]:
+            st.caption("By institute/center: "
+                       + " · ".join(f"{k} ({v})" for k, v in agg["by_ic"].items()))
+
+        for it in rep_items:
+            label = (f":blue[**{it.get('ic', 'NIH')}**] · {fmt_date(it.get('award_date') or it.get('date', ''))}"
+                     f" · {reporter.fmt_money(it.get('amount'))} · {it.get('title', '')[:90]}")
+            with st.expander(label):
+                st.markdown(f"**{it.get('title', '')}**")
+                meta_bits = [b for b in (
+                    it.get("pi") and f"PI: {it['pi']}",
+                    it.get("org"),
+                    it.get("project_num"),
+                    it.get("fiscal_year") and f"FY{it['fiscal_year']}",
+                ) if b]
+                st.caption(" · ".join(meta_bits))
+                period = f"{it.get('start') or '?'} – {it.get('end') or '?'}"
+                st.markdown(f"**{reporter.fmt_money(it.get('amount'))}** · Project period {period}"
+                            + (f" · Award notice {it['award_date']}" if it.get("award_date") else ""))
+                if it.get("abstract"):
+                    st.write(it["abstract"][:1200] + ("…" if len(it["abstract"]) > 1200 else ""))
+                if it.get("url"):
+                    st.markdown(f"[Open in NIH RePORTER ↗]({it['url']})")
+
+        st.divider()
+        rep_df = pd.DataFrame(rep_items)[
+            ["award_date", "ic", "amount", "pi", "org", "project_num",
+             "fiscal_year", "title", "url"]]
+        dl1, dl2 = st.columns(2)
+        dl1.download_button("⬇️ Export awards (CSV)", rep_df.to_csv(index=False),
+                            file_name="nih_reporter_awards.csv", mime="text/csv",
+                            key="rep_csv")
+
+        if dl2.button("📝 Summarize this report", key="rep_sum"):
+            with st.spinner("Writing the weekly award summary..."):
+                text, engine = summarize.generate_summary(
+                    rep_items, style="Executive summary",
+                    extra_instructions=(
+                        "These are newly issued NIH research awards, not policy items. "
+                        "Lead with the funding totals and notable awards (largest dollar "
+                        "amounts, prominent institutes), group by research theme, and name "
+                        "PIs and institutes. Do not invent figures."))
+            st.session_state.rep_summary = text
+            st.session_state.rep_summary_engine = engine
+
+        if st.session_state.get("rep_summary"):
+            st.markdown(st.session_state.rep_summary)
+            st.caption(f"Engine: {'Claude (' + summarize.MODEL + ')' if st.session_state.get('rep_summary_engine') == 'claude' else 'template'}")
+            rs1, rs2 = st.columns(2)
+            rs1.download_button("⬇️ Summary (Markdown)", st.session_state.rep_summary,
+                                file_name="nih_reporter_summary.md", mime="text/markdown",
+                                key="rep_sum_dl")
+            rep_title = "NIH RePORTER Weekly Award Report - " + datetime.now().strftime("%b %d, %Y")
+            rs2.download_button(
+                "⬇️ Email digest (.eml)",
+                emailer.build_eml(rep_items, st.session_state.rep_summary, rep_title),
+                file_name="nih_reporter_digest.eml", mime="message/rfc822",
+                key="rep_eml")
 
 
 # ---------- Tab: Deadlines ----------
