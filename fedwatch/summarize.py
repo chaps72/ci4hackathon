@@ -49,7 +49,7 @@ def claude_available() -> bool:
 _EMPTY_QUERY = {
     "organization": None, "all_institutions": False, "topic": None, "pi_name": None,
     "ic_codes": [], "activity_codes": [], "fiscal_years": [], "days_back": None,
-    "newly_added": False,
+    "newly_added": False, "active_only": False,
 }
 
 
@@ -78,6 +78,10 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
     if any(w in q for w in ("all institutions", "across institutions", "nationwide",
                             "every institution", "all universities", "any institution")):
         out["all_institutions"] = True
+    if (re.search(r"\bactive\b", q) or re.search(r"\bongoing\b", q)
+        or "currently funded" in q or "currently held" in q) and \
+            any(w in q for w in ("grant", "award", "project", "fund", "portfolio", "pi")):
+        out["active_only"] = True
     return out
 
 
@@ -113,8 +117,9 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         "organization (string or null), all_institutions (boolean), topic (string "
         "or null), pi_name (string or null), ic_codes (array), activity_codes "
         "(array), fiscal_years (array of integers), days_back (integer or null), "
-        "newly_added (boolean). Use null/empty arrays/false when the user does not "
-        f"specify a field.\n\nRequest: {question}"
+        "newly_added (boolean), active_only (boolean: true when the user asks for "
+        "active / ongoing / currently-funded grants). Use null/empty arrays/false "
+        f"when the user does not specify a field.\n\nRequest: {question}"
     )
     try:
         resp = client.messages.create(
@@ -133,6 +138,7 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
                              if str(y).isdigit()],
             "days_back": int(data["days_back"]) if data.get("days_back") else None,
             "newly_added": bool(data.get("newly_added")),
+            "active_only": bool(data.get("active_only")),
         }
         # Keep heuristic windows if the model missed an explicit one.
         if not out["fiscal_years"] and heuristic["fiscal_years"]:

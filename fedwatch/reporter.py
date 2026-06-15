@@ -127,8 +127,12 @@ def parse_project_num(project_num: str):
 
 def _payload(org_names, pi_name, text_query, ic_codes, activity_codes, org_states,
              award_min, award_max, from_date, to_date, fiscal_years,
-             newly_added_only, offset, limit):
+             newly_added_only, offset, limit, active_only=False):
     criteria: dict = {}
+    if active_only:
+        # Include projects whose award period is current (not just those with a
+        # recent award-notice date). Results are still date/period-filtered below.
+        criteria["include_active_projects"] = True
     if org_names:
         criteria["org_names"] = list(org_names)
     if pi_name:
@@ -251,15 +255,20 @@ def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
                  ic_codes=None, activity_codes=None, org_states=None,
                  award_min=None, award_max=None, days_back: int = 7,
                  fiscal_years=None, newly_added_only: bool = False,
-                 limit: int = 200, use_award_window: bool = True):
+                 limit: int = 200, use_award_window: bool = True,
+                 active_only: bool = False):
     """Fetch recent NIH awards. Returns ``(items, error)``; never raises.
 
     ``items`` is a list of normalized dicts (newest award first). ``error`` is
     None on success (even when zero awards match) or a short message when the
-    live API could not be reached.
+    live API could not be reached. With ``active_only`` the result is restricted
+    to grants whose project period is current (end date today or later), and the
+    day look-back is ignored so the whole active portfolio is considered.
     """
     to_date = datetime.now().strftime("%Y-%m-%d")
     from_date = (datetime.now() - timedelta(days=max(days_back, 1))).strftime("%Y-%m-%d")
+    # Active-grant queries span the portfolio, not a recent-notice window.
+    window = use_award_window and not active_only
 
     def build(offset, page):
         return _payload(
@@ -267,10 +276,10 @@ def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
             text_query=text_query.strip(), ic_codes=ic_codes,
             activity_codes=activity_codes, org_states=org_states,
             award_min=award_min, award_max=award_max,
-            from_date=from_date if use_award_window else None,
-            to_date=to_date if use_award_window else None,
+            from_date=from_date if window else None,
+            to_date=to_date if window else None,
             fiscal_years=fiscal_years, newly_added_only=newly_added_only,
-            offset=offset, limit=page)
+            offset=offset, limit=page, active_only=active_only)
 
     # Page through results so large pulls (e.g. a full fiscal year for
     # investigator-level analysis) aren't truncated at the 500-record page cap.
@@ -295,6 +304,10 @@ def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
             break
 
     items = [_normalize(r) for r in records]
+    if active_only:
+        # Keep grants whose period is current: end date today or later (records
+        # without an end date are treated as active).
+        items = [it for it in items if not it.get("end") or it["end"] >= to_date]
     items.sort(key=lambda i: i.get("award_date") or i.get("start") or "", reverse=True)
     return items, None
 
