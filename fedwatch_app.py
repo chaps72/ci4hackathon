@@ -116,11 +116,9 @@ def refresh(days_back: int, grants_keyword: str, research_only: bool = True,
                     i["drop_reason"] = "AI judgment: not SVPR-relevant"
                 dropped += irrelevant
                 classified = [i for i in classified if i.get("relevant") is not False]
-        except Exception as exc:  # noqa: BLE001 - fall back to rule filtering
-            st.warning(f"AI review unavailable ({exc}); applying rule-based filter.")
-            if research_only:
-                classified, rule_dropped = filter_relevant(classified)
-                dropped += rule_dropped
+        except Exception as exc:  # noqa: BLE001 - never empty the feed on AI error
+            st.warning(f"AI review hit an error ({exc}); showing all items unfiltered "
+                       "for this refresh.")
     st.session_state.dropped_items = dropped
     st.session_state.dropped_count = len(dropped)
     st.session_state.feed_items = classified
