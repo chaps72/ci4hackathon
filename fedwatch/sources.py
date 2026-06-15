@@ -311,6 +311,12 @@ KEY_AGENCY_SLUGS = [
     "national-science-foundation",
     "science-and-technology-policy-office",
     "management-and-budget-office",
+    "health-and-human-services-department",
+    "energy-department",
+    "defense-department",
+    "national-aeronautics-and-space-administration",
+    "food-and-drug-administration",
+    "centers-for-disease-control-and-prevention",
 ]
 
 
@@ -561,7 +567,12 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
     """
     errors: list[str] = []
     items = []
+    # Federal Register is the reliable backbone: full-text policy search plus
+    # an agency sweep (every NIH/NSF/DOE/DOD/HHS/OSTP/OMB document). The AI
+    # review handles the volume; this keeps coverage even when NIH's own
+    # site blocks server-side scraping.
     items += fetch_federal_register(days_back=days_back, errors=errors)
+    items += fetch_fr_key_agencies(days_back=days_back, errors=errors)
     items += fetch_executive_orders(errors=errors)
     items += fetch_nih_notices(errors=errors)
     items += fetch_nih_nexus(errors=errors)
