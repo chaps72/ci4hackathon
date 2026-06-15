@@ -145,8 +145,17 @@ def build_facts(items: list) -> str:
               for t, n in dist["at_least"].items()]
     lines.append("Exact distribution: "
                  + ", ".join(f"{k} grant(s): {exact[k]} PI(s)" for k in sorted(exact)))
-    lines.append("Top investigators by grant count: "
-                 + "; ".join(f"{n} ({c})" for n, c in dist["counts"].most_common(25)))
+    roles = reporter.pi_role_counts(items)
+    lines.append("Investigator roles: 'Contact PI' is the lead PI; 'Co-PI/MPI' is an "
+                 "additional PI on a multi-PI grant. NIH RePORTER publishes PD/PIs "
+                 "only - co-investigators / other personnel are NOT in the data.")
+    lines.append("Top investigators by distinct grants (total; contact PI / co-PI): "
+                 + "; ".join(f"{n} ({v['total']}; contact {v['contact']}, "
+                            f"co-PI {v['copi']})"
+                            for n, v in list(roles.items())[:25]))
+    sub = sum(1 for it in items if it.get("is_subproject"))
+    multi = sum(1 for it in items if it.get("multi_pi"))
+    lines.append(f"Grants that are subprojects: {sub}. Multi-PI grants: {multi}.")
     lines.append("Awards by IC: " + ", ".join(f"{k}: {v}" for k, v in a["by_ic"].items()))
     lines.append("Awards by activity code: "
                  + ", ".join(f"{k}: {v}" for k, v in a["by_activity"].items()))
@@ -490,10 +499,15 @@ with st.expander("Key numbers — investigators by grants held as PI"):
     kpi(kq[0], "Distinct PIs", str(len(reporter.pi_award_counts(rep_items))))
     for col, t in zip(kq[1:], (2, 3, 4, 5)):
         kpi(col, f"≥ {t} grants", str(_dist["at_least"][t]))
-    _multi = [{"Investigator": n, "Grants as PI": c}
-              for n, c in reporter.pi_award_counts(rep_items).most_common() if c >= 2]
+    _roles = reporter.pi_role_counts(rep_items)
+    _multi = [{"Investigator": n, "Grants (PI)": v["total"],
+               "as Contact PI": v["contact"], "as Co-PI / MPI": v["copi"]}
+              for n, v in _roles.items() if v["total"] >= 2]
     if _multi:
         st.dataframe(pd.DataFrame(_multi), hide_index=True, use_container_width=True)
+        st.caption("Contact PI = lead PI · Co-PI / MPI = additional PI on a multi-PI "
+                   "grant. Co-investigators / other personnel are not published in "
+                   "NIH RePORTER.")
     else:
         st.caption("No investigator holds more than one grant in this result set — "
                    "widen the window or select more fiscal years.")
@@ -536,10 +550,14 @@ with tab_overview:
 # ============================ Awards table ============================
 with tab_awards:
     df = pd.DataFrame(rep_items)
+    df["role"] = df.apply(
+        lambda r: ("Multi-PI" if r.get("multi_pi") else "Single PI")
+        + (" · Subproject" if r.get("is_subproject") else ""), axis=1)
     show = df[["award_date", "ic", "activity_code", "app_type", "amount",
-               "pi", "org", "project_num", "title", "url"]].copy()
+               "contact_pi", "role", "pi", "org", "project_num", "title", "url"]].copy()
     show.columns = ["Award notice", "IC", "Activity", "Type", "Amount",
-                    "PI", "Organization", "Project #", "Title", "Link"]
+                    "Contact PI", "Role", "All PIs", "Organization", "Project #",
+                    "Title", "Link"]
     st.dataframe(
         show, hide_index=True, use_container_width=True, height=460,
         column_config={
@@ -549,16 +567,21 @@ with tab_awards:
         })
     st.download_button(
         "Export awards (CSV)",
-        df[["award_date", "ic", "activity_code", "app_type", "amount", "pi",
-            "org", "state", "project_num", "fiscal_year", "title", "url"]]
-        .to_csv(index=False),
+        df[["award_date", "ic", "activity_code", "app_type", "amount",
+            "contact_pi", "pi", "multi_pi", "is_subproject", "org", "state",
+            "project_num", "fiscal_year", "title", "url"]].to_csv(index=False),
         file_name="nih_reporter_awards.csv", mime="text/csv")
 
     with st.expander(f"Award detail cards ({len(rep_items)})"):
         for it in rep_items:
             st.markdown(f"**{it.get('title', '')}**")
+            role = "Multi-PI" if it.get("multi_pi") else "Single PI"
+            if it.get("is_subproject"):
+                role += " · Subproject"
             meta = [b for b in (
-                it.get("pi") and f"PI: {it['pi']}", it.get("org"),
+                it.get("contact_pi") and f"Contact PI: {it['contact_pi']}",
+                it.get("multi_pi") and it.get("pi") and f"All PIs: {it['pi']}",
+                role, it.get("org"),
                 it.get("ic"), it.get("activity_code"), it.get("app_type"),
                 it.get("project_num"),
                 it.get("fiscal_year") and f"FY{it['fiscal_year']}") if b]
