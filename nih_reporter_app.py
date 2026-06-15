@@ -103,8 +103,9 @@ def bar(series: dict, title: str, top: int = 12):
 # One-click example reports shown front and center (label, question).
 EXAMPLE_REPORTS = [
     ("Investigators with 3+ grants",
-     "How many investigators have 3 or more grants where they are PI, and how "
-     "many have 4 or more? List them with their grant counts."),
+     "Over the last 4 fiscal years, how many investigators have 3 or more grants "
+     "where they are PI, and how many have 4 or more? List them with their grant "
+     "counts."),
     ("Executive summary",
      "Write an executive summary of these new NIH awards for research leadership: "
      "funding totals, the most notable awards, key research themes, and the mix of "
@@ -166,6 +167,8 @@ def build_facts(items: list) -> str:
 # write to these f_* keys. We read the current values here (with defaults) so the
 # data fetch below always reflects them.
 FY_NOW = datetime.now().year
+# NIH fiscal year starts Oct 1, so Oct–Dec belong to the next fiscal year.
+CURRENT_FY = FY_NOW + (1 if datetime.now().month >= 10 else 0)
 FY_OPTIONS = list(range(FY_NOW, FY_NOW - 6, -1))
 STATE_OPTIONS = [
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL",
@@ -253,6 +256,47 @@ def run_query():
         newly_added_only=newly_added, limit=rep_limit)
 
 
+def ai_fetch(parsed: dict):
+    """Fetch awards using criteria parsed from the question (question wins over
+    the manual filters). Returns (awards, error, label)."""
+    if parsed.get("all_institutions"):
+        o_names = None
+    elif parsed.get("organization"):
+        o_names = [parsed["organization"]]
+    elif org_mode and org_name.strip():
+        o_names = [org_name]
+    else:
+        o_names = None
+    fys = parsed.get("fiscal_years") or (fiscal_years or None)
+    days = parsed.get("days_back") or rep_days
+    eff_topic = parsed.get("topic") or topic
+    eff_pi = parsed.get("pi_name") or pi_name
+    eff_ic = parsed.get("ic_codes") or (ic_codes or None)
+    eff_act = parsed.get("activity_codes") or (activity_codes or None)
+    eff_newly = bool(parsed.get("newly_added")) or newly_added
+    awards, err = reporter.fetch_awards(
+        org_names=o_names, pi_name=eff_pi, text_query=eff_topic,
+        ic_codes=eff_ic, activity_codes=eff_act, org_states=states or None,
+        award_min=award_min, award_max=award_max,
+        use_award_window=not bool(fys),
+        days_back=days, fiscal_years=fys or None, newly_added_only=eff_newly,
+        limit=2000 if fys else max(rep_limit, 200))
+    parts = [o_names[0] if o_names else "All institutions"]
+    if eff_pi:
+        parts.append(f"PI: {eff_pi}")
+    if eff_topic:
+        parts.append(f"topic: {eff_topic}")
+    if eff_ic:
+        parts.append("IC: " + ", ".join(eff_ic))
+    if eff_act:
+        parts.append("mech: " + ", ".join(eff_act))
+    if fys:
+        parts.append("FY " + ", ".join(str(y) for y in sorted(fys, reverse=True)))
+    else:
+        parts.append(f"last {days} days")
+    return awards, err, " · ".join(parts)
+
+
 def query_label() -> str:
     filt = [org_name.strip() if (org_mode and org_name.strip()) else "All institutions"]
     for label, val in (("PI", pi_name), ("topic", topic), ("IC", ", ".join(ic_codes)),
@@ -317,10 +361,12 @@ st.session_state.setdefault("ask_question", DEFAULT_QUESTION)
 
 st.subheader("Ask for any report on NIH funding")
 st.caption("Type a question and generate a report — or pick an instant report below. "
-           "Answers use only exact figures computed from the data, so numbers are "
-           "never invented. Prefer to browse? Open **Manual filter search** in the "
-           "left panel (the › arrow, top-left) to filter by institution, institute, "
-           "fiscal year, and more.")
+           "Your question drives the data: name a window or scope and it pulls exactly "
+           "that — e.g. *“over the last 4 fiscal years”*, *“NCI R01s in the last 30 "
+           "days”*, *“across all institutions”*. Answers use only exact figures "
+           "computed from the data, so numbers are never invented. The optional "
+           "**Manual filter search** at the bottom sets defaults when your question "
+           "doesn't specify.")
 
 st.text_area("Your question", key="ask_question", height=90,
              label_visibility="collapsed",
@@ -336,11 +382,25 @@ for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
         st.rerun()
 
 if ask_clicked or st.session_state.pop("run_ask", False):
+    q = st.session_state.ask_question
+    # The question drives the data: parse its scope/window, pull that, then answer.
+    with st.spinner("Reading your request and pulling the matching awards..."):
+        parsed, _ = summarize.parse_query(
+            q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+        awards, err, label = ai_fetch(parsed)
+        if err:
+            awards = reporter.sample_awards()
+            st.session_state.rep_sample = True
+        else:
+            st.session_state.rep_sample = False
+        st.session_state.rep_items = awards
+        st.session_state.rep_query = label
+        st.session_state.filter_sig = filter_sig()  # don't let auto-refresh overwrite
     with st.spinner("Analyzing the data..."):
-        answer, engine = summarize.custom_report(
-            st.session_state.ask_question, build_facts(rep_items))
+        answer, engine = summarize.custom_report(q, build_facts(awards))
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
+    st.rerun()  # redraw KPIs/charts/data below to match the question's window
 
 if st.session_state.get("ask_answer"):
     with st.container(border=True):

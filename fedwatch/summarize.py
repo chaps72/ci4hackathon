@@ -4,7 +4,9 @@ Uses the Claude API when ANTHROPIC_API_KEY is set; otherwise falls back to a
 template-based summary so the app always produces something useful.
 """
 
+import json
 import os
+import re
 
 from .classify import LEVELS, LEVEL_EMOJI
 
@@ -42,6 +44,104 @@ def _items_block(items: list) -> str:
 
 def claude_available() -> bool:
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
+
+
+_EMPTY_QUERY = {
+    "organization": None, "all_institutions": False, "topic": None, "pi_name": None,
+    "ic_codes": [], "activity_codes": [], "fiscal_years": [], "days_back": None,
+    "newly_added": False,
+}
+
+
+def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> dict:
+    """Regex fallback that extracts the most common windows/scope from text."""
+    q = (question or "").lower()
+    out = dict(_EMPTY_QUERY)
+    out["ic_codes"], out["activity_codes"], out["fiscal_years"] = [], [], []
+    m = re.search(r"(?:last|past|previous)\s+(\d+)\s+(?:fiscal\s+years?|fys?|fy)", q)
+    if m:
+        n = int(m.group(1))
+        out["fiscal_years"] = [current_fy - i for i in range(max(n, 1))]
+    for y in re.findall(r"\bfy\s?(\d{4})\b", q) + re.findall(r"\b(20\d{2})\b", q):
+        yi = int(y)
+        if 2000 <= yi <= current_fy and yi not in out["fiscal_years"]:
+            out["fiscal_years"].append(yi)
+    md = re.search(r"(?:last|past|previous)\s+(\d+)\s+days?", q)
+    if md:
+        out["days_back"] = int(md.group(1))
+    for ic in ic_list:
+        if re.search(r"\b" + re.escape(ic.lower()) + r"\b", q):
+            out["ic_codes"].append(ic)
+    for ac in activity_list:
+        if re.search(r"\b" + re.escape(ac.lower()) + r"\b", q):
+            out["activity_codes"].append(ac)
+    if any(w in q for w in ("all institutions", "across institutions", "nationwide",
+                            "every institution", "all universities", "any institution")):
+        out["all_institutions"] = True
+    return out
+
+
+def _extract_json(text: str) -> str:
+    text = re.sub(r"^```(?:json)?|```$", "", (text or "").strip(), flags=re.MULTILINE).strip()
+    start, end = text.find("{"), text.rfind("}")
+    return text[start:end + 1] if start != -1 and end != -1 else text
+
+
+def parse_query(question: str, current_fy: int, ic_list, activity_list):
+    """Extract NIH RePORTER search criteria from a natural-language request.
+
+    Returns ``(criteria_dict, engine)``. The criteria drive the data pull so the
+    question's window/scope (e.g. "over the last 4 fiscal years") takes priority
+    over any manual filters. Falls back to a regex heuristic without a key.
+    """
+    heuristic = _heuristic_parse(question, current_fy, ic_list, activity_list)
+    if not claude_available():
+        return heuristic, "heuristic"
+    import anthropic
+
+    client = anthropic.Anthropic()
+    prompt = (
+        "Extract NIH RePORTER search parameters from the user's request below. "
+        f"The current NIH fiscal year is FY{current_fy}. Convert relative time "
+        "windows to explicit values: 'last N fiscal years' means the N most recent "
+        f"fiscal years including FY{current_fy} (e.g. last 4 -> "
+        f"[{current_fy}, {current_fy-1}, {current_fy-2}, {current_fy-3}]); "
+        "'last N days' means days_back=N. "
+        f"Only use IC abbreviations from this list: {', '.join(ic_list)}. "
+        f"Only use activity codes from: {', '.join(activity_list)}. "
+        "Respond with ONLY a JSON object (no prose, no code fence) with keys: "
+        "organization (string or null), all_institutions (boolean), topic (string "
+        "or null), pi_name (string or null), ic_codes (array), activity_codes "
+        "(array), fiscal_years (array of integers), days_back (integer or null), "
+        "newly_added (boolean). Use null/empty arrays/false when the user does not "
+        f"specify a field.\n\nRequest: {question}"
+    )
+    try:
+        resp = client.messages.create(
+            model=MODEL, max_tokens=600,
+            messages=[{"role": "user", "content": prompt}])
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        data = json.loads(_extract_json(text))
+        out = {
+            "organization": (data.get("organization") or None),
+            "all_institutions": bool(data.get("all_institutions")),
+            "topic": (data.get("topic") or None),
+            "pi_name": (data.get("pi_name") or None),
+            "ic_codes": [c for c in (data.get("ic_codes") or []) if c in ic_list],
+            "activity_codes": [c for c in (data.get("activity_codes") or []) if c in activity_list],
+            "fiscal_years": [int(y) for y in (data.get("fiscal_years") or [])
+                             if str(y).isdigit()],
+            "days_back": int(data["days_back"]) if data.get("days_back") else None,
+            "newly_added": bool(data.get("newly_added")),
+        }
+        # Keep heuristic windows if the model missed an explicit one.
+        if not out["fiscal_years"] and heuristic["fiscal_years"]:
+            out["fiscal_years"] = heuristic["fiscal_years"]
+        if out["days_back"] is None and heuristic["days_back"]:
+            out["days_back"] = heuristic["days_back"]
+        return out, "claude"
+    except Exception:  # noqa: BLE001 - fall back to the heuristic
+        return heuristic, "heuristic"
 
 
 def custom_report(question: str, facts_md: str) -> tuple[str, str]:
