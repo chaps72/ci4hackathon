@@ -119,6 +119,9 @@ EXAMPLE_REPORTS = [
     ("New vs. renewal",
      "How many awards are new vs. renewal vs. continuation, and what does that mix "
      "suggest about the portfolio?"),
+    ("Active grants snapshot",
+     "Summarize all currently active grants: how many there are, total active "
+     "funding, the leading institutes, and the largest active awards."),
 ]
 DEFAULT_QUESTION = EXAMPLE_REPORTS[0][1]
 
@@ -180,8 +183,8 @@ STATE_OPTIONS = [
 # widget is instantiated, which Streamlit requires).
 if st.session_state.pop("_reset_filters", False):
     for _k in ("f_mode", "f_org", "f_pi", "f_topic", "f_ic", "f_act", "f_states",
-               "f_amt", "f_days", "f_fy", "f_newly", "f_limit", "rep_items",
-               "ask_answer", "rep_summary"):
+               "f_amt", "f_days", "f_fy", "f_newly", "f_active", "f_limit",
+               "rep_items", "ask_answer", "rep_summary"):
         st.session_state.pop(_k, None)
 
 mode = st.session_state.get("f_mode", "My institution's new awards")
@@ -198,6 +201,7 @@ award_max = amt[1] * 1000 if amt[1] < 5000 else None
 rep_days = st.session_state.get("f_days", 7)
 fiscal_years = st.session_state.get("f_fy", [])
 newly_added = st.session_state.get("f_newly", False)
+active_only = st.session_state.get("f_active", False)
 rep_limit = st.session_state.get("f_limit", 200)
 
 
@@ -236,7 +240,10 @@ def render_filters():
         c2.slider("Or look back (days)", 7, 365, 7, key="f_days",
                   disabled=bool(st.session_state.get("f_fy")))
         c1.checkbox("Newly added to RePORTER only", key="f_newly")
-        c2.slider("Max awards", 50, 2000, 200, step=50, key="f_limit")
+        c2.checkbox("Active grants only (current project period)", key="f_active",
+                    help="Restrict to grants whose award period is ongoing today. "
+                         "Spans the whole portfolio, ignoring the day look-back.")
+        c1.slider("Max awards", 50, 2000, 200, step=50, key="f_limit")
         if st.button("Reset to defaults"):
             st.session_state["_reset_filters"] = True
             st.rerun()
@@ -253,7 +260,8 @@ def run_query():
         org_states=states or None, award_min=award_min, award_max=award_max,
         use_award_window=not bool(fiscal_years),
         days_back=rep_days, fiscal_years=fiscal_years or None,
-        newly_added_only=newly_added, limit=rep_limit)
+        newly_added_only=newly_added, active_only=active_only,
+        limit=2000 if active_only else rep_limit)
 
 
 def ai_fetch(parsed: dict):
@@ -274,13 +282,14 @@ def ai_fetch(parsed: dict):
     eff_ic = parsed.get("ic_codes") or (ic_codes or None)
     eff_act = parsed.get("activity_codes") or (activity_codes or None)
     eff_newly = bool(parsed.get("newly_added")) or newly_added
+    eff_active = bool(parsed.get("active_only")) or active_only
     awards, err = reporter.fetch_awards(
         org_names=o_names, pi_name=eff_pi, text_query=eff_topic,
         ic_codes=eff_ic, activity_codes=eff_act, org_states=states or None,
         award_min=award_min, award_max=award_max,
         use_award_window=not bool(fys),
         days_back=days, fiscal_years=fys or None, newly_added_only=eff_newly,
-        limit=2000 if fys else max(rep_limit, 200))
+        active_only=eff_active, limit=2000 if (fys or eff_active) else max(rep_limit, 200))
     parts = [o_names[0] if o_names else "All institutions"]
     if eff_pi:
         parts.append(f"PI: {eff_pi}")
@@ -292,8 +301,10 @@ def ai_fetch(parsed: dict):
         parts.append("mech: " + ", ".join(eff_act))
     if fys:
         parts.append("FY " + ", ".join(str(y) for y in sorted(fys, reverse=True)))
-    else:
+    elif not eff_active:
         parts.append(f"last {days} days")
+    if eff_active:
+        parts.append("active grants only")
     return awards, err, " · ".join(parts)
 
 
@@ -314,7 +325,7 @@ def query_label() -> str:
 def filter_sig():
     return (org_mode, org_name, pi_name, topic, tuple(ic_codes), tuple(activity_codes),
             tuple(states), award_min, award_max, rep_days, tuple(sorted(fiscal_years)),
-            newly_added, rep_limit)
+            newly_added, active_only, rep_limit)
 
 
 def store_results(awards, rep_err):
@@ -359,21 +370,28 @@ if "pending_q" in st.session_state:
     st.session_state.ask_question = st.session_state.pop("pending_q")
 st.session_state.setdefault("ask_question", DEFAULT_QUESTION)
 
-st.subheader("Ask for any report on NIH funding")
-st.caption("Type a question and generate a report — or pick an instant report below. "
-           "Your question drives the data: name a window or scope and it pulls exactly "
-           "that — e.g. *“over the last 4 fiscal years”*, *“NCI R01s in the last 30 "
-           "days”*, *“across all institutions”*. Answers use only exact figures "
-           "computed from the data, so numbers are never invented. The optional "
-           "**Manual filter search** at the bottom sets defaults when your question "
-           "doesn't specify.")
+st.write("")
+st.write("")
+# Center the search box in the middle of the screen, like a Google search box.
+_left, _center, _right = st.columns([1, 2.4, 1])
+with _center:
+    st.markdown(
+        "<h2 style='text-align:center;margin-bottom:2px;'>Ask for any report on "
+        "NIH funding</h2>", unsafe_allow_html=True)
+    st.markdown(
+        "<p style='text-align:center;color:#6d6e71;font-size:0.9rem;margin-top:0;'>"
+        "Your question drives the data — name a window or scope and it pulls exactly "
+        "that (e.g. “active grants only”, “last 4 fiscal years”, “NCI R01s”, "
+        "“all institutions”). Figures are computed exactly, never invented.</p>",
+        unsafe_allow_html=True)
+    st.text_area("Your question", key="ask_question", height=90,
+                 label_visibility="collapsed",
+                 placeholder="e.g. How many investigators hold 3+ active grants as PI?")
+    ask_clicked = st.button("Generate report", type="primary", use_container_width=True)
 
-st.text_area("Your question", key="ask_question", height=90,
-             label_visibility="collapsed",
-             placeholder="e.g. How many investigators have 3 or more grants as PI?")
-ask_clicked = st.button("Generate report", type="primary")
-
-st.markdown("**Instant reports**")
+st.write("")
+st.markdown("<p style='text-align:center;font-weight:600;margin-bottom:4px;'>"
+            "Instant reports</p>", unsafe_allow_html=True)
 ex_cols = st.columns(len(EXAMPLE_REPORTS))
 for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
     if col.button(label, use_container_width=True, key=f"ex_{label}"):
