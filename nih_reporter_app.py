@@ -11,6 +11,7 @@ Runs independently of the FedWatch dashboard; both share fedwatch/reporter.py.
 Run with:  streamlit run nih_reporter_app.py
 """
 
+import io
 import os
 from datetime import datetime
 
@@ -172,6 +173,75 @@ def build_facts(items: list) -> str:
                   f"{it.get('activity_code', '')} {it.get('app_type', '')} | "
                   f"PI: {it.get('pi', '')} | {it.get('title', '')}" for it in notable]
     return "\n".join(lines)
+
+
+def _col(df: pd.DataFrame, name: str):
+    return df[name] if name in df.columns else ""
+
+
+def build_workbook(items: list, query: str, summary_md: str = "") -> bytes:
+    """A complete .xlsx workbook of the result set: every award with all fields,
+    plus investigator roles, breakdowns, a summary, and any narrative report. No
+    truncation — every grant in the current result set is included."""
+    agg = reporter.aggregate(items)
+    df = pd.DataFrame(items)
+    if "years_in_window" in df.columns:
+        fy = df["years_in_window"].apply(
+            lambda y: ", ".join(str(v) for v in y) if isinstance(y, list) else y)
+    else:
+        fy = _col(df, "fiscal_year")
+    awards = pd.DataFrame({
+        "Award notice date": _col(df, "award_date"),
+        "Fiscal year(s)": fy,
+        "IC": _col(df, "ic"),
+        "Activity code": _col(df, "activity_code"),
+        "Application type": _col(df, "app_type"),
+        "Amount (window total)": _col(df, "amount"),
+        "Contact PI": _col(df, "contact_pi"),
+        "All PIs": _col(df, "pi"),
+        "Multi-PI": _col(df, "multi_pi"),
+        "Subproject": _col(df, "is_subproject"),
+        "Organization": _col(df, "org"),
+        "City": _col(df, "city"),
+        "State": _col(df, "state"),
+        "Project number": _col(df, "project_num"),
+        "Core project number": _col(df, "core_num"),
+        "Project start": _col(df, "start"),
+        "Project end": _col(df, "end"),
+        "Title": _col(df, "title"),
+        "RePORTER URL": _col(df, "url"),
+        "Abstract": _col(df, "abstract"),
+    })
+    roles = reporter.pi_role_counts(items)
+    investigators = pd.DataFrame(
+        [{"Investigator": n, "Distinct grants (PI)": v["total"],
+          "As contact PI": v["contact"], "As co-PI / MPI": v["copi"]}
+         for n, v in roles.items()])
+    summary = pd.DataFrame({
+        "Metric": ["Query", "Awards (distinct grants)", "Total funding",
+                   "Median award", "Largest award", "Distinct investigators",
+                   "Institutes / Centers"],
+        "Value": [query, agg["count"], agg["total_amount"], agg["median_amount"],
+                  agg["max_amount"], len(roles), len(agg["by_ic"])]})
+
+    out = io.BytesIO()
+    with pd.ExcelWriter(out, engine="openpyxl") as xl:
+        summary.to_excel(xl, sheet_name="Summary", index=False)
+        awards.to_excel(xl, sheet_name="Awards", index=False)
+        if not investigators.empty:
+            investigators.to_excel(xl, sheet_name="Investigators", index=False)
+        for sheet, key in (("By IC", "by_ic"), ("By activity", "by_activity"),
+                           ("By application type", "by_app_type"),
+                           ("By fiscal year", "by_fy"), ("By organization", "by_org")):
+            d = agg.get(key) or {}
+            if d:
+                pd.DataFrame({"Value": [str(k) for k in d],
+                              "Grants": list(d.values())}
+                             ).to_excel(xl, sheet_name=sheet[:31], index=False)
+        if summary_md:
+            pd.DataFrame({"Report": summary_md.split("\n")}).to_excel(
+                xl, sheet_name="Report", index=False)
+    return out.getvalue()
 
 
 # ============================ Filter state ============================
@@ -379,6 +449,20 @@ if not rep_items:
 
 agg = reporter.aggregate(rep_items)
 
+
+@st.cache_data(show_spinner=False)
+def _workbook(sig: str, _items: list, _query: str, _summary_md: str) -> bytes:
+    # Leading-underscore args are excluded from the cache key, so `sig` alone
+    # determines reuse (avoids hashing the unhashable list of dicts each run).
+    return build_workbook(_items, _query, _summary_md)
+
+
+# One complete Excel workbook reused by every data download (built once per state).
+_xlsx_sig = f"{st.session_state.get('rep_query', '')}|{len(rep_items)}|{bool(st.session_state.get('rep_summary'))}"
+xlsx_data = _workbook(_xlsx_sig, rep_items, st.session_state.get("rep_query", ""),
+                      st.session_state.get("rep_summary", ""))  # noqa: E501
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
 # ============================ AI report box — the start screen ============================
 # Apply a pending example question chosen on the previous run. This must happen
 # before the text_area widget is created, or Streamlit rejects the state change.
@@ -458,9 +542,15 @@ else:
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
-            st.download_button("Download answer (Markdown)",
-                               st.session_state.ask_answer,
-                               file_name="nih_custom_report.md", mime="text/markdown")
+    dlc1, dlc2 = st.columns(2)
+    dlc1.download_button("Download data (Excel)", xlsx_data,
+                         file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+                         use_container_width=True,
+                         help="Every grant in this result set, with all fields, "
+                              "plus investigator roles and breakdowns.")
+    dlc2.download_button("Download report (Markdown)", st.session_state.ask_answer,
+                         file_name="nih_report.md", mime="text/markdown",
+                         use_container_width=True)
 
     # ---- Follow-up: builds on the original question + the data it produced ----
     st.markdown("### Ask a follow-up about this report")
@@ -564,11 +654,10 @@ with tab_awards:
             "Title": st.column_config.TextColumn(width="large"),
         })
     st.download_button(
-        "Export awards (CSV)",
-        df[["award_date", "ic", "activity_code", "app_type", "amount",
-            "contact_pi", "pi", "multi_pi", "is_subproject", "org", "state",
-            "project_num", "fiscal_year", "title", "url"]].to_csv(index=False),
-        file_name="nih_reporter_awards.csv", mime="text/csv")
+        "Download all awards (Excel)", xlsx_data,
+        file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+        help="Every grant in this result set with all fields, plus investigator "
+             "roles, breakdowns, and a summary — nothing truncated.")
 
     with st.expander(f"Award detail cards ({len(rep_items)})"):
         for it in rep_items:
@@ -678,15 +767,22 @@ with tab_report:
                    if st.session_state.get("rep_summary_engine") == "claude" else "template"))
         rep_title = "NIH RePORTER Weekly Award Report - " + datetime.now().strftime("%b %d, %Y")
 
-        d1, d2, d3 = st.columns(3)
-        d1.download_button("Summary (Markdown)", st.session_state.rep_summary,
-                           file_name="nih_reporter_summary.md", mime="text/markdown")
-        d2.download_button("HTML digest",
+        d1, d2, d3, d4 = st.columns(4)
+        d1.download_button("Data (Excel)", xlsx_data,
+                           file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+                           use_container_width=True,
+                           help="All awards + roles + breakdowns + this summary.")
+        d2.download_button("Summary (Markdown)", st.session_state.rep_summary,
+                           file_name="nih_reporter_summary.md", mime="text/markdown",
+                           use_container_width=True)
+        d3.download_button("HTML digest",
                            emailer.build_html(rep_items, st.session_state.rep_summary, rep_title),
-                           file_name="nih_reporter_digest.html", mime="text/html")
-        d3.download_button("Email (.eml)",
+                           file_name="nih_reporter_digest.html", mime="text/html",
+                           use_container_width=True)
+        d4.download_button("Email (.eml)",
                            emailer.build_eml(rep_items, st.session_state.rep_summary, rep_title),
-                           file_name="nih_reporter_digest.eml", mime="message/rfc822")
+                           file_name="nih_reporter_digest.eml", mime="message/rfc822",
+                           use_container_width=True)
 
         st.divider()
         st.markdown("**Post to a channel**")
