@@ -107,7 +107,7 @@ if st.columns([5, 2])[1].button("＋ New query", type="primary",
                                 use_container_width=True,
                                 help="Clear everything and start a new question."):
     for _k in ("ask_answer", "ask_engine", "follow_thread", "ask_question",
-               "asked_question"):
+               "asked_question", "clarify_q", "clarify_for", "skip_clarify"):
         st.session_state.pop(_k, None)
     st.rerun()
 
@@ -626,6 +626,28 @@ def store_results(awards, rep_err):
     st.session_state.pop("follow_thread", None)
 
 
+def run_report(q: str):
+    """Parse the question, pull the matching awards, and write the report."""
+    with st.spinner("Reading your request and pulling the matching awards..."):
+        parsed, _ = summarize.parse_query(
+            q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+        awards, err, label = ai_fetch(parsed)
+        st.session_state.rep_sample = bool(err)
+        if err:
+            awards = reporter.sample_awards()
+        st.session_state.rep_items = awards
+        st.session_state.rep_query = label
+        st.session_state.filter_sig = filter_sig()
+    with st.spinner("Analyzing the data..."):
+        answer, engine = summarize.custom_report(q, build_facts(awards))
+    st.session_state.ask_answer = answer
+    st.session_state.ask_engine = engine
+    st.session_state.asked_question = q
+    st.session_state.follow_thread = []
+    for _k in ("clarify_q", "clarify_for"):
+        st.session_state.pop(_k, None)
+
+
 # Fetch whenever the filters change (or on first load), so the AI answers and
 # reports always reflect the current filters — no stale data, no button needed.
 if "rep_items" not in st.session_state or st.session_state.get("filter_sig") != filter_sig():
@@ -689,37 +711,54 @@ if not st.session_state.get("ask_answer"):
                                 use_container_width=True)
 
     st.write("")
-    # Smaller example buttons so the input box stands out.
+    # Smaller example buttons so the input box stands out. Examples are well-formed,
+    # so they skip the clarification check.
     ex_cols = st.columns([1] + [2] * len(EXAMPLE_REPORTS) + [1])
     for col, (label, q) in zip(ex_cols[1:-1], EXAMPLE_REPORTS):
         if col.button(label, use_container_width=True, key=f"ex_{label}"):
             st.session_state.pending_q = q
             st.session_state.run_ask = True
+            st.session_state.skip_clarify = True
             st.rerun()
 
-    if (ask_clicked and st.session_state.ask_question.strip()) \
+    # ---- Clarification: if the request is ambiguous, ask BEFORE running it ----
+    if st.session_state.get("clarify_q"):
+        _cl, _cc, _cr = st.columns([1, 2.4, 1])
+        with _cc:
+            st.info("**Quick clarification** — " + st.session_state["clarify_q"])
+            with st.form("clarify_form", clear_on_submit=False):
+                clar_ans = st.text_input("Your answer", label_visibility="collapsed",
+                                         placeholder="Type your answer…")
+                cf1, cf2 = st.columns(2)
+                cont = cf1.form_submit_button("Continue", type="primary",
+                                              use_container_width=True)
+                anyway = cf2.form_submit_button("Answer anyway",
+                                                use_container_width=True)
+        if cont and clar_ans.strip():
+            run_report(st.session_state["clarify_for"]
+                       + f"\n\n[Clarification] {st.session_state['clarify_q']} "
+                       + f"User's answer: {clar_ans.strip()}")
+            st.rerun()
+        elif anyway:
+            run_report(st.session_state["clarify_for"])
+            st.rerun()
+
+    elif (ask_clicked and st.session_state.ask_question.strip()) \
             or st.session_state.pop("run_ask", False):
         q = st.session_state.ask_question
-        # The question drives the data: parse its scope/window, pull that, answer.
-        with st.spinner("Reading your request and pulling the matching awards..."):
-            parsed, _ = summarize.parse_query(
-                q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
-            awards, err, label = ai_fetch(parsed)
-            if err:
-                awards = reporter.sample_awards()
-                st.session_state.rep_sample = True
-            else:
-                st.session_state.rep_sample = False
-            st.session_state.rep_items = awards
-            st.session_state.rep_query = label
-            st.session_state.filter_sig = filter_sig()
-        with st.spinner("Analyzing the data..."):
-            answer, engine = summarize.custom_report(q, build_facts(awards))
-        st.session_state.ask_answer = answer
-        st.session_state.ask_engine = engine
-        st.session_state.asked_question = q   # the original question, preserved
-        st.session_state.follow_thread = []   # fresh report -> fresh follow-up thread
-        st.rerun()
+        skip = st.session_state.pop("skip_clarify", False)
+        cq = ""
+        if not skip:
+            with st.spinner("Reading your request…"):
+                cq = summarize.clarify(q)
+        if cq:
+            # Ask first; don't run the report until the user answers.
+            st.session_state.clarify_q = cq
+            st.session_state.clarify_for = q
+            st.rerun()
+        else:
+            run_report(q)
+            st.rerun()
 
 else:
     # ----- Report view: the top search box is hidden; report + follow-up lead. -----

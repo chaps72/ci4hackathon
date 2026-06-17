@@ -220,6 +220,42 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         return heuristic, "heuristic"
 
 
+def clarify(question: str) -> str:
+    """Return ONE short clarifying question if the request is genuinely ambiguous
+    in a way that would change the data pulled or the answer; otherwise ''.
+
+    Conservative by design — most requests run with sensible defaults (home org
+    Emory, etc.) and need no clarification.
+    """
+    if not claude_available():
+        return ""
+    import anthropic
+
+    client = anthropic.Anthropic()
+    prompt = (
+        "You triage NIH RePORTER analytics requests for a university research "
+        "office before they run. Decide whether the request is missing a detail "
+        "that would MATERIALLY change the data pulled or the answer — e.g. an "
+        "ambiguous or unstated time window for a trend, dollars vs. counts, which "
+        "institution, or which institute. Defaults that DON'T need asking: home "
+        "institution is Emory; no window means all available data. Be "
+        "conservative — most requests are clear enough. If a detail is genuinely "
+        "needed, reply with ONE short question (max 25 words) and nothing else. "
+        "If it's clear enough to run, reply with exactly 'OK'.\n\n"
+        f"Request: {question}"
+    )
+    try:
+        resp = client.messages.create(
+            model=MODEL, max_tokens=120,
+            messages=[{"role": "user", "content": prompt}])
+        text = next((b.text for b in resp.content if b.type == "text"), "").strip()
+        if not text or text.upper().startswith("OK") or "?" not in text:
+            return ""
+        return text
+    except Exception:  # noqa: BLE001
+        return ""
+
+
 def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, str]:
     """Answer a natural-language report request using pre-computed dataset facts.
 
@@ -252,12 +288,7 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "the chart separately; just provide the relevant per-category breakdown "
         "(the facts include funding and counts by fiscal year, IC, activity code, "
         "application type, state, and organization). "
-        "If the request is genuinely ambiguous and a clarifying detail would "
-        "materially change the answer (e.g. unclear which time window, whether "
-        "dollars or counts, which institution), you MAY begin your reply with a "
-        "short '**Quick clarification:** <one question>' and then give your best-"
-        "effort answer with a stated assumption — ask only when it truly matters, "
-        "never for routine requests."
+        "The request has already been clarified if needed, so just answer it."
         f"{context}\n\n"
         f"User request:\n{question}\n\n"
         f"Dataset facts:\n{facts_md}"
