@@ -220,6 +220,15 @@ def build_facts(items: list) -> str:
         lines.append("Funding ($) by institution: " + _money_line(a["funding_by_org"], 15))
     if len(a["by_state"]) > 1:
         lines.append("Awards by state: " + _counts_line(a["by_state"], 15))
+    # Year-over-year cross-tab: funding by IC for each fiscal year, so per-
+    # institute comparisons across years are answerable.
+    fys = sorted(a["funding_by_fy"])
+    if len(fys) > 1:
+        xt = reporter.funding_crosstab(items, "ic")
+        top_ics = list(a["funding_by_ic"])[:12]
+        lines.append("Funding ($) by IC per fiscal year (top ICs): " + "; ".join(
+            f"{ic} [" + ", ".join(f"FY{fy} {reporter.fmt_money(xt.get(ic, {}).get(fy, 0))}"
+                                  for fy in fys) + "]" for ic in top_ics))
     notable = sorted((it for it in items if it.get("amount")),
                      key=lambda i: int(i["amount"]), reverse=True)[:30]
     if notable:
@@ -327,18 +336,42 @@ _DIM_KEYS = {
 }
 
 
-def maybe_chart(question: str, agg: dict):
+_DIM_FIELD = {"ic": "ic", "activity": "activity_code", "app_type": "app_type",
+              "org": "org", "state": "state"}
+
+
+def maybe_chart(question: str, agg: dict, items: list):
     """Render a bar chart when the question asks for one — for whatever dimension
     (fiscal year, IC, activity, application type, org, state) and metric (funding
-    $ or award count) it mentions. Generic, so it works across questions."""
+    $ or award count) it mentions. When the question compares a category ACROSS
+    years, render a grouped category x fiscal-year chart. Generic across questions."""
     q = (question or "").lower()
     if not any(w in q for w in _CHART_WORDS):
         return
     metric = ("funding" if any(w in q for w in _FUND_WORDS)
               else "count" if any(w in q for w in _COUNT_WORDS) else "funding")
     dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
+
+    # Year-over-year comparison of a category -> grouped category x FY chart.
+    year_words = ("fiscal year", "by year", "per year", "each year", "over time",
+                  "annual", "year over year", "year-over-year", "previous year",
+                  "prior year", "previous years", "prior years", "trend", "compare",
+                  "comparison", " vs ", "versus", "history", "historical")
+    cat_dim = next((d for d, (kw, *_) in _DIM_KEYS.items()
+                    if d != "fy" and any(k in q for k in kw)), None)
+    fys = sorted(agg.get("funding_by_fy") or {})
+    if cat_dim and any(w in q for w in year_words) and len(fys) > 1:
+        xt = reporter.funding_crosstab(items, _DIM_FIELD[cat_dim])
+        top = sorted(xt, key=lambda c: sum(xt[c].values()), reverse=True)[:10]
+        df = pd.DataFrame({f"FY{fy}": [xt[c].get(fy, 0) for c in top] for fy in fys},
+                          index=[str(c) for c in top])
+        label = _DIM_KEYS[cat_dim][3]
+        st.markdown(f"**Funding ($) by {label} and fiscal year**")
+        st.bar_chart(df, stack=False, height=max(200, 34 * len(top)), horizontal=True)
+        return
+
     if dim is None:
-        dim = "fy" if len(agg.get("funding_by_fy") or {}) > 1 else "ic"
+        dim = "fy" if len(fys) > 1 else "ic"
     _, fund_key, count_key, dim_label = _DIM_KEYS[dim]
     data = agg.get(fund_key if metric == "funding" else count_key) or {}
     rows = list(data.items())
@@ -640,7 +673,8 @@ else:
     with st.container(border=True):
         st.markdown(st.session_state.ask_answer)
         maybe_chart(st.session_state.get("asked_question",
-                                         st.session_state.get("ask_question", "")), agg)
+                                         st.session_state.get("ask_question", "")),
+                    agg, rep_items)
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
@@ -665,7 +699,7 @@ else:
         st.markdown(f"**Follow-up:** {turn['q']}")
         with st.container(border=True):
             st.markdown(turn["a"])
-            maybe_chart(turn["q"], agg)
+            maybe_chart(turn["q"], agg, rep_items)
 
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
