@@ -285,19 +285,25 @@ def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
                  award_min=None, award_max=None, days_back: int = 7,
                  fiscal_years=None, newly_added_only: bool = False,
                  limit: int = 200, use_award_window: bool = True,
-                 active_only: bool = False):
+                 active_only: bool = False, date_from=None, date_to=None):
     """Fetch recent NIH awards. Returns ``(items, error)``; never raises.
 
     ``items`` is a list of normalized dicts (newest award first). ``error`` is
     None on success (even when zero awards match) or a short message when the
     live API could not be reached. With ``active_only`` the result is restricted
     to grants whose project period is current (end date today or later), and the
-    day look-back is ignored so the whole active portfolio is considered.
+    day look-back is ignored so the whole active portfolio is considered. An
+    explicit ``date_from``/``date_to`` (YYYY-MM-DD) overrides the day window and
+    filters on the award-notice date.
     """
-    to_date = datetime.now().strftime("%Y-%m-%d")
-    from_date = (datetime.now() - timedelta(days=max(days_back, 1))).strftime("%Y-%m-%d")
-    # Active-grant queries span the portfolio, not a recent-notice window.
-    window = use_award_window and not active_only
+    auto_to = datetime.now().strftime("%Y-%m-%d")
+    auto_from = (datetime.now() - timedelta(days=max(days_back, 1))).strftime("%Y-%m-%d")
+    explicit = bool(date_from or date_to)
+    from_date = date_from or auto_from
+    to_date = date_to or auto_to
+    # Active-grant queries span the portfolio; an explicit date range forces the
+    # award-notice window on regardless of use_award_window.
+    window = (use_award_window and not active_only) or explicit
 
     def build(offset, page):
         return _payload(
@@ -422,6 +428,28 @@ def _count_by_fy(items: list) -> dict:
     for it in items:
         for fy in (it.get("fy_amounts") or {}):
             out[fy] = out.get(fy, 0) + 1
+    return dict(sorted(out.items()))
+
+
+def by_period(items: list, period: str = "week", metric: str = "count") -> dict:
+    """Group awards by the week or month of their award-notice date.
+
+    Returns ``{period_label: value}`` (chronological), where value is the count
+    of new awards or total funding. Week labels are the Monday of that week.
+    """
+    out: dict = {}
+    for it in items:
+        d = (it.get("award_date") or it.get("start") or "")[:10]
+        try:
+            dt = datetime.strptime(d, "%Y-%m-%d")
+        except (ValueError, TypeError):
+            continue
+        if period == "month":
+            key = dt.strftime("%Y-%m")
+        else:
+            key = (dt - timedelta(days=dt.weekday())).strftime("%Y-%m-%d")
+        val = _toint(it.get("amount")) if metric == "funding" else 1
+        out[key] = out.get(key, 0) + val
     return dict(sorted(out.items()))
 
 

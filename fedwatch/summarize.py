@@ -49,8 +49,16 @@ def claude_available() -> bool:
 _EMPTY_QUERY = {
     "organization": None, "all_institutions": False, "topic": None, "pi_name": None,
     "ic_codes": [], "activity_codes": [], "fiscal_years": [], "days_back": None,
-    "newly_added": False, "active_only": False,
+    "newly_added": False, "active_only": False, "date_from": None, "date_to": None,
+    "group_by": None,
 }
+
+_MONTHS = {"january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
+           "july": 7, "august": 8, "september": 9, "october": 10, "november": 11,
+           "december": 12, "jan": 1, "feb": 2, "mar": 3, "apr": 4, "jun": 6,
+           "jul": 7, "aug": 8, "sep": 9, "sept": 9, "oct": 10, "nov": 11, "dec": 12}
+_MONTH_LAST = {1: 31, 2: 29, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30,
+               10: 31, 11: 30, 12: 31}
 
 
 def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> dict:
@@ -96,7 +104,26 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
         or "currently funded" in q or "currently held" in q) and \
             any(w in q for w in ("grant", "award", "project", "fund", "portfolio", "pi")):
         out["active_only"] = True
+    # Weekly / monthly grouping.
+    if any(w in q for w in ("weekly", "per week", "by week", "each week",
+                            "week by week", "week-by-week", "week over week")):
+        out["group_by"] = "week"
+    elif any(w in q for w in ("monthly", "per month", "by month", "each month",
+                              "month by month", "month over month")):
+        out["group_by"] = "month"
+    # Named months -> an award-notice date range in the current FY year.
+    months = sorted({n for name, n in _MONTHS.items()
+                     if re.search(r"\b" + name + r"\b", q)})
+    if months and not out["fiscal_years"]:
+        y = current_fy
+        lo, hi = months[0], months[-1]
+        out["date_from"] = f"{y}-{lo:02d}-01"
+        out["date_to"] = f"{y}-{hi:02d}-{_MONTH_LAST[hi]:02d}"
     return out
+
+
+def _valid_date(s):
+    return s if isinstance(s, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", s) else None
 
 
 def _extract_json(text: str) -> str:
@@ -130,15 +157,23 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         f"years', return a RANGE of fiscal years (FY{current_fy} and the 5 prior: "
         f"[{current_fy}, {current_fy-1}, {current_fy-2}, {current_fy-3}, "
         f"{current_fy-4}, {current_fy-5}]) — never just one year. "
+        "If the user names specific months or a calendar date range (e.g. 'April, "
+        "May and June', 'since March', 'between Jan 1 and Mar 31'), set date_from "
+        f"and date_to as YYYY-MM-DD, assuming year {current_fy} unless a year is "
+        "given (date_from = first day of the earliest month, date_to = last day of "
+        "the latest month). If the user wants a weekly or monthly breakdown ('on a "
+        "weekly basis', 'per week', 'by month'), set group_by to 'week' or 'month' "
+        "(do NOT treat 'weekly' as days_back=7). "
         f"Only use IC abbreviations from this list: {', '.join(ic_list)}. "
         f"Only use activity codes from: {', '.join(activity_list)}. "
         "Respond with ONLY a JSON object (no prose, no code fence) with keys: "
         "organization (string or null), all_institutions (boolean), topic (string "
         "or null), pi_name (string or null), ic_codes (array), activity_codes "
         "(array), fiscal_years (array of integers), days_back (integer or null), "
-        "newly_added (boolean), active_only (boolean: true when the user asks for "
-        "active / ongoing / currently-funded grants). Use null/empty arrays/false "
-        f"when the user does not specify a field.\n\nRequest: {question}"
+        "newly_added (boolean), active_only (boolean), date_from (YYYY-MM-DD or "
+        "null), date_to (YYYY-MM-DD or null), group_by ('week', 'month', or null). "
+        "Use null/empty arrays/false when the user does not specify a field."
+        f"\n\nRequest: {question}"
     )
     try:
         resp = client.messages.create(
@@ -158,12 +193,19 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
             "days_back": int(data["days_back"]) if data.get("days_back") else None,
             "newly_added": bool(data.get("newly_added")),
             "active_only": bool(data.get("active_only")),
+            "date_from": _valid_date(data.get("date_from")),
+            "date_to": _valid_date(data.get("date_to")),
+            "group_by": data.get("group_by") if data.get("group_by") in ("week", "month") else None,
         }
         # Keep heuristic windows if the model missed an explicit one.
         if not out["fiscal_years"] and heuristic["fiscal_years"]:
             out["fiscal_years"] = heuristic["fiscal_years"]
         if out["days_back"] is None and heuristic["days_back"]:
             out["days_back"] = heuristic["days_back"]
+        if not out["date_from"] and heuristic["date_from"]:
+            out["date_from"], out["date_to"] = heuristic["date_from"], heuristic["date_to"]
+        if not out["group_by"] and heuristic["group_by"]:
+            out["group_by"] = heuristic["group_by"]
         return out, "claude"
     except Exception:  # noqa: BLE001 - fall back to the heuristic
         return heuristic, "heuristic"
