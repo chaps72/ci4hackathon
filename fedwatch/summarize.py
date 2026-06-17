@@ -66,6 +66,10 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
         yi = int(y)
         if 2000 <= yi <= current_fy and yi not in out["fiscal_years"]:
             out["fiscal_years"].append(yi)
+    for y in re.findall(r"\bfy\s?'?(\d{2})\b", q):  # 2-digit, e.g. "fy26"
+        yi = 2000 + int(y)
+        if 2000 <= yi <= current_fy and yi not in out["fiscal_years"]:
+            out["fiscal_years"].append(yi)
     md = re.search(r"(?:last|past|previous)\s+(\d+)\s+days?", q)
     if md:
         out["days_back"] = int(md.group(1))
@@ -78,6 +82,16 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
     if any(w in q for w in ("all institutions", "across institutions", "nationwide",
                             "every institution", "all universities", "any institution")):
         out["all_institutions"] = True
+    # Comparison / trend intent: pull a range of fiscal years, not just the one
+    # the user named, so "compare FY26 to previous years" has prior years to use.
+    if any(w in q for w in (
+            "compare", "comparison", "versus", " vs ", "year over year",
+            "year-over-year", "previous year", "previous fiscal", "prior year",
+            "prior fiscal", "previous years", "prior years", "over the years",
+            "each year", "all years", "all previous", "historical", "history",
+            "trend", "past years", "earlier years", "year by year", "yearly",
+            "every year", "by year")) and len(out["fiscal_years"]) <= 1:
+        out["fiscal_years"] = [current_fy - i for i in range(6)]
     if (re.search(r"\bactive\b", q) or re.search(r"\bongoing\b", q)
         or "currently funded" in q or "currently held" in q) and \
             any(w in q for w in ("grant", "award", "project", "fund", "portfolio", "pi")):
@@ -110,7 +124,12 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         "windows to explicit values: 'last N fiscal years' means the N most recent "
         f"fiscal years including FY{current_fy} (e.g. last 4 -> "
         f"[{current_fy}, {current_fy-1}, {current_fy-2}, {current_fy-3}]); "
-        "'last N days' means days_back=N. "
+        "'last N days' means days_back=N. IMPORTANT: if the user asks to COMPARE "
+        "across years, see a trend/history, or says 'previous years', 'prior "
+        "years', 'year over year', 'all years', 'each year', or 'all previous "
+        f"years', return a RANGE of fiscal years (FY{current_fy} and the 5 prior: "
+        f"[{current_fy}, {current_fy-1}, {current_fy-2}, {current_fy-3}, "
+        f"{current_fy-4}, {current_fy-5}]) — never just one year. "
         f"Only use IC abbreviations from this list: {', '.join(ic_list)}. "
         f"Only use activity codes from: {', '.join(activity_list)}. "
         "Respond with ONLY a JSON object (no prose, no code fence) with keys: "

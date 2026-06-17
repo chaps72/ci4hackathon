@@ -415,6 +415,19 @@ def _funding_by_fy(items: list) -> dict:
     return dict(sorted(out.items()))
 
 
+def funding_crosstab(items: list, key: str) -> dict:
+    """Per-category, per-fiscal-year funding: ``{category: {fiscal_year: dollars}}``.
+
+    Powers year-over-year comparisons (e.g. funding by institute across years).
+    """
+    out: dict = {}
+    for it in items:
+        cat = it.get(key) or "—"
+        for fy, amt in (it.get("fy_amounts") or {}).items():
+            out.setdefault(cat, {})[fy] = out.setdefault(cat, {}).get(fy, 0) + amt
+    return out
+
+
 def _counts(items: list, key: str) -> dict:
     out: dict = {}
     for it in items:
