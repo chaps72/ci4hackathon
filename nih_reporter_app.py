@@ -28,63 +28,70 @@ from fedwatch import emailer, notify, reporter, summarize
 st.set_page_config(page_title="NIH RePORTER Weekly Report", page_icon="🔬",
                    layout="wide", initial_sidebar_state="collapsed")
 
-# ---------- Modern-minimal styling ----------
-ACCENT = "#2457d6"        # single accent
-ACCENT_HOVER = "#1c46ab"
-ACCENT_2 = "#0ea5a4"      # secondary (e.g. benchmark second series)
-INK = "#11181c"
-MUTED = "#5b6671"
-BORDER = "#e6e8eb"
-PANEL = "#f7f8fa"
+# ---------- Apple-inspired styling (system font, airy, ghost buttons) ----------
+ACCENT = "#0071e3"        # Apple blue (links, tabs, charts)
+ACCENT_HOVER = "#0a84ff"
+ACCENT_2 = "#30b0a8"      # secondary chart series
+INK = "#1d1d1f"           # Apple near-black text
+MUTED = "#6e6e73"         # Apple secondary text
+BORDER = "#d2d2d7"        # Apple hairline
+PANEL = "#f5f5f7"         # Apple light gray
 # Chart colors (names kept for existing references).
 EMORY_BLUE = ACCENT
 EMORY_LIGHT_BLUE = ACCENT_HOVER
 EMORY_GOLD = ACCENT_2
 
+_APPLE_FONT = ("-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', "
+               "'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif")
+
 st.markdown(f"""<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-html, body, [class*="css"], .stMarkdown, p, span, div, input, textarea, button {{
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+html, body, [class*="css"], .stMarkdown, p, span, div, input, textarea, button, label {{
+    font-family: {_APPLE_FONT};
+    -webkit-font-smoothing: antialiased;
 }}
-h1, h2, h3, h4 {{ color: {INK} !important; font-family: 'Inter', sans-serif !important;
-    font-weight: 600 !important; letter-spacing: -0.01em; }}
+h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important;
+    font-weight: 600 !important; letter-spacing: -0.02em; }}
 [data-testid="stAppViewContainer"] {{ background: #ffffff; }}
+.block-container {{ padding-top: 2.2rem; max-width: 1100px; }}
 [data-testid="stSidebar"] {{ background: {PANEL}; border-right: 1px solid {BORDER}; }}
 [data-testid="stExpander"] {{
-    border: 1px solid {BORDER}; border-radius: 12px; background: #ffffff;
-    margin-bottom: 8px; box-shadow: none;
+    border: 1px solid {BORDER}; border-radius: 14px; background: #ffffff;
+    margin-bottom: 10px; box-shadow: none;
 }}
-/* Primary + download buttons: solid accent, soft shadow, rounded */
-.stButton button[kind="primary"], .stDownloadButton button {{
-    background-color: {ACCENT}; color: #ffffff; border: none; border-radius: 8px;
-    font-weight: 500; box-shadow: 0 1px 2px rgba(16,24,40,0.08);
+/* All buttons: outlined / ghost pill, fill on hover (Apple-style) */
+.stButton button, .stDownloadButton button {{
+    background: #ffffff; color: {INK}; border: 1px solid {BORDER};
+    border-radius: 980px; font-weight: 500; padding: 0.45rem 1.2rem;
+    transition: all 0.15s ease;
 }}
-.stButton button[kind="primary"]:hover, .stDownloadButton button:hover {{
-    background-color: {ACCENT_HOVER}; color: #ffffff;
+.stButton button:hover, .stDownloadButton button:hover,
+.stFormSubmitButton button:hover {{
+    background: {INK}; color: #ffffff; border-color: {INK};
 }}
-/* Secondary buttons (example chips): quiet, outlined, small */
+.stFormSubmitButton button {{
+    background: #ffffff; color: {INK}; border: 1px solid {BORDER};
+    border-radius: 980px; font-weight: 500;
+}}
+/* Example chips: smaller ghost pills */
 .stButton button[kind="secondary"] {{
-    background: #ffffff; color: {INK}; border: 1px solid {BORDER}; border-radius: 8px;
-    font-size: 0.76rem; padding: 0.25rem 0.6rem; min-height: 0; line-height: 1.3;
-    font-weight: 500;
+    font-size: 0.78rem; padding: 0.3rem 0.85rem; min-height: 0; line-height: 1.3;
 }}
-.stButton button[kind="secondary"]:hover {{ border-color: {ACCENT}; color: {ACCENT}; }}
-.stTabs [data-baseweb="tab-list"] {{ gap: 6px; border-bottom: 1px solid {BORDER}; }}
+.stTabs [data-baseweb="tab-list"] {{ gap: 8px; border-bottom: 1px solid {BORDER}; }}
 .stTabs [aria-selected="true"] {{ color: {ACCENT} !important; font-weight: 600; }}
-a {{ color: {ACCENT}; }}
+a {{ color: {ACCENT}; text-decoration: none; }}
+a:hover {{ text-decoration: underline; }}
 [data-testid="stMetricValue"], .stDataFrame {{ font-variant-numeric: tabular-nums; }}
-.nih-header {{
-    padding: 8px 0 16px 0; margin-bottom: 14px; border-bottom: 1px solid {BORDER};
-}}
-.nih-header h1 {{ color: {INK} !important; margin: 0; font-size: 1.5rem;
-    font-weight: 600; letter-spacing: -0.02em; }}
-.nih-header p {{ color: {MUTED}; margin: 4px 0 0 0; font-size: 0.85rem; }}
+.nih-header {{ text-align: center; padding: 14px 0 22px 0; margin-bottom: 8px; }}
+.nih-header h1 {{ color: {INK} !important; margin: 0; font-size: 2.1rem;
+    font-weight: 600; letter-spacing: -0.03em; }}
+.nih-header p {{ color: {MUTED}; margin: 7px 0 0 0; font-size: 1.02rem;
+    font-weight: 400; }}
 .kpi {{
-    border: 1px solid {BORDER}; border-radius: 12px; padding: 14px 16px;
+    border: 1px solid {BORDER}; border-radius: 16px; padding: 16px 18px;
     background: #ffffff; height: 100%;
 }}
-.kpi .num {{ font-weight: 600; font-size: 1.6rem; color: {INK}; line-height: 1.15;
-    font-variant-numeric: tabular-nums; }}
+.kpi .num {{ font-weight: 600; font-size: 1.7rem; color: {INK}; line-height: 1.15;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }}
 .kpi .lab {{ font-size: 0.72rem; color: {MUTED}; text-transform: uppercase;
     letter-spacing: 0.06em; margin-top: 2px; }}
 .kpi .sub {{ font-size: 0.74rem; color: {MUTED}; margin-top: 3px; }}
