@@ -556,6 +556,13 @@ else:
     st.markdown("### Ask a follow-up about this report")
     st.caption("Builds on the question and the exact data above — same result set, "
                "no new search.")
+    # The conversation so far renders first; the input box always sits at the
+    # very bottom, directly under the most recent answer.
+    for turn in st.session_state.get("follow_thread", []):
+        st.markdown(f"**Follow-up:** {turn['q']}")
+        with st.container(border=True):
+            st.markdown(turn["a"])
+
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
             "Follow-up question", label_visibility="collapsed",
@@ -575,44 +582,11 @@ else:
             {"q": follow_q, "a": f_ans, "engine": f_eng})
         st.rerun()
 
-    for turn in st.session_state.get("follow_thread", []):
-        st.markdown(f"**Follow-up:** {turn['q']}")
-        with st.container(border=True):
-            st.markdown(turn["a"])
-
-# Exact investigator grant-count numbers backing the flagship example.
-_dist = reporter.grant_count_distribution(rep_items, thresholds=(2, 3, 4, 5))
-with st.expander("Key numbers — investigators by grants held as PI"):
-    kq = st.columns(5)
-    kpi(kq[0], "Distinct PIs", str(len(reporter.pi_award_counts(rep_items))))
-    for col, t in zip(kq[1:], (2, 3, 4, 5)):
-        kpi(col, f"≥ {t} grants", str(_dist["at_least"][t]))
-    _roles = reporter.pi_role_counts(rep_items)
-    _multi = [{"Investigator": n, "Grants (PI)": v["total"],
-               "as Contact PI": v["contact"], "as Co-PI / MPI": v["copi"]}
-              for n, v in _roles.items() if v["total"] >= 2]
-    if _multi:
-        st.dataframe(pd.DataFrame(_multi), hide_index=True, use_container_width=True)
-        st.caption("Contact PI = lead PI · Co-PI / MPI = additional PI on a multi-PI "
-                   "grant. Co-investigators / other personnel are not published in "
-                   "NIH RePORTER.")
-    else:
-        st.caption("No investigator holds more than one grant in this result set — "
-                   "widen the window or select more fiscal years.")
-
 st.divider()
 
 # ============================ The data ============================
 st.subheader("Explore the data")
 st.caption("Showing: " + st.session_state.get("rep_query", ""))
-k1, k2, k3, k4, k5 = st.columns(5)
-kpi(k1, "Awards", f"{agg['count']:,}")
-kpi(k2, "Total funding", reporter.fmt_money(agg["total_amount"]))
-kpi(k3, "Median award", reporter.fmt_money(agg["median_amount"]))
-kpi(k4, "Largest award", reporter.fmt_money(agg["max_amount"]))
-kpi(k5, "Institutes", str(len(agg["by_ic"])),
-    sub=" · ".join(list(agg["by_ic"])[:3]))
-st.write("")
 
 tab_overview, tab_awards, tab_board, tab_bench, tab_report = st.tabs(
     ["Overview", "Awards", "Leaderboards", "Benchmark", "Report"])
