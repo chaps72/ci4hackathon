@@ -28,52 +28,72 @@ from fedwatch import emailer, notify, reporter, summarize
 st.set_page_config(page_title="NIH RePORTER Weekly Report", page_icon="🔬",
                    layout="wide", initial_sidebar_state="collapsed")
 
-# ---------- Brand styling ----------
-EMORY_BLUE = "#012169"
-EMORY_GOLD = "#f2a900"
-EMORY_LIGHT_BLUE = "#007dba"
+# ---------- Modern-minimal styling ----------
+ACCENT = "#2457d6"        # single accent
+ACCENT_HOVER = "#1c46ab"
+ACCENT_2 = "#0ea5a4"      # secondary (e.g. benchmark second series)
+INK = "#11181c"
+MUTED = "#5b6671"
+BORDER = "#e6e8eb"
+PANEL = "#f7f8fa"
+# Chart colors (names kept for existing references).
+EMORY_BLUE = ACCENT
+EMORY_LIGHT_BLUE = ACCENT_HOVER
+EMORY_GOLD = ACCENT_2
 
 st.markdown(f"""<style>
-h1, h2, h3 {{ color: {EMORY_BLUE} !important; font-family: Georgia, 'Times New Roman', serif; }}
-[data-testid="stSidebar"] {{ background: #f7f8fb; border-right: 1px solid #e3e7ee; }}
-[data-testid="stSidebar"] h1 {{ color: {EMORY_BLUE} !important; font-size: 1.35rem; }}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+html, body, [class*="css"], .stMarkdown, p, span, div, input, textarea, button {{
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}}
+h1, h2, h3, h4 {{ color: {INK} !important; font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important; letter-spacing: -0.01em; }}
+[data-testid="stAppViewContainer"] {{ background: #ffffff; }}
+[data-testid="stSidebar"] {{ background: {PANEL}; border-right: 1px solid {BORDER}; }}
 [data-testid="stExpander"] {{
-    border: 1px solid #e3e7ee; border-radius: 10px; background: #ffffff;
-    margin-bottom: 6px; box-shadow: 0 1px 2px rgba(1,33,105,0.04);
+    border: 1px solid {BORDER}; border-radius: 12px; background: #ffffff;
+    margin-bottom: 8px; box-shadow: none;
 }}
+/* Primary + download buttons: solid accent, soft shadow, rounded */
 .stButton button[kind="primary"], .stDownloadButton button {{
-    background-color: {EMORY_BLUE}; color: #ffffff; border: none; border-radius: 6px;
+    background-color: {ACCENT}; color: #ffffff; border: none; border-radius: 8px;
+    font-weight: 500; box-shadow: 0 1px 2px rgba(16,24,40,0.08);
 }}
-.stButton button[kind="secondary"] {{ font-size: 0.74rem; padding: 0.2rem 0.5rem;
-    min-height: 0; line-height: 1.2; }}
 .stButton button[kind="primary"]:hover, .stDownloadButton button:hover {{
-    background-color: {EMORY_LIGHT_BLUE}; color: #ffffff;
+    background-color: {ACCENT_HOVER}; color: #ffffff;
 }}
-.stTabs [data-baseweb="tab-list"] {{ gap: 4px; border-bottom: 2px solid #e3e7ee; }}
-.stTabs [aria-selected="true"] {{ color: {EMORY_BLUE} !important; font-weight: 600; }}
-a {{ color: {EMORY_LIGHT_BLUE}; }}
+/* Secondary buttons (example chips): quiet, outlined, small */
+.stButton button[kind="secondary"] {{
+    background: #ffffff; color: {INK}; border: 1px solid {BORDER}; border-radius: 8px;
+    font-size: 0.76rem; padding: 0.25rem 0.6rem; min-height: 0; line-height: 1.3;
+    font-weight: 500;
+}}
+.stButton button[kind="secondary"]:hover {{ border-color: {ACCENT}; color: {ACCENT}; }}
+.stTabs [data-baseweb="tab-list"] {{ gap: 6px; border-bottom: 1px solid {BORDER}; }}
+.stTabs [aria-selected="true"] {{ color: {ACCENT} !important; font-weight: 600; }}
+a {{ color: {ACCENT}; }}
+[data-testid="stMetricValue"], .stDataFrame {{ font-variant-numeric: tabular-nums; }}
 .nih-header {{
-    background: linear-gradient(135deg, {EMORY_BLUE} 0%, #02297f 100%);
-    border-bottom: 4px solid {EMORY_GOLD};
-    border-radius: 12px; padding: 18px 26px 14px 26px; margin-bottom: 18px;
+    padding: 8px 0 16px 0; margin-bottom: 14px; border-bottom: 1px solid {BORDER};
 }}
-.nih-header h1 {{ color: #ffffff !important; margin: 0; font-size: 1.7rem; }}
-.nih-header p {{ color: #d6deef; margin: 5px 0 0 0; font-size: 0.9rem; }}
+.nih-header h1 {{ color: {INK} !important; margin: 0; font-size: 1.5rem;
+    font-weight: 600; letter-spacing: -0.02em; }}
+.nih-header p {{ color: {MUTED}; margin: 4px 0 0 0; font-size: 0.85rem; }}
 .kpi {{
-    border: 1px solid #e3e7ee; border-top: 4px solid {EMORY_BLUE};
-    border-radius: 12px; padding: 14px 18px 16px 18px; background: #ffffff;
-    box-shadow: 0 1px 3px rgba(1,33,105,0.05); height: 100%;
+    border: 1px solid {BORDER}; border-radius: 12px; padding: 14px 16px;
+    background: #ffffff; height: 100%;
 }}
-.kpi .num {{ font: 700 1.8rem Georgia, serif; color: {EMORY_BLUE}; line-height: 1.15; }}
-.kpi .lab {{ font-size: 0.72rem; color: #6d6e71; text-transform: uppercase;
-    letter-spacing: 0.07em; margin-top: 2px; }}
-.kpi .sub {{ font-size: 0.74rem; color: #8a8c8f; margin-top: 3px; }}
+.kpi .num {{ font-weight: 600; font-size: 1.6rem; color: {INK}; line-height: 1.15;
+    font-variant-numeric: tabular-nums; }}
+.kpi .lab {{ font-size: 0.72rem; color: {MUTED}; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-top: 2px; }}
+.kpi .sub {{ font-size: 0.74rem; color: {MUTED}; margin-top: 3px; }}
 </style>""", unsafe_allow_html=True)
 
 st.markdown(
-    '<div class="nih-header"><h1>NIH RePORTER Weekly Report</h1>'
-    '<p>Recently issued NIH/HHS awards, live from the NIH RePORTER API · '
-    'Office of the SVPR</p></div>', unsafe_allow_html=True)
+    '<div class="nih-header"><h1>NIH RePORTER</h1>'
+    '<p>NIH/HHS award intelligence · live from the NIH RePORTER API</p></div>',
+    unsafe_allow_html=True)
 
 # Always-available "New query" reset at the very top (prominent).
 if st.columns([5, 2])[1].button("＋ New query", type="primary",

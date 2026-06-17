@@ -1,5 +1,6 @@
 [theme]
-primaryColor = "#012169"              # Emory blue (tabs, sliders, focus states)
+primaryColor = "#2457d6"              # accent (buttons, tabs, sliders, focus)
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#eef1f7"  # light Emory blue tint (sidebar, inputs)
-textColor = "#26282a"
+secondaryBackgroundColor = "#f7f8fa"  # sidebar / inputs / panels
+textColor = "#11181c"
+font = "sans serif"
