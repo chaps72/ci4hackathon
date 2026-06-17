@@ -506,6 +506,17 @@ def ai_fetch(parsed: dict):
     eff_ic = parsed.get("ic_codes") or None
     eff_act = parsed.get("activity_codes") or None
     eff_newly = bool(parsed.get("newly_added"))
+    # Record ceiling. Multi-year (fiscal-year) pulls return one row per project
+    # PER YEAR, so they need a high cap or prior years get truncated by the
+    # newest-first sort. Day-window pulls are small.
+    if fys:
+        limit = 14000          # ~ up to the API's offset ceiling; paginated
+    elif eff_active:
+        limit = 8000
+    elif days:
+        limit = 800
+    else:
+        limit = 2000
     # No window in the question -> no time filter at all (all available data),
     # rather than imposing a default window the user didn't ask for.
     awards, err = reporter.fetch_awards(
@@ -514,7 +525,7 @@ def ai_fetch(parsed: dict):
         award_min=None, award_max=None,
         use_award_window=bool(days),
         days_back=days or 7, fiscal_years=fys, newly_added_only=eff_newly,
-        active_only=eff_active, limit=800 if (days and not eff_active) else 2000)
+        active_only=eff_active, limit=limit)
     parts = [o_names[0] if o_names else "All institutions"]
     if eff_pi:
         parts.append(f"PI: {eff_pi}")
