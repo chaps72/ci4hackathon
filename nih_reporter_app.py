@@ -13,10 +13,15 @@ Run with:  streamlit run nih_reporter_app.py
 
 import io
 import os
+import re
 from datetime import datetime
 
 import pandas as pd
 import streamlit as st
+
+# Control characters openpyxl rejects in cells (NIH abstracts/titles sometimes
+# contain them); strip before writing Excel.
+_ILLEGAL_XLSX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
 from fedwatch import emailer, notify, reporter, summarize
 
@@ -70,8 +75,9 @@ st.markdown(
     '<p>Recently issued NIH/HHS awards, live from the NIH RePORTER API · '
     'Office of the SVPR</p></div>', unsafe_allow_html=True)
 
-# Always-available "New query" reset at the very top.
-if st.columns([6, 1])[1].button("New query", use_container_width=True,
+# Always-available "New query" reset at the very top (prominent).
+if st.columns([5, 2])[1].button("＋ New query", type="primary",
+                                use_container_width=True,
                                 help="Clear everything and start a new question."):
     for _k in ("ask_answer", "ask_engine", "follow_thread", "ask_question",
                "asked_question"):
@@ -201,6 +207,14 @@ def _col(df: pd.DataFrame, name: str):
     return df[name] if name in df.columns else ""
 
 
+def _clean_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Strip control characters openpyxl rejects from all string cells."""
+    for c in df.columns:
+        df[c] = df[c].map(
+            lambda v: _ILLEGAL_XLSX.sub("", v) if isinstance(v, str) else v)
+    return df
+
+
 def build_workbook(items: list, query: str, summary_md: str = "") -> bytes:
     """A complete .xlsx workbook of the result set: every award with all fields,
     plus investigator roles, breakdowns, a summary, and any narrative report. No
@@ -248,20 +262,20 @@ def build_workbook(items: list, query: str, summary_md: str = "") -> bytes:
 
     out = io.BytesIO()
     with pd.ExcelWriter(out, engine="openpyxl") as xl:
-        summary.to_excel(xl, sheet_name="Summary", index=False)
-        awards.to_excel(xl, sheet_name="Awards", index=False)
+        _clean_df(summary).to_excel(xl, sheet_name="Summary", index=False)
+        _clean_df(awards).to_excel(xl, sheet_name="Awards", index=False)
         if not investigators.empty:
-            investigators.to_excel(xl, sheet_name="Investigators", index=False)
+            _clean_df(investigators).to_excel(xl, sheet_name="Investigators", index=False)
         for sheet, key in (("By IC", "by_ic"), ("By activity", "by_activity"),
                            ("By application type", "by_app_type"),
                            ("By fiscal year", "by_fy"), ("By organization", "by_org")):
             d = agg.get(key) or {}
             if d:
-                pd.DataFrame({"Value": [str(k) for k in d],
-                              "Grants": list(d.values())}
-                             ).to_excel(xl, sheet_name=sheet[:31], index=False)
+                _clean_df(pd.DataFrame({"Value": [str(k) for k in d],
+                                        "Grants": list(d.values())})
+                          ).to_excel(xl, sheet_name=sheet[:31], index=False)
         if summary_md:
-            pd.DataFrame({"Report": summary_md.split("\n")}).to_excel(
+            _clean_df(pd.DataFrame({"Report": summary_md.split("\n")})).to_excel(
                 xl, sheet_name="Report", index=False)
     return out.getvalue()
 
@@ -525,11 +539,19 @@ def _workbook(sig: str, _items: list, _query: str, _summary_md: str) -> bytes:
     return build_workbook(_items, _query, _summary_md)
 
 
-# One complete Excel workbook reused by every data download (built once per state).
-_xlsx_sig = f"{st.session_state.get('rep_query', '')}|{len(rep_items)}|{bool(st.session_state.get('rep_summary'))}"
-xlsx_data = _workbook(_xlsx_sig, rep_items, st.session_state.get("rep_query", ""),
-                      st.session_state.get("rep_summary", ""))  # noqa: E501
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+# Build the workbook only in the report view (where the downloads live), and never
+# let a build error take down the app — fall back to no Excel if it fails.
+xlsx_data = None
+if st.session_state.get("ask_answer"):
+    try:
+        _xlsx_sig = (f"{st.session_state.get('rep_query', '')}|{len(rep_items)}|"
+                     f"{bool(st.session_state.get('rep_summary'))}")
+        xlsx_data = _workbook(_xlsx_sig, rep_items, st.session_state.get("rep_query", ""),
+                              st.session_state.get("rep_summary", ""))
+    except Exception:  # noqa: BLE001 - downloads degrade gracefully
+        xlsx_data = None
 
 # ============================ AI report box — the start screen ============================
 # Apply a pending example question chosen on the previous run. This must happen
@@ -596,11 +618,12 @@ else:
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
     dlc1, dlc2 = st.columns(2)
-    dlc1.download_button("Download data (Excel)", xlsx_data,
-                         file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
-                         use_container_width=True,
-                         help="Every grant in this result set, with all fields, "
-                              "plus investigator roles and breakdowns.")
+    if xlsx_data:
+        dlc1.download_button("Download data (Excel)", xlsx_data,
+                             file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+                             use_container_width=True,
+                             help="Every grant in this result set, with all fields, "
+                                  "plus investigator roles and breakdowns.")
     dlc2.download_button("Download report (Markdown)", st.session_state.ask_answer,
                          file_name="nih_report.md", mime="text/markdown",
                          use_container_width=True)
@@ -686,11 +709,12 @@ with tab_awards:
             "Link": st.column_config.LinkColumn("RePORTER", display_text="Open ↗"),
             "Title": st.column_config.TextColumn(width="large"),
         })
-    st.download_button(
-        "Download all awards (Excel)", xlsx_data,
-        file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
-        help="Every grant in this result set with all fields, plus investigator "
-             "roles, breakdowns, and a summary — nothing truncated.")
+    if xlsx_data:
+        st.download_button(
+            "Download all awards (Excel)", xlsx_data,
+            file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+            help="Every grant in this result set with all fields, plus investigator "
+                 "roles, breakdowns, and a summary — nothing truncated.")
 
     with st.expander(f"Award detail cards ({len(rep_items)})"):
         for it in rep_items:
@@ -801,10 +825,11 @@ with tab_report:
         rep_title = "NIH RePORTER Weekly Award Report - " + datetime.now().strftime("%b %d, %Y")
 
         d1, d2, d3, d4 = st.columns(4)
-        d1.download_button("Data (Excel)", xlsx_data,
-                           file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
-                           use_container_width=True,
-                           help="All awards + roles + breakdowns + this summary.")
+        if xlsx_data:
+            d1.download_button("Data (Excel)", xlsx_data,
+                               file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+                               use_container_width=True,
+                               help="All awards + roles + breakdowns + this summary.")
         d2.download_button("Summary (Markdown)", st.session_state.rep_summary,
                            file_name="nih_reporter_summary.md", mime="text/markdown",
                            use_container_width=True)
