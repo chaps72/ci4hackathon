@@ -230,6 +230,11 @@ def _normalize(rec: dict) -> dict:
     core_num = (rec.get("core_project_num") or "").strip().upper()
     if not core_num and project_num:
         core_num = re.sub(r"^\s*\d+", "", project_num).split("-")[0].strip().upper()
+    # Per-fiscal-year funding for this record, preserved through dedupe so
+    # year-by-year breakdowns (and charts) remain possible.
+    fy_amounts = {}
+    if rec.get("fiscal_year") is not None and amount is not None:
+        fy_amounts[rec["fiscal_year"]] = _toint(amount)
 
     bits = [b for b in (
         pi and f"PI: {pi}",
@@ -262,6 +267,7 @@ def _normalize(rec: dict) -> dict:
         "org": org_name,
         "amount": amount,
         "fiscal_year": rec.get("fiscal_year"),
+        "fy_amounts": fy_amounts,
         "ic": agency,
         "activity_code": activity_code,
         "app_type": app_type,
@@ -365,11 +371,15 @@ def dedupe_projects(items: list) -> list:
         group = groups[key]
         rep = dict(max(group, key=lambda i: ((i.get("fiscal_year") or 0),
                                              i.get("award_date") or "")))
-        total = sum(_toint(i.get("amount")) for i in group)
-        if total:
-            rep["amount"] = total
-        rep["years_in_window"] = sorted({i.get("fiscal_year") for i in group
-                                         if i.get("fiscal_year")})
+        # Merge per-fiscal-year funding across the grant's records, preserving
+        # the year-by-year breakdown while the grant is counted once.
+        fy_amounts: dict = {}
+        for i in group:
+            for fy, amt in (i.get("fy_amounts") or {}).items():
+                fy_amounts[fy] = fy_amounts.get(fy, 0) + amt
+        rep["fy_amounts"] = fy_amounts
+        rep["amount"] = sum(fy_amounts.values()) or rep.get("amount")
+        rep["years_in_window"] = sorted(fy_amounts.keys())
         out.append(rep)
     return out
 
@@ -385,6 +395,24 @@ def _amounts(items: list) -> list:
         except (TypeError, ValueError, KeyError):
             pass
     return out
+
+
+def _sum_by(items: list, key: str) -> dict:
+    """Total award dollars grouped by ``key`` (descending)."""
+    out: dict = {}
+    for it in items:
+        val = it.get(key) or "—"
+        out[val] = out.get(val, 0) + _toint(it.get("amount"))
+    return dict(sorted(out.items(), key=lambda kv: kv[1], reverse=True))
+
+
+def _funding_by_fy(items: list) -> dict:
+    """Total dollars per fiscal year (chronological), from per-year amounts."""
+    out: dict = {}
+    for it in items:
+        for fy, amt in (it.get("fy_amounts") or {}).items():
+            out[fy] = out.get(fy, 0) + amt
+    return dict(sorted(out.items()))
 
 
 def _counts(items: list, key: str) -> dict:
@@ -410,8 +438,16 @@ def aggregate(items: list) -> dict:
         "by_activity": _counts(items, "activity_code"),
         "by_app_type": _counts(items, "app_type"),
         "by_state": _counts(items, "state"),
-        "by_fy": _counts(items, "fiscal_year"),
+        "by_fy": dict(sorted(_counts(items, "fiscal_year").items())),
         "by_org": _counts(items, "org"),
+        # Funding ($) breakdowns for every dimension, so any "by X" question or
+        # chart works for dollars as well as counts.
+        "funding_by_fy": _funding_by_fy(items),
+        "funding_by_ic": _sum_by(items, "ic"),
+        "funding_by_activity": _sum_by(items, "activity_code"),
+        "funding_by_app_type": _sum_by(items, "app_type"),
+        "funding_by_state": _sum_by(items, "state"),
+        "funding_by_org": _sum_by(items, "org"),
     }
 
 

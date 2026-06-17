@@ -157,14 +157,26 @@ def build_facts(items: list) -> str:
     sub = sum(1 for it in items if it.get("is_subproject"))
     multi = sum(1 for it in items if it.get("multi_pi"))
     lines.append(f"Grants that are subprojects: {sub}. Multi-PI grants: {multi}.")
-    lines.append("Awards by IC: " + ", ".join(f"{k}: {v}" for k, v in a["by_ic"].items()))
-    lines.append("Awards by activity code: "
-                 + ", ".join(f"{k}: {v}" for k, v in a["by_activity"].items()))
-    lines.append("Awards by application type: "
-                 + ", ".join(f"{k}: {v}" for k, v in a["by_app_type"].items()))
+    def _counts_line(d, n=20):
+        return ", ".join(f"{k}: {v}" for k, v in list(d.items())[:n])
+
+    def _money_line(d, n=20):
+        return ", ".join(f"{k}: {reporter.fmt_money(v)}" for k, v in list(d.items())[:n])
+
+    # Counts and funding ($) for every dimension, so any "by X" question works.
+    lines.append("Awards (count) by fiscal year: " + _counts_line(a["by_fy"]))
+    lines.append("Funding ($) by fiscal year: " + _money_line(a["funding_by_fy"]))
+    lines.append("Awards by IC: " + _counts_line(a["by_ic"]))
+    lines.append("Funding ($) by IC: " + _money_line(a["funding_by_ic"]))
+    lines.append("Awards by activity code: " + _counts_line(a["by_activity"]))
+    lines.append("Funding ($) by activity code: " + _money_line(a["funding_by_activity"]))
+    lines.append("Awards by application type: " + _counts_line(a["by_app_type"]))
+    lines.append("Funding ($) by application type: " + _money_line(a["funding_by_app_type"]))
     if len(a["by_org"]) > 1:
-        lines.append("Awards by institution: "
-                     + ", ".join(f"{k}: {v}" for k, v in list(a["by_org"].items())[:15]))
+        lines.append("Awards by institution: " + _counts_line(a["by_org"], 15))
+        lines.append("Funding ($) by institution: " + _money_line(a["funding_by_org"], 15))
+    if len(a["by_state"]) > 1:
+        lines.append("Awards by state: " + _counts_line(a["by_state"], 15))
     notable = sorted((it for it in items if it.get("amount")),
                      key=lambda i: int(i["amount"]), reverse=True)[:30]
     if notable:
@@ -242,6 +254,52 @@ def build_workbook(items: list, query: str, summary_md: str = "") -> bytes:
             pd.DataFrame({"Report": summary_md.split("\n")}).to_excel(
                 xl, sheet_name="Report", index=False)
     return out.getvalue()
+
+
+_CHART_WORDS = ("chart", "graph", "plot", "bar", "visuali", "trend", "compare",
+                "comparison", "breakdown", "distribution", "over time", "by year")
+_FUND_WORDS = ("$", "fund", "dollar", "amount", "money", "spend", "budget", "award size")
+_COUNT_WORDS = ("number", "count", "how many", "# of", "volume", "tally")
+_DIM_KEYS = {
+    "fy": (("fiscal year", "by year", "per year", "each year", "over time", "annual",
+            "by fy", "per fy", "year by year", "yearly", "trend"),
+           "funding_by_fy", "by_fy", "fiscal year"),
+    "ic": (("institute", "center", "by ic", " ic "), "funding_by_ic", "by_ic",
+           "Institute / Center"),
+    "activity": (("activity", "mechanism", "grant type", "by r0", "award type"),
+                 "funding_by_activity", "by_activity", "activity code"),
+    "app_type": (("application type", "new vs", "renewal", "competing", "new versus"),
+                 "funding_by_app_type", "by_app_type", "application type"),
+    "org": (("institution", "organization", "university", " org"),
+            "funding_by_org", "by_org", "institution"),
+    "state": (("state",), "funding_by_state", "by_state", "state"),
+}
+
+
+def maybe_chart(question: str, agg: dict):
+    """Render a bar chart when the question asks for one — for whatever dimension
+    (fiscal year, IC, activity, application type, org, state) and metric (funding
+    $ or award count) it mentions. Generic, so it works across questions."""
+    q = (question or "").lower()
+    if not any(w in q for w in _CHART_WORDS):
+        return
+    metric = ("funding" if any(w in q for w in _FUND_WORDS)
+              else "count" if any(w in q for w in _COUNT_WORDS) else "funding")
+    dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
+    if dim is None:
+        dim = "fy" if len(agg.get("funding_by_fy") or {}) > 1 else "ic"
+    _, fund_key, count_key, dim_label = _DIM_KEYS[dim]
+    data = agg.get(fund_key if metric == "funding" else count_key) or {}
+    rows = list(data.items())
+    if dim != "fy":
+        rows = rows[:15]
+    if not rows:
+        return
+    ylabel = "Funding ($)" if metric == "funding" else "Awards"
+    s = pd.Series({str(k): v for k, v in rows}, name=ylabel)
+    st.markdown(f"**{ylabel} by {dim_label}**")
+    st.bar_chart(s, color=EMORY_BLUE, horizontal=(dim != "fy"),
+                 height=max(160, 30 * len(s)) if dim != "fy" else 300)
 
 
 # ============================ Filter state ============================
@@ -539,6 +597,8 @@ else:
                                                    st.session_state.get("ask_question", "")))
     with st.container(border=True):
         st.markdown(st.session_state.ask_answer)
+        maybe_chart(st.session_state.get("asked_question",
+                                         st.session_state.get("ask_question", "")), agg)
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
@@ -562,6 +622,7 @@ else:
         st.markdown(f"**Follow-up:** {turn['q']}")
         with st.container(border=True):
             st.markdown(turn["a"])
+            maybe_chart(turn["q"], agg)
 
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
