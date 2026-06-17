@@ -235,6 +235,20 @@ def build_facts(items: list) -> str:
         lines.append("Funding ($) by IC per fiscal year (top ICs): " + "; ".join(
             f"{ic} [" + ", ".join(f"FY{fy} {reporter.fmt_money(xt.get(ic, {}).get(fy, 0))}"
                                   for fy in fys) + "]" for ic in top_ics))
+    # Weekly / monthly breakdown of new awards (by award-notice date), so
+    # 'on a weekly basis' style questions are answerable.
+    wk = reporter.by_period(items, "week", "count")
+    if 1 < len(wk) <= 30:
+        wk_f = reporter.by_period(items, "week", "funding")
+        lines.append("New awards by week (week starting; count, funding): "
+                     + "; ".join(f"{k}: {v}, {reporter.fmt_money(wk_f.get(k, 0))}"
+                                 for k, v in wk.items()))
+    mo = reporter.by_period(items, "month", "count")
+    if len(mo) > 1:
+        mo_f = reporter.by_period(items, "month", "funding")
+        lines.append("New awards by month (count, funding): "
+                     + "; ".join(f"{k}: {v}, {reporter.fmt_money(mo_f.get(k, 0))}"
+                                 for k, v in mo.items()))
     notable = sorted((it for it in items if it.get("amount")),
                      key=lambda i: int(i["amount"]), reverse=True)[:30]
     if notable:
@@ -356,6 +370,23 @@ def maybe_chart(question: str, agg: dict, items: list):
         return
     metric = ("funding" if any(w in q for w in _FUND_WORDS)
               else "count" if any(w in q for w in _COUNT_WORDS) else "funding")
+
+    # Weekly / monthly time series of new awards (by award-notice date).
+    period = ("week" if any(w in q for w in ("weekly", "per week", "by week",
+                                             "each week", "week over week", "week-by-week"))
+              else "month" if any(w in q for w in ("monthly", "per month", "by month",
+                                                   "each month", "month over month"))
+              else None)
+    if period:
+        pmetric = "funding" if any(w in q for w in _FUND_WORDS) else "count"
+        data = reporter.by_period(items, period, pmetric)
+        if data:
+            ylabel = "Funding ($)" if pmetric == "funding" else "New awards"
+            s = pd.Series(data, name=ylabel)
+            st.markdown(f"**{ylabel} by {period}** (award-notice date)")
+            st.bar_chart(s, color=EMORY_BLUE, height=300)
+            return
+
     dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
 
     # Year-over-year comparison of a category -> grouped category x FY chart.
@@ -507,6 +538,8 @@ def ai_fetch(parsed: dict):
     fys = parsed.get("fiscal_years") or None
     days = parsed.get("days_back")
     eff_active = bool(parsed.get("active_only"))
+    d_from = parsed.get("date_from")
+    d_to = parsed.get("date_to")
     eff_topic = parsed.get("topic") or ""
     eff_pi = parsed.get("pi_name") or ""
     eff_ic = parsed.get("ic_codes") or None
@@ -519,6 +552,8 @@ def ai_fetch(parsed: dict):
         limit = 14000          # ~ up to the API's offset ceiling; paginated
     elif eff_active:
         limit = 8000
+    elif d_from or d_to:
+        limit = 4000
     elif days:
         limit = 800
     else:
@@ -531,7 +566,7 @@ def ai_fetch(parsed: dict):
         award_min=None, award_max=None,
         use_award_window=bool(days),
         days_back=days or 7, fiscal_years=fys, newly_added_only=eff_newly,
-        active_only=eff_active, limit=limit)
+        active_only=eff_active, date_from=d_from, date_to=d_to, limit=limit)
     parts = [o_names[0] if o_names else "All institutions"]
     if eff_pi:
         parts.append(f"PI: {eff_pi}")
@@ -541,13 +576,17 @@ def ai_fetch(parsed: dict):
         parts.append("IC: " + ", ".join(eff_ic))
     if eff_act:
         parts.append("mech: " + ", ".join(eff_act))
-    if fys:
+    if d_from or d_to:
+        parts.append(f"{d_from or '…'} → {d_to or '…'}")
+    elif fys:
         parts.append("FY " + ", ".join(str(y) for y in sorted(fys, reverse=True)))
     elif days:
         parts.append(f"last {days} days")
     if eff_active:
         parts.append("active grants only")
-    if not (fys or days or eff_active):
+    if parsed.get("group_by"):
+        parts.append(f"by {parsed['group_by']}")
+    if not (fys or days or eff_active or d_from or d_to):
         parts.append("all available (no date filter)")
     return awards, err, " · ".join(parts)
 
