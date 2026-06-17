@@ -119,6 +119,12 @@ def _secret(name: str, default: str = "") -> str:
         return os.environ.get(name, default)
 
 
+def ai_md(text: str):
+    """Render model output, escaping '$' so Streamlit doesn't turn dollar
+    amounts (text between two $) into LaTeX math / serif italics."""
+    st.markdown((text or "").replace("$", "\\$"))
+
+
 def fmt_date(d: str) -> str:
     try:
         return datetime.strptime((d or "")[:10], "%Y-%m-%d").strftime("%b %d, %Y")
@@ -682,7 +688,7 @@ else:
     st.caption("Question: " + st.session_state.get("asked_question",
                                                    st.session_state.get("ask_question", "")))
     with st.container(border=True):
-        st.markdown(st.session_state.ask_answer)
+        ai_md(st.session_state.ask_answer)
         maybe_chart(st.session_state.get("asked_question",
                                          st.session_state.get("ask_question", "")),
                     agg, rep_items)
@@ -709,7 +715,7 @@ else:
     for turn in st.session_state.get("follow_thread", []):
         st.markdown(f"**Follow-up:** {turn['q']}")
         with st.container(border=True):
-            st.markdown(turn["a"])
+            ai_md(turn["a"])
             maybe_chart(turn["q"], agg, rep_items)
 
     with st.form("followup_form", clear_on_submit=True):
