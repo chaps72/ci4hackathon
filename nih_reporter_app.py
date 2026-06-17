@@ -275,14 +275,10 @@ def run_query():
 
 
 def ai_fetch(parsed: dict):
-    """Fetch awards using ONLY criteria parsed from the question — the manual
-    filter panel is ignored for a top-level AI query, so nothing the user didn't
-    ask for is silently applied. Returns (awards, error, label).
-
-    Defaults when the question is silent: organization = the home institution
-    (unless it names one or says 'all institutions'); time window = the current
-    fiscal year. Everything else (IC, activity code, state, award size) is only
-    applied if the question names it.
+    """Fetch awards using ONLY criteria parsed from the question. The single
+    default is the home institution (Emory); every other dimension — time
+    window, IC, activity code, state, award size — comes from the question.
+    Returns (awards, error, label).
     """
     if parsed.get("all_institutions"):
         o_names = None
@@ -298,16 +294,15 @@ def ai_fetch(parsed: dict):
     eff_ic = parsed.get("ic_codes") or None
     eff_act = parsed.get("activity_codes") or None
     eff_newly = bool(parsed.get("newly_added"))
-    # No window specified -> default to the current fiscal year (bounded, useful).
-    if not fys and not days and not eff_active:
-        fys = [CURRENT_FY]
+    # No window in the question -> no time filter at all (all available data),
+    # rather than imposing a default window the user didn't ask for.
     awards, err = reporter.fetch_awards(
         org_names=o_names, pi_name=eff_pi, text_query=eff_topic,
         ic_codes=eff_ic, activity_codes=eff_act, org_states=None,
         award_min=None, award_max=None,
-        use_award_window=not bool(fys),
+        use_award_window=bool(days),
         days_back=days or 7, fiscal_years=fys, newly_added_only=eff_newly,
-        active_only=eff_active, limit=2000 if (fys or eff_active) else 500)
+        active_only=eff_active, limit=800 if (days and not eff_active) else 2000)
     parts = [o_names[0] if o_names else "All institutions"]
     if eff_pi:
         parts.append(f"PI: {eff_pi}")
@@ -323,6 +318,8 @@ def ai_fetch(parsed: dict):
         parts.append(f"last {days} days")
     if eff_active:
         parts.append("active grants only")
+    if not (fys or days or eff_active):
+        parts.append("all available (no date filter)")
     return awards, err, " · ".join(parts)
 
 
@@ -400,11 +397,12 @@ if not st.session_state.get("ask_answer"):
             "NIH funding</h2>", unsafe_allow_html=True)
         st.markdown(
             "<p style='text-align:center;color:#6d6e71;font-size:0.9rem;margin-top:0;'>"
-            "Each question searches fresh — it ignores the manual filters and pulls "
-            "exactly what you describe (e.g. “active grants only”, “last 4 fiscal "
-            f"years”, “NCI R01s”, “all institutions”). Defaults to {reporter.DEFAULT_ORG} "
-            "and the current fiscal year unless you say otherwise. Figures are "
-            "computed exactly, never invented.</p>", unsafe_allow_html=True)
+            f"Searches {reporter.DEFAULT_ORG} by default — everything else (time "
+            "window, institute, mechanism, PI…) comes from your question (e.g. "
+            "“active grants only”, “last 4 fiscal years”, “NCI R01s”). Say "
+            "“all institutions” to go nationwide. With no window it searches all "
+            "available data. Figures are computed exactly, never invented.</p>",
+            unsafe_allow_html=True)
         st.text_area("Your question", key="ask_question", height=90,
                      label_visibility="collapsed",
                      placeholder="e.g. How many investigators hold 3+ active grants as PI?")
