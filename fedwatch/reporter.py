@@ -415,6 +415,16 @@ def _funding_by_fy(items: list) -> dict:
     return dict(sorted(out.items()))
 
 
+def _count_by_fy(items: list) -> dict:
+    """Number of grants funded in each fiscal year (a grant spanning several
+    years counts in each), from per-year amounts. Chronological."""
+    out: dict = {}
+    for it in items:
+        for fy in (it.get("fy_amounts") or {}):
+            out[fy] = out.get(fy, 0) + 1
+    return dict(sorted(out.items()))
+
+
 def funding_crosstab(items: list, key: str) -> dict:
     """Per-category, per-fiscal-year funding: ``{category: {fiscal_year: dollars}}``.
 
@@ -451,7 +461,9 @@ def aggregate(items: list) -> dict:
         "by_activity": _counts(items, "activity_code"),
         "by_app_type": _counts(items, "app_type"),
         "by_state": _counts(items, "state"),
-        "by_fy": dict(sorted(_counts(items, "fiscal_year").items())),
+        # Count grants in each fiscal year they were funded (not just the latest),
+        # so multi-year grants don't all collapse into the most recent year.
+        "by_fy": _count_by_fy(items),
         "by_org": _counts(items, "org"),
         # Funding ($) breakdowns for every dimension, so any "by X" question or
         # chart works for dollars as well as counts.
