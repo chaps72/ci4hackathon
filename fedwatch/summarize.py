@@ -166,6 +166,12 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         "(do NOT treat 'weekly' as days_back=7). "
         f"Only use IC abbreviations from this list: {', '.join(ic_list)}. "
         f"Only use activity codes from: {', '.join(activity_list)}. "
+        "IMPORTANT: 'newly_added' means projects RECENTLY ADDED TO THE RePORTER "
+        "DATABASE — it is NOT for new awards. Do NOT set it for 'new awards', "
+        "'new grants', 'new NIH funding', or Type-1/new application type; only "
+        "set it if the user literally says 'newly added to RePORTER' or 'recently "
+        "added to the database'. A phrase like 'new awards per week' just means "
+        "awards issued in the date window — leave newly_added false. "
         "Respond with ONLY a JSON object (no prose, no code fence) with keys: "
         "organization (string or null), all_institutions (boolean), topic (string "
         "or null), pi_name (string or null), ic_codes (array), activity_codes "
@@ -191,7 +197,10 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
             "fiscal_years": [int(y) for y in (data.get("fiscal_years") or [])
                              if str(y).isdigit()],
             "days_back": int(data["days_back"]) if data.get("days_back") else None,
-            "newly_added": bool(data.get("newly_added")),
+            # Only honor 'newly added' when the user literally said it — guards
+            # against 'new awards' being read as the database-added flag.
+            "newly_added": bool(data.get("newly_added"))
+            and bool(re.search(r"newly added|recently added", question or "", re.I)),
             "active_only": bool(data.get("active_only")),
             "date_from": _valid_date(data.get("date_from")),
             "date_to": _valid_date(data.get("date_to")),
