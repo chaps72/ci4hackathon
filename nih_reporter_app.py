@@ -39,6 +39,8 @@ h1, h2, h3 {{ color: {EMORY_BLUE} !important; font-family: Georgia, 'Times New R
 .stButton button[kind="primary"], .stDownloadButton button {{
     background-color: {EMORY_BLUE}; color: #ffffff; border: none; border-radius: 6px;
 }}
+.stButton button[kind="secondary"] {{ font-size: 0.74rem; padding: 0.2rem 0.5rem;
+    min-height: 0; line-height: 1.2; }}
 .stButton button[kind="primary"]:hover, .stDownloadButton button:hover {{
     background-color: {EMORY_LIGHT_BLUE}; color: #ffffff;
 }}
@@ -526,42 +528,31 @@ XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 # before the text_area widget is created, or Streamlit rejects the state change.
 if "pending_q" in st.session_state:
     st.session_state.ask_question = st.session_state.pop("pending_q")
-st.session_state.setdefault("ask_question", DEFAULT_QUESTION)
+st.session_state.setdefault("ask_question", "")
 
 if not st.session_state.get("ask_answer"):
-    # ----- Start screen: centered search box + instant reports -----
+    # ----- Start screen: just the search box and (small) example reports -----
     st.write("")
     st.write("")
     _left, _center, _right = st.columns([1, 2.4, 1])
     with _center:
-        st.markdown(
-            "<h2 style='text-align:center;margin-bottom:2px;'>Ask for any report on "
-            "NIH funding</h2>", unsafe_allow_html=True)
-        st.markdown(
-            "<p style='text-align:center;color:#6d6e71;font-size:0.9rem;margin-top:0;'>"
-            f"Searches {reporter.DEFAULT_ORG} by default — everything else (time "
-            "window, institute, mechanism, PI…) comes from your question (e.g. "
-            "“active grants only”, “last 4 fiscal years”, “NCI R01s”). Say "
-            "“all institutions” to go nationwide. With no window it searches all "
-            "available data. Figures are computed exactly, never invented.</p>",
-            unsafe_allow_html=True)
-        st.text_area("Your question", key="ask_question", height=90,
+        st.text_area("Your question", key="ask_question", height=110,
                      label_visibility="collapsed",
-                     placeholder="e.g. How many investigators hold 3+ active grants as PI?")
+                     placeholder="Ask anything about NIH funding…")
         ask_clicked = st.button("Generate report", type="primary",
                                 use_container_width=True)
 
     st.write("")
-    st.markdown("<p style='text-align:center;font-weight:600;margin-bottom:4px;'>"
-                "Instant reports</p>", unsafe_allow_html=True)
-    ex_cols = st.columns(len(EXAMPLE_REPORTS))
-    for col, (label, q) in zip(ex_cols, EXAMPLE_REPORTS):
+    # Smaller example buttons so the input box stands out.
+    ex_cols = st.columns([1] + [2] * len(EXAMPLE_REPORTS) + [1])
+    for col, (label, q) in zip(ex_cols[1:-1], EXAMPLE_REPORTS):
         if col.button(label, use_container_width=True, key=f"ex_{label}"):
             st.session_state.pending_q = q
             st.session_state.run_ask = True
             st.rerun()
 
-    if ask_clicked or st.session_state.pop("run_ask", False):
+    if (ask_clicked and st.session_state.ask_question.strip()) \
+            or st.session_state.pop("run_ask", False):
         q = st.session_state.ask_question
         # The question drives the data: parse its scope/window, pull that, answer.
         with st.spinner("Reading your request and pulling the matching awards..."):
