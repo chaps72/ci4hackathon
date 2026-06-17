@@ -70,6 +70,14 @@ st.markdown(
     '<p>Recently issued NIH/HHS awards, live from the NIH RePORTER API · '
     'Office of the SVPR</p></div>', unsafe_allow_html=True)
 
+# Always-available "New query" reset at the very top.
+if st.columns([6, 1])[1].button("New query", use_container_width=True,
+                                help="Clear everything and start a new question."):
+    for _k in ("ask_answer", "ask_engine", "follow_thread", "ask_question",
+               "asked_question"):
+        st.session_state.pop(_k, None)
+    st.rerun()
+
 
 def _secret(name: str, default: str = "") -> str:
     try:
@@ -577,13 +585,7 @@ if not st.session_state.get("ask_answer"):
 
 else:
     # ----- Report view: the top search box is hidden; report + follow-up lead. -----
-    head = st.columns([5, 1])
-    head[0].subheader("Your report")
-    if head[1].button("New search", use_container_width=True,
-                      help="Start over with a new question."):
-        for _k in ("ask_answer", "ask_engine", "follow_thread"):
-            st.session_state.pop(_k, None)
-        st.rerun()
+    st.subheader("Your report")
     st.caption("Question: " + st.session_state.get("asked_question",
                                                    st.session_state.get("ask_question", "")))
     with st.container(border=True):
@@ -633,6 +635,11 @@ else:
         st.session_state.setdefault("follow_thread", []).append(
             {"q": follow_q, "a": f_ans, "engine": f_eng})
         st.rerun()
+
+# The data dashboard and manual filters belong to the report view only — the
+# start screen stays just the search box and example reports.
+if not st.session_state.get("ask_answer"):
+    st.stop()
 
 st.divider()
 
