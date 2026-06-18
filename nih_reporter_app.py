@@ -149,7 +149,7 @@ st.markdown(
 
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
                "asked_question", "clarify_q", "clarify_for", "skip_clarify",
-               "suggestions")
+               "suggestions", "report_pdf")
 
 
 def reset_query():
@@ -425,6 +425,77 @@ def build_workbook(items: list, query: str, summary_md: str = "") -> bytes:
     return out.getvalue()
 
 
+def _money_fmt(x, _pos=None):
+    return f"${x/1e6:.1f}M" if x >= 1e6 else (f"${x/1e3:.0f}K" if x >= 1e3 else f"${x:.0f}")
+
+
+def build_pdf(items: list, agg: dict, query: str, answer: str, scope: dict) -> bytes:
+    """A multi-page PDF: a title + narrative page, then several bar charts."""
+    import textwrap
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
+    from matplotlib.ticker import FuncFormatter
+
+    navy, ink, muted = "#012169", "#1d1d1f", "#6e6e73"
+    scope = scope or {}
+    buf = io.BytesIO()
+    with PdfPages(buf) as pdf:
+        # --- Title + narrative page ---
+        fig = plt.figure(figsize=(8.5, 11))
+        fig.text(0.08, 0.955, "EMORY RESEARCH", color=navy, fontsize=11, fontweight="bold")
+        fig.text(0.08, 0.93, "NIH RePORTER report", color=ink, fontsize=22, fontweight="bold")
+        fig.text(0.08, 0.905, f"Covering: {query}", color=muted, fontsize=9)
+        fig.text(0.08, 0.892, datetime.now().strftime("Generated %B %d, %Y"),
+                 color=muted, fontsize=8)
+        body = re.sub(r"[*#`>]", "", answer or "")
+        lines = []
+        for para in body.split("\n"):
+            lines += (textwrap.wrap(para, width=98) or [""])
+        fig.text(0.08, 0.86, "\n".join(lines[:78]), color=ink, fontsize=9.5, va="top")
+        plt.axis("off")
+        pdf.savefig(fig)
+        plt.close(fig)
+
+        def bar_page(title, d, vertical=False, money=True, top=12):
+            if not d:
+                return
+            rows = list(d.items())[:top]
+            labels = [str(k) for k, _ in rows]
+            vals = [v for _, v in rows]
+            fig, ax = plt.subplots(figsize=(8.5, 5.6))
+            if vertical:
+                ax.bar(labels, vals, color=navy)
+                ax.tick_params(axis="x", rotation=45)
+                (ax.yaxis if money else ax.yaxis).set_major_formatter(
+                    FuncFormatter(_money_fmt)) if money else None
+            else:
+                ax.barh(labels[::-1], vals[::-1], color=navy)
+                if money:
+                    ax.xaxis.set_major_formatter(FuncFormatter(_money_fmt))
+            ax.set_title(title, color=navy, fontsize=14, fontweight="bold", loc="left", pad=14)
+            for s in ("top", "right"):
+                ax.spines[s].set_visible(False)
+            ax.tick_params(colors=ink, labelsize=9)
+            fig.tight_layout()
+            pdf.savefig(fig)
+            plt.close(fig)
+
+        if len(agg.get("funding_by_fy") or {}) > 1:
+            bar_page("Funding by fiscal year",
+                     {f"FY{k}": v for k, v in agg["funding_by_fy"].items()}, vertical=True)
+        if scope.get("group_by") or scope.get("date_from"):
+            wk = reporter.by_period(items, scope.get("group_by") or "week", "funding")
+            bar_page(f"Funding by {scope.get('group_by') or 'week'}", wk, vertical=True)
+        bar_page("Funding by Institute / Center", agg.get("funding_by_ic"))
+        bar_page("Funding by activity code / mechanism", agg.get("funding_by_activity"))
+        bar_page("Funding by application type", agg.get("funding_by_app_type"))
+        if len(agg.get("funding_by_org") or {}) > 1:
+            bar_page("Funding by organization", agg.get("funding_by_org"))
+    return buf.getvalue()
+
+
 _CHART_WORDS = ("chart", "graph", "plot", "bar", "visuali", "trend", "compare",
                 "comparison", "breakdown", "distribution", "over time", "by year")
 _FUND_WORDS = ("$", "fund", "dollar", "amount", "money", "spend", "budget", "award size")
@@ -497,6 +568,8 @@ def chart_explorer(agg: dict, items: list, question: str, scope: dict, key_prefi
     d, count_key, fund_key = _EXP_DIMS[sel]
     is_f = metric.startswith("Funding")
     ylabel = "Funding ($)" if is_f else "Awards"
+    st.caption(f"{metric} by {sel} — for the data above: "
+               f"{st.session_state.get('rep_query', '')}")
     if d in ("week", "month"):
         data = reporter.by_period(items, d, "funding" if is_f else "count")
         if data:
@@ -832,7 +905,7 @@ def run_report(q: str):
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
     st.session_state.follow_thread = []
-    for _k in ("clarify_q", "clarify_for", "suggestions"):
+    for _k in ("clarify_q", "clarify_for", "suggestions", "report_pdf"):
         st.session_state.pop(_k, None)
 
 
@@ -900,6 +973,7 @@ def run_followup(fq: str):
             st.session_state.rep_query = label
             st.session_state.last_parsed = merged
             st.session_state.filter_sig = filter_sig()
+            st.session_state.pop("report_pdf", None)  # data changed; rebuild PDF
             note = f"_Pulled data for: {label}._\n\n"
     items = st.session_state.get("rep_items") or []
     prior = ["Original question: " + st.session_state.get(
@@ -1043,7 +1117,7 @@ else:
                    st.session_state.get("asked_question",
                                         st.session_state.get("ask_question", "")),
                    st.session_state.get("last_parsed"), key_prefix="main")
-    dlc1, dlc2 = st.columns(2)
+    dlc1, dlc2, dlc3 = st.columns(3)
     if xlsx_data:
         dlc1.download_button("Download data (Excel)", xlsx_data,
                              file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
@@ -1053,6 +1127,22 @@ else:
     dlc2.download_button("Download report (Markdown)", st.session_state.ask_answer,
                          file_name="nih_report.md", mime="text/markdown",
                          use_container_width=True)
+    # PDF report (narrative + multiple graphs) — built on demand, then offered.
+    if st.session_state.get("report_pdf"):
+        dlc3.download_button("Download PDF (with graphs)", st.session_state.report_pdf,
+                             file_name="nih_reporter_report.pdf", mime="application/pdf",
+                             use_container_width=True)
+    elif dlc3.button("Create PDF report", use_container_width=True,
+                     help="A PDF with the narrative and several bar charts "
+                          "(by institute, fiscal year, mechanism, …)."):
+        try:
+            with st.spinner("Building the PDF report…"):
+                st.session_state.report_pdf = build_pdf(
+                    rep_items, agg, st.session_state.get("rep_query", ""),
+                    st.session_state.ask_answer, st.session_state.get("last_parsed"))
+            st.rerun()
+        except Exception as exc:  # noqa: BLE001
+            st.error(f"PDF build failed: {exc}")
 
     # ---- Suggested next steps: tailored, graph-leaning ideas for this data ----
     if "suggestions" not in st.session_state:
