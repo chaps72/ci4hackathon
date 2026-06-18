@@ -625,8 +625,11 @@ def _chart_png(title: str, data: dict, vertical: bool, money: bool) -> bytes:
     return buf.getvalue()
 
 
-def chart_explorer(agg: dict, items: list, question: str, scope: dict, key_prefix="exp"):
-    """A graph with a smart default plus controls to flip the breakdown/metric."""
+def chart_explorer(items: list, question: str, scope: dict, key_prefix="exp"):
+    """A graph with a smart default plus controls to flip the breakdown/metric.
+    Computes its own aggregate from the items it's handed, so it always matches
+    that exact dataset (the report's own snapshot)."""
+    agg = reporter.aggregate(items or [])
     dlabel, mlabel = _default_view(question, scope, agg)
     labels = list(_EXP_DIMS)
     st.markdown("**View as a graph**")
@@ -667,12 +670,11 @@ def chart_explorer(agg: dict, items: list, question: str, scope: dict, key_prefi
         pass
 
 
-def maybe_chart(question: str, agg: dict, items: list, scope: dict = None):
-    """Render a chart that matches what the text/scope is about. The pulled scope
-    (fiscal years, date range, weekly/monthly grouping) drives the chart so it
-    lines up with the answer: one fiscal year -> that year's breakdown; weekly ->
-    a weekly time series; multiple years -> a year trend / grouped comparison."""
+def maybe_chart(question: str, items: list, scope: dict = None):
+    """Render a chart that matches what the text/scope is about, from the exact
+    items handed in (so each follow-up charts its own data snapshot)."""
     scope = scope or {}
+    agg = reporter.aggregate(items or [])
     q = (question or "").lower()
     _graph_intent = _CHART_WORDS + (
         "by ", "per ", "across", "breakdown", "break down", "distribution",
@@ -1039,23 +1041,22 @@ def _merge_parse(base: dict, add: dict, fq: str) -> dict:
 
 
 def run_followup(fq: str):
-    """Answer a follow-up. If it needs data the original pull didn't include,
-    go back and pull that data first, then answer on the expanded set."""
+    """Answer a follow-up. If it needs data the original pull didn't include, go
+    back and pull that data first. Each turn keeps its OWN data snapshot/scope so
+    its chart matches its own answer (without disturbing the main report)."""
     note = ""
+    items = st.session_state.get("rep_items") or []
+    scope = st.session_state.get("last_parsed") or {}
+    label = st.session_state.get("rep_query", "")
     fparsed, _ = summarize.parse_query(
         fq, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
     if _needs_refetch(fparsed, fq):
-        merged = _merge_parse(st.session_state.get("last_parsed") or {}, fparsed, fq)
+        merged = _merge_parse(scope, fparsed, fq)
         with st.spinner("Pulling the data needed for this…"):
-            awards, err, label = ai_fetch(merged)
+            awards, err, label2 = ai_fetch(merged)
         if not err and awards:
-            st.session_state.rep_items = awards
-            st.session_state.rep_query = label
-            st.session_state.last_parsed = merged
-            st.session_state.filter_sig = filter_sig()
-            st.session_state.pop("report_pdf", None)  # data changed; rebuild PDF
+            items, scope, label = awards, merged, label2
             note = f"_Pulled data for: {label}._\n\n"
-    items = st.session_state.get("rep_items") or []
     prior = ["Original question: " + st.session_state.get(
                  "asked_question", st.session_state.get("ask_question", "")),
              "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
@@ -1065,7 +1066,8 @@ def run_followup(fq: str):
         ans, eng = summarize.custom_report(fq, build_facts(items, fq),
                                            prior="\n\n".join(prior))
     st.session_state.setdefault("follow_thread", []).append(
-        {"q": fq, "a": note + ans, "engine": eng})
+        {"q": fq, "a": note + ans, "engine": eng, "items": items,
+         "scope": scope, "query": label})
 
 
 # Fetch whenever the filters change (or on first load), so the AI answers and
@@ -1201,37 +1203,36 @@ else:
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
-    chart_explorer(agg, rep_items,
+    chart_explorer(rep_items,
                    st.session_state.get("asked_question",
                                         st.session_state.get("ask_question", "")),
                    st.session_state.get("last_parsed"),
                    key_prefix=f"main{st.session_state.get('report_seq', 0)}")
-    dlc1, dlc2, dlc3 = st.columns(3)
-    if xlsx_data:
-        dlc1.download_button("Download data (Excel)", xlsx_data,
-                             file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
-                             use_container_width=True,
-                             help="Every grant in this result set, with all fields, "
-                                  "plus investigator roles and breakdowns.")
-    dlc2.download_button("Download report (Markdown)", st.session_state.ask_answer,
-                         file_name="nih_report.md", mime="text/markdown",
-                         use_container_width=True)
-    # PDF report (narrative + multiple graphs) — built on demand, then offered.
-    if st.session_state.get("report_pdf"):
-        dlc3.download_button("Download PDF (with graphs)", st.session_state.report_pdf,
-                             file_name="nih_reporter_report.pdf", mime="application/pdf",
+    with st.expander("Export this report  ·  Excel · PDF · Markdown"):
+        dlc1, dlc2, dlc3 = st.columns(3)
+        if xlsx_data:
+            dlc1.download_button("Data (Excel)", xlsx_data,
+                                 file_name="nih_reporter_data.xlsx", mime=XLSX_MIME,
+                                 use_container_width=True,
+                                 help="Every grant in this result set, with all "
+                                      "fields, investigator roles, breakdowns, charts.")
+        dlc2.download_button("Report (Markdown)", st.session_state.ask_answer,
+                             file_name="nih_report.md", mime="text/markdown",
                              use_container_width=True)
-    elif dlc3.button("Create PDF report", use_container_width=True,
-                     help="A PDF with the narrative and several bar charts "
-                          "(by institute, fiscal year, mechanism, …)."):
-        try:
-            with st.spinner("Building the PDF report…"):
-                st.session_state.report_pdf = build_pdf(
-                    rep_items, agg, st.session_state.get("rep_query", ""),
-                    st.session_state.ask_answer, st.session_state.get("last_parsed"))
-            st.rerun()
-        except Exception as exc:  # noqa: BLE001
-            st.error(f"PDF build failed: {exc}")
+        if st.session_state.get("report_pdf"):
+            dlc3.download_button("PDF (with graphs)", st.session_state.report_pdf,
+                                 file_name="nih_reporter_report.pdf",
+                                 mime="application/pdf", use_container_width=True)
+        elif dlc3.button("Create PDF report", use_container_width=True,
+                         help="Narrative plus several bar charts."):
+            try:
+                with st.spinner("Building the PDF report…"):
+                    st.session_state.report_pdf = build_pdf(
+                        rep_items, agg, st.session_state.get("rep_query", ""),
+                        st.session_state.ask_answer, st.session_state.get("last_parsed"))
+                st.rerun()
+            except Exception as exc:  # noqa: BLE001
+                st.error(f"PDF build failed: {exc}")
 
     # ---- Suggested next steps: tailored, graph-leaning ideas for this data ----
     if "suggestions" not in st.session_state:
@@ -1254,11 +1255,12 @@ else:
                "no new search.")
     # The conversation so far renders first; the input box always sits at the
     # very bottom, directly under the most recent answer.
-    for turn in st.session_state.get("follow_thread", []):
+    for _ti, turn in enumerate(st.session_state.get("follow_thread", [])):
         st.markdown(f"**Follow-up:** {turn['q']}")
         with st.container(border=True):
             ai_md(turn["a"])
-            maybe_chart(turn["q"], agg, rep_items, st.session_state.get("last_parsed"))
+            # Chart this turn's OWN data snapshot (matches its answer).
+            maybe_chart(turn["q"], turn.get("items", rep_items), turn.get("scope"))
 
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
