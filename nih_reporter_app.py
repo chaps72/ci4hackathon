@@ -93,6 +93,16 @@ a:hover {{ text-decoration: underline; }}
     border-bottom: 2px solid {EMORY_BRAND_GOLD}; }}
 .nih-eyebrow {{ color: {EMORY_NAVY}; font-size: 0.72rem; font-weight: 700;
     letter-spacing: 0.16em; text-transform: uppercase; }}
+.emory-wordmark {{ display: inline-flex; align-items: center; gap: 14px;
+    margin-bottom: 4px; }}
+.emory-wordmark .em {{ font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 700; font-size: 1.75rem; color: {EMORY_NAVY};
+    letter-spacing: 0.01em; line-height: 1; }}
+.emory-wordmark .bar {{ width: 1px; height: 1.5rem; background: {EMORY_NAVY};
+    opacity: 0.55; }}
+.emory-wordmark .res {{ font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400; font-size: 1.0rem; color: {EMORY_NAVY};
+    letter-spacing: 0.3em; }}
 .nih-header h1 {{ color: {INK} !important; margin: 2px 0 0 0; font-size: 2.1rem;
     font-weight: 600; letter-spacing: -0.03em; }}
 .nih-header p {{ color: {MUTED}; margin: 7px 0 0 0; font-size: 1.02rem;
@@ -118,7 +128,8 @@ def _emory_brand() -> str:
             b64 = base64.b64encode(open(path, "rb").read()).decode()
             return (f'<img src="data:image/{mime};base64,{b64}" '
                     'style="height:34px;margin-bottom:6px;" alt="Emory Research"/>')
-    return '<div class="nih-eyebrow">Emory Research</div>'
+    return ('<div class="emory-wordmark"><span class="em">EMORY</span>'
+            '<span class="bar"></span><span class="res">RESEARCH</span></div>')
 
 
 st.markdown(
