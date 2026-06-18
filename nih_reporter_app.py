@@ -830,10 +830,13 @@ if not st.session_state.get("ask_answer"):
                 clar_ans = st.text_input("Your answer", label_visibility="collapsed",
                                          placeholder="Type your answer…")
                 cf1, cf2 = st.columns(2)
-                cont = cf1.form_submit_button("Continue", type="primary",
+                cont = cf1.form_submit_button("Use my answer", type="primary",
                                               use_container_width=True)
-                anyway = cf2.form_submit_button("Answer anyway",
+                anyway = cf2.form_submit_button("Skip — use defaults",
                                                 use_container_width=True)
+            st.caption("**Use my answer**: run the report using what you typed above. "
+                       "**Skip — use defaults**: run it now without answering "
+                       "(home institution = Emory, all available data).")
         if cont and clar_ans.strip():
             run_report(st.session_state["clarify_for"]
                        + f"\n\n[Clarification] {st.session_state['clarify_q']} "
