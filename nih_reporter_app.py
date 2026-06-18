@@ -80,6 +80,15 @@ h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important
 .stButton button[kind="secondary"] {{
     font-size: 0.78rem; padding: 0.3rem 0.85rem; min-height: 0; line-height: 1.3;
 }}
+/* New query buttons: soft pastel-Emory fill (targeted by their widget keys) */
+.st-key-newq_top button, .st-key-newq_bottom button {{
+    background: #e7ecf7 !important; color: {EMORY_NAVY} !important;
+    border: 1px solid #d4ddf0 !important;
+}}
+.st-key-newq_top button:hover, .st-key-newq_bottom button:hover {{
+    background: #d8e2f4 !important; color: {EMORY_NAVY} !important;
+    border-color: #bcc9ea !important;
+}}
 .stTabs [data-baseweb="tab-list"] {{ gap: 8px; border-bottom: 1px solid {BORDER}; }}
 .stTabs [aria-selected="true"] {{ color: {ACCENT} !important; font-weight: 600; }}
 a {{ color: {ACCENT}; text-decoration: none; }}
