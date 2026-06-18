@@ -260,6 +260,8 @@ EXAMPLE_REPORTS = [
 DEFAULT_QUESTION = EXAMPLE_REPORTS[0][1]
 
 
+_PUB_WORDS = ("publication", "publications", "papers", "paper", "pubmed", "output",
+              "outputs", "productivity", "published", "citations", "research output")
 _ABSTRACT_WORDS = ("abstract", "about", "research area", "research areas", "topic",
                    "theme", "studying", "study focus", "focus on", "subject",
                    "what are these", "what is this", "describe", "research themes",
@@ -356,6 +358,34 @@ def build_facts(items: list, question: str = "") -> str:
             lines.append("Abstracts for the top awards (for research-theme questions):")
             lines += [f"  - {it.get('title', '')} (PI {it.get('pi', '')}, "
                       f"{it.get('ic', '')}): {it['abstract'][:600]}" for it in with_abs]
+    # Linked publications (research output) — fetched only when the question is
+    # about outputs, to keep it cheap. Patents and clinical-trial links are not
+    # reliably exposed by RePORTER's public API, so we note that.
+    if question and any(w in question.lower() for w in _PUB_WORDS):
+        cores = [it.get("core_num") for it in items if it.get("core_num")]
+        pubs, perr = reporter.publication_counts(cores)
+        if perr and not pubs:
+            lines.append("Publications: linkage could not be retrieved right now "
+                         f"({perr}).")
+        else:
+            total_pubs = sum(pubs.values())
+            covered = sum(1 for c in set(cores) if pubs.get((c or '').upper()))
+            lines.append(f"Linked publications (NIH RePORTER / PubMed): {total_pubs} "
+                         f"publications linked across {covered} grants in this set "
+                         "(grants without linked pubs have 0).")
+            by_pi = {}
+            for it in items:
+                n = pubs.get((it.get("core_num") or "").upper(), 0)
+                if n:
+                    by_pi.setdefault(it.get("title", "")[:60] + f" (PI {it.get('pi','')})", 0)
+                    by_pi[it.get("title", "")[:60] + f" (PI {it.get('pi','')})"] += n
+            top = sorted(by_pi.items(), key=lambda kv: kv[1], reverse=True)[:12]
+            if top:
+                lines.append("Most-publishing grants (title (PI): #pubs): "
+                             + "; ".join(f"{k}: {v}" for k, v in top))
+        lines.append("Note: NIH RePORTER's public API links PUBLICATIONS only; "
+                     "patents and clinical-trial links are not reliably available "
+                     "from it.")
     return "\n".join(lines)
 
 
