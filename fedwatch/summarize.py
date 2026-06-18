@@ -266,6 +266,55 @@ def clarify(question: str) -> str:
         return ""
 
 
+# Fallback suggestions when no API key (still varied, graph-leaning).
+_FALLBACK_SUGGESTIONS = [
+    ("Funding by institute", "Show total funding by NIH institute (IC) as a bar chart."),
+    ("Trend over years", "Show total funding by fiscal year as a bar chart, and note the trend."),
+    ("New vs. renewal", "Break down new vs. renewal vs. continuation awards, with a chart."),
+    ("Top PIs", "Who are the top principal investigators by total funding? Show a chart."),
+    ("Mechanism mix", "Break funding down by activity code / mechanism, with a chart."),
+]
+
+
+def suggest_followups(question: str, facts_md: str) -> list:
+    """Propose 4 useful NEXT analyses for this result set — favoring ones that
+    produce a graph and angles the user may not have considered. Returns a list
+    of (button_label, follow_up_prompt) tuples."""
+    if not claude_available():
+        return _FALLBACK_SUGGESTIONS[:4]
+    import anthropic
+
+    client = anthropic.Anthropic()
+    prompt = (
+        "You are suggesting next analytical steps for an NIH RePORTER report at a "
+        "university research office. Given the user's question and the dataset "
+        "facts, propose 4 useful FOLLOW-UP analyses they likely haven't considered "
+        "— prefer ones that produce a GRAPH (breakdowns, trends over fiscal years, "
+        "comparisons, concentration/share, mechanism or institute mix) and make "
+        "them specific to THIS data. Respond with ONLY a JSON array of 4 objects "
+        "{\"label\": <button text, max 4 words>, \"prompt\": <full instruction to "
+        "run, one sentence>}. No prose.\n\n"
+        f"Question: {question}\n\nDataset facts:\n{facts_md[:2500]}"
+    )
+    try:
+        resp = client.messages.create(
+            model=MODEL, max_tokens=500,
+            messages=[{"role": "user", "content": prompt}])
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        data = json.loads(_extract_json_array(text))
+        out = [(str(o["label"])[:40], str(o["prompt"]))
+               for o in data if o.get("label") and o.get("prompt")]
+        return out[:4] or _FALLBACK_SUGGESTIONS[:4]
+    except Exception:  # noqa: BLE001
+        return _FALLBACK_SUGGESTIONS[:4]
+
+
+def _extract_json_array(text: str) -> str:
+    text = re.sub(r"^```(?:json)?|```$", "", (text or "").strip(), flags=re.MULTILINE).strip()
+    start, end = text.find("["), text.rfind("]")
+    return text[start:end + 1] if start != -1 and end != -1 else text
+
+
 def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, str]:
     """Answer a natural-language report request using pre-computed dataset facts.
 

@@ -103,9 +103,9 @@ a:hover {{ text-decoration: underline; }}
 .emory-wordmark .res {{ font-family: Georgia, 'Times New Roman', serif;
     font-weight: 400; font-size: 1.0rem; color: {EMORY_NAVY};
     letter-spacing: 0.3em; }}
-.nih-header h1 {{ color: {INK} !important; margin: 2px 0 0 0; font-size: 2.1rem;
-    font-weight: 600; letter-spacing: -0.03em; }}
-.nih-header p {{ color: {MUTED}; margin: 7px 0 0 0; font-size: 1.02rem;
+.nih-header h1 {{ color: {INK} !important; margin: 4px 0 0 0; font-size: 3.1rem;
+    font-weight: 700; letter-spacing: -0.035em; }}
+.nih-header p {{ color: {MUTED}; margin: 8px 0 0 0; font-size: 1.05rem;
     font-weight: 400; }}
 .kpi {{
     border: 1px solid {BORDER}; border-radius: 16px; padding: 16px 18px;
@@ -139,7 +139,8 @@ st.markdown(
     unsafe_allow_html=True)
 
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
-               "asked_question", "clarify_q", "clarify_for", "skip_clarify")
+               "asked_question", "clarify_q", "clarify_for", "skip_clarify",
+               "suggestions")
 
 
 def reset_query():
@@ -718,7 +719,7 @@ def run_report(q: str):
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
     st.session_state.follow_thread = []
-    for _k in ("clarify_q", "clarify_for"):
+    for _k in ("clarify_q", "clarify_for", "suggestions"):
         st.session_state.pop(_k, None)
 
 
@@ -883,11 +884,18 @@ else:
                          file_name="nih_report.md", mime="text/markdown",
                          use_container_width=True)
 
-    # ---- Suggested next steps: one-click follow-ups (charts, breakdowns) ----
-    st.caption("Suggested next steps")
-    ns_cols = st.columns(len(NEXT_STEPS))
-    for _col, (_lbl, _fq) in zip(ns_cols, NEXT_STEPS):
-        if _col.button(_lbl, key=f"ns_{_lbl}", use_container_width=True):
+    # ---- Suggested next steps: tailored, graph-leaning ideas for this data ----
+    if "suggestions" not in st.session_state:
+        try:
+            st.session_state.suggestions = summarize.suggest_followups(
+                st.session_state.get("asked_question", ""), build_facts(rep_items))
+        except Exception:  # noqa: BLE001
+            st.session_state.suggestions = NEXT_STEPS
+    suggestions = st.session_state.suggestions or NEXT_STEPS
+    st.caption("Suggested next steps — ideas you might not have considered")
+    ns_cols = st.columns(len(suggestions))
+    for _i, (_col, (_lbl, _fq)) in enumerate(zip(ns_cols, suggestions)):
+        if _col.button(_lbl, key=f"ns_{_i}_{_lbl}", use_container_width=True):
             run_followup(_fq)
             st.rerun()
 
