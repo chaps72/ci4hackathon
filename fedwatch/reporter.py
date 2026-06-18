@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 import requests
 
 API_URL = "https://api.reporter.nih.gov/v2/projects/search"
+PUBLICATIONS_URL = "https://api.reporter.nih.gov/v2/publications/search"
 TIMEOUT = 25
 HEADERS = {
     "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -596,6 +597,40 @@ def compare_orgs(orgs, text_query: str = "", ic_codes=None, days_back: int = 7,
     rows.sort(key=lambda r: r["total_amount"], reverse=True)
     return rows, errors
 
+
+def publication_counts(core_nums, max_pubs: int = 4000):
+    """Count NIH RePORTER-linked publications per grant (by core project number).
+
+    Returns ``(counts, error)`` where counts is ``{core_num: n_publications}``.
+    Fails soft: on any API error returns whatever was gathered plus a message.
+    Publications are research OUTPUT linked to the grant in RePORTER (PubMed).
+    """
+    cores = [c for c in dict.fromkeys(core_nums) if c][:500]  # API caps the list
+    if not cores:
+        return {}, None
+    counts: Counter = Counter()
+    offset, total = 0, None
+    while offset < max_pubs:
+        page = min(500, max_pubs - offset)
+        payload = {"criteria": {"core_project_nums": cores},
+                   "offset": offset, "limit": page}
+        try:
+            resp = requests.post(PUBLICATIONS_URL, json=payload, headers=HEADERS,
+                                 timeout=TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:  # noqa: BLE001 - fail soft
+            return dict(counts), f"NIH RePORTER publications fetch failed: {exc}"
+        results = data.get("results") or []
+        for r in results:
+            cp = (r.get("coreproject") or "").strip().upper()
+            if cp:
+                counts[cp] += 1
+        total = (data.get("meta") or {}).get("total", total)
+        offset += len(results)
+        if not results or (total is not None and offset >= total):
+            break
+    return dict(counts), None
 
 # ---------------------------------------------------------------------------
 # Offline sample so the report renders without network access. Figures are
