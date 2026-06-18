@@ -581,7 +581,8 @@ def compare_orgs(orgs, text_query: str = "", ic_codes=None, days_back: int = 7,
             continue
         items, err = fetch_awards(
             org_names=[org], text_query=text_query, ic_codes=ic_codes,
-            days_back=days_back, fiscal_years=fiscal_years, limit=limit)
+            days_back=days_back, fiscal_years=fiscal_years, limit=limit,
+            use_award_window=not bool(fiscal_years))
         if err:
             errors.append(f"{org}: {err}")
             continue

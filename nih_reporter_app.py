@@ -149,7 +149,7 @@ st.markdown(
 
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
                "asked_question", "clarify_q", "clarify_for", "skip_clarify",
-               "suggestions", "report_pdf")
+               "suggestions", "report_pdf", "benchmark")
 
 
 def reset_query():
@@ -961,6 +961,48 @@ def store_results(awards, rep_err):
     st.session_state.pop("follow_thread", None)
 
 
+DEFAULT_PEERS = ["EMORY UNIVERSITY", "DUKE UNIVERSITY", "VANDERBILT UNIVERSITY",
+                 "JOHNS HOPKINS UNIVERSITY", "WASHINGTON UNIVERSITY",
+                 "UNIVERSITY OF PITTSBURGH"]
+_BENCH_WORDS = ("benchmark", "peer", "peers", "compared to other", "vs other",
+                "versus other", "against other institution", "how does emory compare",
+                "compare emory", "relative to peer", "other institutions",
+                "other universities", "nationally ranked", "rank among")
+_PEER_NAMES = {
+    "duke": "DUKE UNIVERSITY", "vanderbilt": "VANDERBILT UNIVERSITY",
+    "johns hopkins": "JOHNS HOPKINS UNIVERSITY", "hopkins": "JOHNS HOPKINS UNIVERSITY",
+    "washington university": "WASHINGTON UNIVERSITY", "wustl": "WASHINGTON UNIVERSITY",
+    "washu": "WASHINGTON UNIVERSITY", "pittsburgh": "UNIVERSITY OF PITTSBURGH",
+    "pitt": "UNIVERSITY OF PITTSBURGH", "stanford": "STANFORD UNIVERSITY",
+    "yale": "YALE UNIVERSITY", "penn": "UNIVERSITY OF PENNSYLVANIA",
+    "michigan": "UNIVERSITY OF MICHIGAN AT ANN ARBOR",
+    "ucsf": "UNIVERSITY OF CALIFORNIA, SAN FRANCISCO",
+    "unc": "UNIV OF NORTH CAROLINA CHAPEL HILL",
+}
+
+
+def maybe_benchmark(question: str, scope: dict):
+    """If the question asks to benchmark Emory against peers, compare total NIH
+    funding across institutions for the same scope. Returns {rows, errors, fys}
+    or None."""
+    q = (question or "").lower()
+    named = [v for k, v in _PEER_NAMES.items() if k in q]
+    wants = any(w in q for w in _BENCH_WORDS) or (
+        named and any(w in q for w in ("compare", "vs ", "versus", "benchmark", "against")))
+    if not wants:
+        return None
+    orgs = ["EMORY UNIVERSITY"] + (named or [o for o in DEFAULT_PEERS
+                                             if o != "EMORY UNIVERSITY"])
+    seen = set()
+    orgs = [o for o in orgs if not (o in seen or seen.add(o))]
+    fys = scope.get("fiscal_years") or [CURRENT_FY]
+    with st.spinner("Benchmarking against peer institutions…"):
+        rows, errs = reporter.compare_orgs(
+            orgs, text_query=scope.get("topic") or "",
+            ic_codes=scope.get("ic_codes") or None, fiscal_years=fys, limit=4000)
+    return {"rows": rows, "errors": errs, "fys": fys}
+
+
 def run_report(q: str):
     """Parse the question, pull the matching awards, and write the report."""
     with st.spinner("Reading your request and pulling the matching awards..."):
@@ -974,8 +1016,16 @@ def run_report(q: str):
         st.session_state.rep_query = label
         st.session_state.last_parsed = parsed   # scope drives charts + follow-ups
         st.session_state.filter_sig = filter_sig()
+    bench = maybe_benchmark(q, parsed)
+    st.session_state.benchmark = bench
+    facts = build_facts(awards, q)
+    if bench and bench.get("rows"):
+        facts += ("\n\nPeer benchmark — total NIH funding by institution for FY "
+                  + ", ".join(str(y) for y in bench["fys"]) + ": "
+                  + "; ".join(f"{r['org']}: {reporter.fmt_money(r['total_amount'])} "
+                              f"({r['awards']} awards)" for r in bench["rows"]))
     with st.spinner("Analyzing the data..."):
-        answer, engine = summarize.custom_report(q, build_facts(awards, q))
+        answer, engine = summarize.custom_report(q, facts)
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
@@ -1149,6 +1199,22 @@ if not st.session_state.get("ask_answer"):
             st.session_state.skip_clarify = True
             st.rerun()
 
+    # ---- Saved reports (this session) ----
+    _saved = st.session_state.get("saved") or []
+    if _saved:
+        _sl, _sc, _sr = st.columns([1, 2.4, 1])
+        with _sc:
+            with st.expander(f"⭐ Saved reports ({len(_saved)})"):
+                for _si, _s in enumerate(_saved):
+                    _r, _x = st.columns([6, 1])
+                    if _r.button(_s["q"][:80], key=f"saved_{_si}",
+                                 use_container_width=True):
+                        run_report(_s["q"])
+                        st.rerun()
+                    if _x.button("✕", key=f"unsave_{_si}"):
+                        _saved.pop(_si)
+                        st.rerun()
+
     # ---- Clarification: if the request is ambiguous, ask BEFORE running it ----
     if st.session_state.get("clarify_q"):
         _cl, _cc, _cr = st.columns([1, 2.4, 1])
@@ -1208,6 +1274,18 @@ else:
                                         st.session_state.get("ask_question", "")),
                    st.session_state.get("last_parsed"),
                    key_prefix=f"main{st.session_state.get('report_seq', 0)}")
+
+    _bench = st.session_state.get("benchmark")
+    if _bench and _bench.get("rows"):
+        st.markdown("**Peer benchmark — total NIH funding** (FY "
+                    + ", ".join(str(y) for y in _bench["fys"]) + ")")
+        _bd = {r["org"].title(): r["total_amount"] for r in _bench["rows"]}
+        st.bar_chart(pd.Series(_bd, name="Funding ($)"), color=EMORY_BLUE,
+                     horizontal=True, height=max(160, 34 * len(_bd)))
+        if _bench.get("errors"):
+            st.caption("Some peers couldn't be fetched: "
+                       + "; ".join(_bench["errors"][:2]))
+
     with st.expander("Export this report  ·  Excel · PDF · Markdown"):
         dlc1, dlc2, dlc3 = st.columns(3)
         if xlsx_data:
@@ -1233,6 +1311,42 @@ else:
                 st.rerun()
             except Exception as exc:  # noqa: BLE001
                 st.error(f"PDF build failed: {exc}")
+
+        st.divider()
+        st.markdown("**Email this report**")
+        _smtp = _secret("SMTP_HOST")
+        em1, em2 = st.columns([3, 1])
+        _to = em1.text_input("Recipient email(s), comma-separated",
+                             key="email_to", label_visibility="collapsed",
+                             placeholder="name@emory.edu", disabled=not _smtp)
+        if em2.button("Send", use_container_width=True, disabled=not _smtp):
+            if not _to.strip():
+                st.warning("Enter at least one recipient.")
+            else:
+                try:
+                    title = "NIH RePORTER report — " + datetime.now().strftime("%b %d, %Y")
+                    notify.send_email(
+                        _smtp, int(_secret("SMTP_PORT", "587")),
+                        _secret("SMTP_USERNAME"), _secret("SMTP_PASSWORD"),
+                        _secret("ALERT_EMAIL_FROM", "nih-reporter@emory.edu"),
+                        _to.strip(), rep_items[:60],
+                        summary_md=st.session_state.ask_answer, title=title)
+                    st.success(f"Sent to {_to.strip()}.")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(f"Email failed: {exc}")
+        if not _smtp:
+            st.caption("Set SMTP_HOST + SMTP_USERNAME/SMTP_PASSWORD (and optionally "
+                       "ALERT_EMAIL_FROM) in Streamlit secrets to enable emailing.")
+
+        st.divider()
+        if st.button("⭐ Save this report", key="save_report"):
+            saved = st.session_state.setdefault("saved", [])
+            qn = st.session_state.get("asked_question", "")
+            if qn and not any(s["q"] == qn for s in saved):
+                saved.append({"q": qn, "label": st.session_state.get("rep_query", "")})
+                st.toast("Saved. Find it on the start screen (New query).", icon="⭐")
+            else:
+                st.caption("Already saved.")
 
     # ---- Suggested next steps: tailored, graph-leaning ideas for this data ----
     if "suggestions" not in st.session_state:
