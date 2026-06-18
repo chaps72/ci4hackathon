@@ -30,9 +30,9 @@ st.set_page_config(page_title="NIH RePORTER Weekly Report", page_icon="🔬",
                    layout="wide", initial_sidebar_state="collapsed")
 
 # ---------- Apple-inspired styling (system font, airy, ghost buttons) ----------
-ACCENT = "#0071e3"        # Apple blue (links, tabs, charts)
-ACCENT_HOVER = "#0a84ff"
-ACCENT_2 = "#30b0a8"      # secondary chart series
+ACCENT = "#012169"        # Emory navy (links, tabs, charts) — professional, not bright
+ACCENT_HOVER = "#1c3a8f"  # lighter navy
+ACCENT_2 = "#8a94ad"      # muted steel-blue secondary chart series
 INK = "#1d1d1f"           # Apple near-black text
 MUTED = "#6e6e73"         # Apple secondary text
 BORDER = "#d2d2d7"        # Apple hairline
@@ -70,7 +70,7 @@ h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important
 }}
 .stButton button:hover, .stDownloadButton button:hover,
 .stFormSubmitButton button:hover {{
-    background: {INK}; color: #ffffff; border-color: {INK};
+    background: {ACCENT}; color: #ffffff; border-color: {ACCENT};
 }}
 .stFormSubmitButton button {{
     background: #ffffff; color: {INK}; border: 1px solid {BORDER};
