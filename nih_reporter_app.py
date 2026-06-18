@@ -439,6 +439,78 @@ _DIM_KEYS = {
 _DIM_FIELD = {"ic": "ic", "activity": "activity_code", "app_type": "app_type",
               "org": "org", "state": "state"}
 
+# Interactive graph-explorer dimensions: label -> (dim, count_key, funding_key).
+_EXP_DIMS = {
+    "Fiscal year": ("fy", "by_fy", "funding_by_fy"),
+    "Institute (IC)": ("ic", "by_ic", "funding_by_ic"),
+    "Activity code / mechanism": ("activity", "by_activity", "funding_by_activity"),
+    "Application type": ("app_type", "by_app_type", "funding_by_app_type"),
+    "Organization": ("org", "by_org", "funding_by_org"),
+    "State": ("state", "by_state", "funding_by_state"),
+    "Week (new awards)": ("week", None, None),
+    "Month (new awards)": ("month", None, None),
+}
+
+
+def _default_view(question: str, scope: dict, agg: dict):
+    """Pick the graph view (dimension label, metric label) that matches the text."""
+    q = (question or "").lower()
+    scope = scope or {}
+    metric = "Award count" if any(w in q for w in _COUNT_WORDS) else "Funding ($)"
+    if scope.get("group_by") == "week" or (scope.get("date_from") and not scope.get("fiscal_years")):
+        return "Week (new awards)", metric
+    if scope.get("group_by") == "month":
+        return "Month (new awards)", metric
+    fys = scope.get("fiscal_years") or []
+    if len(fys) > 1 or (not fys and len(agg.get("funding_by_fy") or {}) > 1
+                        and any(w in q for w in ("trend", "year", "over time"))):
+        return "Fiscal year", metric
+    for label, (d, *_r) in _EXP_DIMS.items():
+        if d in ("week", "month", "fy"):
+            continue
+        kw = _DIM_KEYS.get(d, ((),))[0]
+        if any(k in q for k in kw):
+            return label, metric
+    return "Institute (IC)", metric
+
+
+def chart_explorer(agg: dict, items: list, question: str, scope: dict, key_prefix="exp"):
+    """A graph with a smart default plus controls to flip the breakdown/metric."""
+    dlabel, mlabel = _default_view(question, scope, agg)
+    labels = list(_EXP_DIMS)
+    st.markdown("**View as a graph**")
+    c1, c2 = st.columns([2, 1])
+    sel = c1.selectbox("Break down by", labels, index=labels.index(dlabel),
+                       key=f"{key_prefix}_dim", label_visibility="collapsed")
+    metric = c2.radio("Measure", ["Funding ($)", "Award count"],
+                      index=0 if mlabel.startswith("Funding") else 1, horizontal=True,
+                      key=f"{key_prefix}_metric", label_visibility="collapsed")
+    d, count_key, fund_key = _EXP_DIMS[sel]
+    is_f = metric.startswith("Funding")
+    ylabel = "Funding ($)" if is_f else "Awards"
+    if d in ("week", "month"):
+        data = reporter.by_period(items, d, "funding" if is_f else "count")
+        if data:
+            st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE, height=320)
+        else:
+            st.caption("No dated awards to chart for this view.")
+        return
+    if d == "fy":
+        data = agg.get("funding_by_fy") if is_f else agg.get("by_fy")
+        if data:
+            st.bar_chart(pd.Series({f"FY{k}": v for k, v in data.items()}, name=ylabel),
+                         color=EMORY_BLUE, height=320)
+        else:
+            st.caption("No fiscal-year data for this view.")
+        return
+    data = (agg.get(fund_key) if is_f else agg.get(count_key)) or {}
+    rows = list(data.items())[:15]
+    if rows:
+        st.bar_chart(pd.Series({str(k): v for k, v in rows}, name=ylabel),
+                     color=EMORY_BLUE, horizontal=True, height=max(180, 32 * len(rows)))
+    else:
+        st.caption("No data for this view.")
+
 
 def maybe_chart(question: str, agg: dict, items: list, scope: dict = None):
     """Render a chart that matches what the text/scope is about. The pulled scope
@@ -955,12 +1027,13 @@ else:
                                                    st.session_state.get("ask_question", "")))
     with st.container(border=True):
         ai_md(st.session_state.ask_answer)
-        maybe_chart(st.session_state.get("asked_question",
-                                         st.session_state.get("ask_question", "")),
-                    agg, rep_items, st.session_state.get("last_parsed"))
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
+    chart_explorer(agg, rep_items,
+                   st.session_state.get("asked_question",
+                                        st.session_state.get("ask_question", "")),
+                   st.session_state.get("last_parsed"), key_prefix="main")
     dlc1, dlc2 = st.columns(2)
     if xlsx_data:
         dlc1.download_button("Download data (Excel)", xlsx_data,
