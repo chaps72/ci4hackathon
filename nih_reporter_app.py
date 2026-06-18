@@ -533,24 +533,36 @@ _EXP_DIMS = {
 
 
 def _default_view(question: str, scope: dict, agg: dict):
-    """Pick the graph view (dimension label, metric label) that matches the text."""
+    """Pick the graph view (dimension label, metric label) that matches the text.
+    An explicit dimension in the question wins; otherwise fall back to the scope."""
     q = (question or "").lower()
     scope = scope or {}
     metric = "Award count" if any(w in q for w in _COUNT_WORDS) else "Funding ($)"
-    if scope.get("group_by") == "week" or (scope.get("date_from") and not scope.get("fiscal_years")):
+
+    # 1) Explicit dimension named in the question takes priority.
+    if any(w in q for w in ("weekly", "per week", "by week", "each week", "week-by-week")):
+        return "Week (new awards)", metric
+    if any(w in q for w in ("monthly", "per month", "by month", "each month")):
+        return "Month (new awards)", metric
+    if any(w in q for w in ("fiscal year", "by year", "per year", "each year", "by fy",
+                            "per fy", "year over year", "year-over-year", "over the years",
+                            "annual", "yearly", "trend", "over time")):
+        return "Fiscal year", metric
+    for label, dim in (("Institute (IC)", "ic"),
+                       ("Activity code / mechanism", "activity"),
+                       ("Application type", "app_type"),
+                       ("Organization", "org"), ("State", "state")):
+        if any(k in q for k in _DIM_KEYS[dim][0]):
+            return label, metric
+
+    # 2) No explicit dimension -> infer from the pulled scope.
+    if scope.get("group_by") == "week" or (scope.get("date_from")
+                                           and not scope.get("fiscal_years")):
         return "Week (new awards)", metric
     if scope.get("group_by") == "month":
         return "Month (new awards)", metric
-    fys = scope.get("fiscal_years") or []
-    if len(fys) > 1 or (not fys and len(agg.get("funding_by_fy") or {}) > 1
-                        and any(w in q for w in ("trend", "year", "over time"))):
+    if len(scope.get("fiscal_years") or []) > 1:
         return "Fiscal year", metric
-    for label, (d, *_r) in _EXP_DIMS.items():
-        if d in ("week", "month", "fy"):
-            continue
-        kw = _DIM_KEYS.get(d, ((),))[0]
-        if any(k in q for k in kw):
-            return label, metric
     return "Institute (IC)", metric
 
 
@@ -905,6 +917,9 @@ def run_report(q: str):
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
     st.session_state.follow_thread = []
+    # New report id so the graph explorer gets fresh widgets (and its scope-matched
+    # default), instead of keeping the previous report's selection.
+    st.session_state.report_seq = st.session_state.get("report_seq", 0) + 1
     for _k in ("clarify_q", "clarify_for", "suggestions", "report_pdf"):
         st.session_state.pop(_k, None)
 
@@ -1116,7 +1131,8 @@ else:
     chart_explorer(agg, rep_items,
                    st.session_state.get("asked_question",
                                         st.session_state.get("ask_question", "")),
-                   st.session_state.get("last_parsed"), key_prefix="main")
+                   st.session_state.get("last_parsed"),
+                   key_prefix=f"main{st.session_state.get('report_seq', 0)}")
     dlc1, dlc2, dlc3 = st.columns(3)
     if xlsx_data:
         dlc1.download_button("Download data (Excel)", xlsx_data,
