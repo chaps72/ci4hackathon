@@ -1,0 +1,36 @@
+name: NIH competitive alerts
+
+on:
+  schedule:
+    - cron: "0 14 * * 1"   # 10am ET Mondays (EDT)
+  workflow_dispatch: {}
+
+jobs:
+  alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests anthropic
+
+      - name: Send competitive alerts
+        env:
+          PEER_ORGS: ${{ vars.PEER_ORGS }}
+          ALERT_ICS: ${{ vars.ALERT_ICS }}
+          ALERT_TOPIC: ${{ vars.ALERT_TOPIC }}
+          ALERT_DAYS: ${{ vars.ALERT_DAYS }}
+          ALERT_MIN_AMOUNT: ${{ vars.ALERT_MIN_AMOUNT }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+        run: python nih_competitive_alerts.py
