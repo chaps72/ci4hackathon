@@ -155,6 +155,11 @@ _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
 def reset_query():
     for _k in _RESET_KEYS:
         st.session_state.pop(_k, None)
+    st.session_state.pop("_q_consumed", None)
+    try:
+        st.query_params.clear()
+    except Exception:  # noqa: BLE001
+        pass
     st.rerun()
 
 
@@ -170,6 +175,28 @@ def _secret(name: str, default: str = "") -> str:
         return st.secrets[name]
     except (KeyError, FileNotFoundError):
         return os.environ.get(name, default)
+
+
+def _password_gate():
+    """If APP_PASSWORD is set (secret/env), require it before showing the app."""
+    pw = _secret("APP_PASSWORD")
+    if not pw or st.session_state.get("authed"):
+        return
+    _l, _c, _r = st.columns([1, 1.4, 1])
+    with _c:
+        st.markdown("#### Restricted — enter the access password")
+        entered = st.text_input("Password", type="password",
+                                label_visibility="collapsed")
+        if st.button("Enter", type="primary", use_container_width=True):
+            if entered == pw:
+                st.session_state.authed = True
+                st.rerun()
+            else:
+                st.error("Incorrect password.")
+    st.stop()
+
+
+_password_gate()
 
 
 def ai_md(text: str):
@@ -205,6 +232,10 @@ def bar(series: dict, title: str, top: int = 12):
 
 # One-click example reports shown front and center (label, question).
 EXAMPLE_REPORTS = [
+    ("What's new this week",
+     "What new NIH awards did Emory receive in the last 7 days? Summarize the count "
+     "and total funding, list them with PI, institute and amount, and show a chart "
+     "of funding by institute."),
     ("Investigators with 3+ grants",
      "Over the last 4 fiscal years, how many investigators have 3 or more grants "
      "where they are PI, and how many have 4 or more? List them with their grant "
@@ -566,6 +597,34 @@ def _default_view(question: str, scope: dict, agg: dict):
     return "Institute (IC)", metric
 
 
+def _chart_png(title: str, data: dict, vertical: bool, money: bool) -> bytes:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    navy, ink = "#012169", "#1d1d1f"
+    labels, vals = list(data), list(data.values())
+    fig, ax = plt.subplots(figsize=(8, 4.6))
+    if vertical:
+        ax.bar(labels, vals, color=navy)
+        ax.tick_params(axis="x", rotation=45)
+        if money:
+            ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+    else:
+        ax.barh(labels[::-1], vals[::-1], color=navy)
+        if money:
+            ax.xaxis.set_major_formatter(FuncFormatter(_money_fmt))
+    ax.set_title(title, color=navy, fontsize=13, fontweight="bold", loc="left", pad=12)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    ax.tick_params(colors=ink, labelsize=9)
+    buf = io.BytesIO()
+    fig.tight_layout()
+    fig.savefig(buf, format="png", dpi=150)
+    plt.close(fig)
+    return buf.getvalue()
+
+
 def chart_explorer(agg: dict, items: list, question: str, scope: dict, key_prefix="exp"):
     """A graph with a smart default plus controls to flip the breakdown/metric."""
     dlabel, mlabel = _default_view(question, scope, agg)
@@ -584,26 +643,28 @@ def chart_explorer(agg: dict, items: list, question: str, scope: dict, key_prefi
                f"{st.session_state.get('rep_query', '')}")
     if d in ("week", "month"):
         data = reporter.by_period(items, d, "funding" if is_f else "count")
-        if data:
-            st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE, height=320)
-        else:
-            st.caption("No dated awards to chart for this view.")
-        return
-    if d == "fy":
-        data = agg.get("funding_by_fy") if is_f else agg.get("by_fy")
-        if data:
-            st.bar_chart(pd.Series({f"FY{k}": v for k, v in data.items()}, name=ylabel),
-                         color=EMORY_BLUE, height=320)
-        else:
-            st.caption("No fiscal-year data for this view.")
-        return
-    data = (agg.get(fund_key) if is_f else agg.get(count_key)) or {}
-    rows = list(data.items())[:15]
-    if rows:
-        st.bar_chart(pd.Series({str(k): v for k, v in rows}, name=ylabel),
-                     color=EMORY_BLUE, horizontal=True, height=max(180, 32 * len(rows)))
+        vertical, title = True, f"{ylabel} by {d}"
+    elif d == "fy":
+        raw = agg.get("funding_by_fy") if is_f else agg.get("by_fy")
+        data = {f"FY{k}": v for k, v in (raw or {}).items()}
+        vertical, title = True, f"{ylabel} by fiscal year"
     else:
+        raw = (agg.get(fund_key) if is_f else agg.get(count_key)) or {}
+        data = {str(k): v for k, v in list(raw.items())[:15]}
+        vertical, title = False, f"{ylabel} by {sel}"
+    if not data:
         st.caption("No data for this view.")
+        return
+    st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE,
+                 horizontal=not vertical,
+                 height=320 if vertical else max(180, 32 * len(data)))
+    try:
+        st.download_button("Download chart (PNG)",
+                           _chart_png(title, data, vertical, is_f),
+                           file_name="nih_chart.png", mime="image/png",
+                           key=f"{key_prefix}_png")
+    except Exception:  # noqa: BLE001 - PNG is best-effort
+        pass
 
 
 def maybe_chart(question: str, agg: dict, items: list, scope: dict = None):
@@ -916,6 +977,10 @@ def run_report(q: str):
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
+    try:
+        st.query_params["q"] = q  # reflect in the URL for a shareable link
+    except Exception:  # noqa: BLE001
+        pass
     st.session_state.follow_thread = []
     # New report id so the graph explorer gets fresh widgets (and its scope-matched
     # default), instead of keeping the previous report's selection.
@@ -1054,6 +1119,12 @@ if "pending_q" in st.session_state:
 st.session_state.setdefault("ask_question", "")
 
 if not st.session_state.get("ask_answer"):
+    # Shareable link: a ?q=… in the URL auto-runs that report once on load.
+    _qp = st.query_params.get("q")
+    if _qp and not st.session_state.get("_q_consumed"):
+        st.session_state._q_consumed = True
+        run_report(_qp)
+        st.rerun()
     # ----- Start screen: just the search box and (small) example reports -----
     st.write("")
     st.write("")
@@ -1123,6 +1194,8 @@ else:
     st.subheader("Your report")
     st.caption("Question: " + st.session_state.get("asked_question",
                                                    st.session_state.get("ask_question", "")))
+    st.caption("🔗 Shareable: the link in your browser's address bar reopens this "
+               "report — copy it to share.")
     with st.container(border=True):
         ai_md(st.session_state.ask_answer)
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
