@@ -220,7 +220,14 @@ EXAMPLE_REPORTS = [
 DEFAULT_QUESTION = EXAMPLE_REPORTS[0][1]
 
 
-def build_facts(items: list) -> str:
+_ABSTRACT_WORDS = ("abstract", "about", "research area", "research areas", "topic",
+                   "theme", "studying", "study focus", "focus on", "subject",
+                   "what are these", "what is this", "describe", "research themes",
+                   "what kind of research", "areas of research", "science of",
+                   "what they study", "research focus", "summarize the research")
+
+
+def build_facts(items: list, question: str = "") -> str:
     """Exact, deterministically computed facts handed to the LLM for answers."""
     a = reporter.aggregate(items)
     dist = reporter.grant_count_distribution(items, thresholds=(1, 2, 3, 4, 5, 6))
@@ -301,6 +308,14 @@ def build_facts(items: list) -> str:
         lines += [f"  - {reporter.fmt_money(it['amount'])} | {it.get('ic', '')} "
                   f"{it.get('activity_code', '')} {it.get('app_type', '')} | "
                   f"PI: {it.get('pi', '')} | {it.get('title', '')}" for it in notable]
+    # Abstracts are already fetched (free from RePORTER); include a capped sample
+    # ONLY when the question is about research content, to keep token cost low.
+    if question and any(w in question.lower() for w in _ABSTRACT_WORDS):
+        with_abs = [it for it in notable if it.get("abstract")][:15]
+        if with_abs:
+            lines.append("Abstracts for the top awards (for research-theme questions):")
+            lines += [f"  - {it.get('title', '')} (PI {it.get('pi', '')}, "
+                      f"{it.get('ic', '')}): {it['abstract'][:600]}" for it in with_abs]
     return "\n".join(lines)
 
 
@@ -425,14 +440,13 @@ _DIM_FIELD = {"ic": "ic", "activity": "activity_code", "app_type": "app_type",
               "org": "org", "state": "state"}
 
 
-def maybe_chart(question: str, agg: dict, items: list):
-    """Render a bar chart when the question asks for one — for whatever dimension
-    (fiscal year, IC, activity, application type, org, state) and metric (funding
-    $ or award count) it mentions. When the question compares a category ACROSS
-    years, render a grouped category x fiscal-year chart. Generic across questions."""
+def maybe_chart(question: str, agg: dict, items: list, scope: dict = None):
+    """Render a chart that matches what the text/scope is about. The pulled scope
+    (fiscal years, date range, weekly/monthly grouping) drives the chart so it
+    lines up with the answer: one fiscal year -> that year's breakdown; weekly ->
+    a weekly time series; multiple years -> a year trend / grouped comparison."""
+    scope = scope or {}
     q = (question or "").lower()
-    # Prioritize graphs: render whenever the question implies a breakdown,
-    # comparison, ranking, or any dimension — not only on explicit "chart" words.
     _graph_intent = _CHART_WORDS + (
         "by ", "per ", "across", "breakdown", "break down", "distribution",
         "split", "share", "top ", "largest", "leading", "dominant", "funding",
@@ -440,62 +454,79 @@ def maybe_chart(question: str, agg: dict, items: list):
     _dim_hit = any(any(k in q for k in kw) for _d, (kw, *_rest) in _DIM_KEYS.items())
     if not (any(w in q for w in _graph_intent) or _dim_hit):
         return
-    metric = ("funding" if any(w in q for w in _FUND_WORDS)
-              else "count" if any(w in q for w in _COUNT_WORDS) else "funding")
+    metric = ("count" if any(w in q for w in _COUNT_WORDS)
+              else "funding" if any(w in q for w in _FUND_WORDS) else "funding")
 
-    # Weekly / monthly time series of new awards (by award-notice date).
-    period = ("week" if any(w in q for w in ("weekly", "per week", "by week",
-                                             "each week", "week over week", "week-by-week"))
-              else "month" if any(w in q for w in ("monthly", "per month", "by month",
-                                                   "each month", "month over month"))
-              else None)
+    fys = sorted({int(y) for y in (scope.get("fiscal_years") or []) if str(y).isdigit()})
+    has_range = bool(scope.get("date_from") or scope.get("date_to"))
+    if fys:
+        window = "FY " + ", ".join(str(y) for y in sorted(fys, reverse=True))
+    elif has_range:
+        window = f"{scope.get('date_from') or '…'} → {scope.get('date_to') or '…'}"
+    else:
+        window = ""
+    wsfx = f" — {window}" if window else ""
+
+    # 1) Time series: explicit weekly/monthly, or a calendar date range (-> weekly).
+    period = scope.get("group_by")
+    if any(w in q for w in ("weekly", "per week", "by week", "each week",
+                            "week over week", "week-by-week")):
+        period = "week"
+    elif any(w in q for w in ("monthly", "per month", "by month", "each month",
+                              "month over month")):
+        period = "month"
+    elif not period and has_range:
+        period = "week"
     if period:
-        pmetric = "funding" if any(w in q for w in _FUND_WORDS) else "count"
+        pmetric = "count" if any(w in q for w in _COUNT_WORDS) else \
+            ("funding" if any(w in q for w in _FUND_WORDS) else "count")
         data = reporter.by_period(items, period, pmetric)
         if data:
             ylabel = "Funding ($)" if pmetric == "funding" else "New awards"
-            s = pd.Series(data, name=ylabel)
-            st.markdown(f"**{ylabel} by {period}** (award-notice date)")
-            st.bar_chart(s, color=EMORY_BLUE, height=300)
+            st.markdown(f"**{ylabel} by {period}**{wsfx}")
+            st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE, height=300)
             return
 
     dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
-
-    # Year-over-year comparison of a category -> grouped category x FY chart.
-    year_words = ("fiscal year", "by year", "per year", "each year", "over time",
-                  "annual", "year over year", "year-over-year", "previous year",
-                  "prior year", "previous years", "prior years", "trend", "compare",
-                  "comparison", " vs ", "versus", "history", "historical")
     cat_dim = next((d for d, (kw, *_) in _DIM_KEYS.items()
                     if d != "fy" and any(k in q for k in kw)), None)
-    fys = sorted(agg.get("funding_by_fy") or {})
-    if cat_dim and any(w in q for w in year_words) and len(fys) > 1:
-        xt = reporter.funding_crosstab(items, _DIM_FIELD[cat_dim])
-        top = sorted(xt, key=lambda c: sum(xt[c].values()), reverse=True)[:10]
-        df = pd.DataFrame({f"FY{fy}": [xt[c].get(fy, 0) for c in top] for fy in fys},
-                          index=[str(c) for c in top])
-        label = _DIM_KEYS[cat_dim][3]
-        st.markdown(f"**Funding ($) by {label} and fiscal year**")
-        st.bar_chart(df, stack=False, height=max(200, 34 * len(top)), horizontal=True)
-        return
 
-    if dim is None:
-        dim = "fy" if len(fys) > 1 else "ic"
+    # 2) Multiple fiscal years -> a year comparison (grouped by category, or a trend).
+    multi_year = len(fys) > 1
+    if multi_year:
+        if cat_dim:
+            xt = reporter.funding_crosstab(items, _DIM_FIELD[cat_dim])
+            top = sorted(xt, key=lambda c: sum(xt[c].values()), reverse=True)[:10]
+            yrs = sorted({y for c in xt for y in xt[c]})
+            df = pd.DataFrame({f"FY{y}": [xt[c].get(y, 0) for c in top] for y in yrs},
+                              index=[str(c) for c in top])
+            st.markdown(f"**Funding ($) by {_DIM_KEYS[cat_dim][3]} and fiscal year**")
+            st.bar_chart(df, stack=False, height=max(200, 34 * len(top)), horizontal=True)
+            return
+        d = agg.get("funding_by_fy") if metric == "funding" else agg.get("by_fy")
+        if d:
+            ylabel = "Funding ($)" if metric == "funding" else "Awards"
+            st.markdown(f"**{ylabel} by fiscal year**")
+            st.bar_chart(pd.Series({f"FY{k}": v for k, v in d.items()}, name=ylabel),
+                         color=EMORY_BLUE, height=300)
+            return
+
+    # 3) Single fiscal year / no multi-year -> a breakdown within that window,
+    #    titled with the window so it lines up with the text.
+    if dim is None or dim == "fy":
+        dim = "ic"
     _, fund_key, count_key, dim_label = _DIM_KEYS[dim]
     data = agg.get(fund_key if metric == "funding" else count_key) or {}
-    if not data:  # explicit chart request -> always show something sensible
+    if not data:
         data = agg.get("funding_by_ic") or agg.get("by_ic") or {}
-        dim, dim_label = "ic", "Institute / Center"
-    rows = list(data.items())
-    if dim != "fy":
-        rows = rows[:15]
+        dim_label = "Institute / Center"
+    rows = list(data.items())[:15]
     if not rows:
         return
     ylabel = "Funding ($)" if metric == "funding" else "Awards"
-    s = pd.Series({str(k): v for k, v in rows}, name=ylabel)
-    st.markdown(f"**{ylabel} by {dim_label}**")
-    st.bar_chart(s, color=EMORY_BLUE, horizontal=(dim != "fy"),
-                 height=max(160, 30 * len(s)) if dim != "fy" else 300)
+    st.markdown(f"**{ylabel} by {dim_label}**{wsfx}")
+    st.bar_chart(pd.Series({str(k): v for k, v in rows}, name=ylabel),
+                 color=EMORY_BLUE, horizontal=True, height=max(160, 30 * len(rows)))
 
 
 # ============================ Filter state ============================
@@ -712,9 +743,10 @@ def run_report(q: str):
             awards = reporter.sample_awards()
         st.session_state.rep_items = awards
         st.session_state.rep_query = label
+        st.session_state.last_parsed = parsed   # scope drives charts + follow-ups
         st.session_state.filter_sig = filter_sig()
     with st.spinner("Analyzing the data..."):
-        answer, engine = summarize.custom_report(q, build_facts(awards))
+        answer, engine = summarize.custom_report(q, build_facts(awards, q))
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
@@ -732,9 +764,62 @@ NEXT_STEPS = [
     ("Top PIs", "List the top principal investigators by total funding."),
 ]
 
+_REFETCH_WORDS = (
+    "also", "add", "include", "as well", "plus", "instead", "expand", "wider",
+    "broaden", "previous year", "prior year", "more year", "earlier year",
+    "all institution", "nationwide", "across institution", "every institution",
+    "pull", "go back", "fetch", "since", "back to", "all years", "every year",
+    "last ", "past ", "fiscal year", "fy20", "fy 20", " in 20", "this year",
+    "other institution", "another institution", "compare to", "vs ", "versus")
+
+
+def _needs_refetch(fparsed: dict, fq: str) -> bool:
+    ql = fq.lower()
+    if any(fparsed.get(k) for k in ("fiscal_years", "date_from", "date_to",
+                                    "all_institutions", "organization", "active_only",
+                                    "days_back", "ic_codes", "activity_codes",
+                                    "pi_name", "topic")):
+        return True
+    return any(w in ql for w in _REFETCH_WORDS)
+
+
+def _merge_parse(base: dict, add: dict, fq: str) -> dict:
+    """Merge follow-up criteria over the original. Lists union when the follow-up
+    is additive ('also/add/include'), otherwise the follow-up replaces."""
+    additive = any(w in fq.lower() for w in ("also", "add", "include", "as well",
+                                             "plus", "both", "and "))
+    merged = dict(base or {})
+    for k, v in (add or {}).items():
+        if isinstance(v, list):
+            if v:
+                if additive and k in ("fiscal_years", "ic_codes", "activity_codes"):
+                    merged[k] = sorted(set(merged.get(k) or []) | set(v))
+                else:
+                    merged[k] = v
+        elif isinstance(v, bool):
+            if v:
+                merged[k] = True
+        elif v not in (None, ""):
+            merged[k] = v
+    return merged
+
 
 def run_followup(fq: str):
-    """Answer a follow-up against the current result set (no new fetch)."""
+    """Answer a follow-up. If it needs data the original pull didn't include,
+    go back and pull that data first, then answer on the expanded set."""
+    note = ""
+    fparsed, _ = summarize.parse_query(
+        fq, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+    if _needs_refetch(fparsed, fq):
+        merged = _merge_parse(st.session_state.get("last_parsed") or {}, fparsed, fq)
+        with st.spinner("Pulling the data needed for this…"):
+            awards, err, label = ai_fetch(merged)
+        if not err and awards:
+            st.session_state.rep_items = awards
+            st.session_state.rep_query = label
+            st.session_state.last_parsed = merged
+            st.session_state.filter_sig = filter_sig()
+            note = f"_Pulled data for: {label}._\n\n"
     items = st.session_state.get("rep_items") or []
     prior = ["Original question: " + st.session_state.get(
                  "asked_question", st.session_state.get("ask_question", "")),
@@ -742,10 +827,10 @@ def run_followup(fq: str):
     for t in st.session_state.get("follow_thread", [])[-4:]:
         prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
     with st.spinner("Working on it…"):
-        ans, eng = summarize.custom_report(fq, build_facts(items),
+        ans, eng = summarize.custom_report(fq, build_facts(items, fq),
                                            prior="\n\n".join(prior))
     st.session_state.setdefault("follow_thread", []).append(
-        {"q": fq, "a": ans, "engine": eng})
+        {"q": fq, "a": note + ans, "engine": eng})
 
 
 # Fetch whenever the filters change (or on first load), so the AI answers and
@@ -872,7 +957,7 @@ else:
         ai_md(st.session_state.ask_answer)
         maybe_chart(st.session_state.get("asked_question",
                                          st.session_state.get("ask_question", "")),
-                    agg, rep_items)
+                    agg, rep_items, st.session_state.get("last_parsed"))
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
@@ -912,7 +997,7 @@ else:
         st.markdown(f"**Follow-up:** {turn['q']}")
         with st.container(border=True):
             ai_md(turn["a"])
-            maybe_chart(turn["q"], agg, rep_items)
+            maybe_chart(turn["q"], agg, rep_items, st.session_state.get("last_parsed"))
 
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
