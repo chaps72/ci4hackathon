@@ -11,6 +11,7 @@ Runs independently of the FedWatch dashboard; both share fedwatch/reporter.py.
 Run with:  streamlit run nih_reporter_app.py
 """
 
+import base64
 import io
 import os
 import re
@@ -107,8 +108,21 @@ a:hover {{ text-decoration: underline; }}
 .kpi .sub {{ font-size: 0.74rem; color: {MUTED}; margin-top: 3px; }}
 </style>""", unsafe_allow_html=True)
 
+def _emory_brand() -> str:
+    """Show the Emory Research logo if one is committed at assets/emory_research_logo.*,
+    otherwise a navy text wordmark."""
+    for ext in ("svg", "png", "jpg", "jpeg"):
+        path = os.path.join("assets", f"emory_research_logo.{ext}")
+        if os.path.exists(path):
+            mime = "svg+xml" if ext == "svg" else ext.replace("jpg", "jpeg")
+            b64 = base64.b64encode(open(path, "rb").read()).decode()
+            return (f'<img src="data:image/{mime};base64,{b64}" '
+                    'style="height:34px;margin-bottom:6px;" alt="Emory Research"/>')
+    return '<div class="nih-eyebrow">Emory Research</div>'
+
+
 st.markdown(
-    '<div class="nih-header"><div class="nih-eyebrow">Emory Research</div>'
+    f'<div class="nih-header">{_emory_brand()}'
     '<h1>NIH RePORTER</h1>'
     '<p>NIH/HHS award intelligence · live from the NIH RePORTER API</p></div>',
     unsafe_allow_html=True)
@@ -405,7 +419,14 @@ def maybe_chart(question: str, agg: dict, items: list):
     $ or award count) it mentions. When the question compares a category ACROSS
     years, render a grouped category x fiscal-year chart. Generic across questions."""
     q = (question or "").lower()
-    if not any(w in q for w in _CHART_WORDS):
+    # Prioritize graphs: render whenever the question implies a breakdown,
+    # comparison, ranking, or any dimension — not only on explicit "chart" words.
+    _graph_intent = _CHART_WORDS + (
+        "by ", "per ", "across", "breakdown", "break down", "distribution",
+        "split", "share", "top ", "largest", "leading", "dominant", "funding",
+        "spending", "compare", "comparison", "trend", "over time", "rank")
+    _dim_hit = any(any(k in q for k in kw) for _d, (kw, *_rest) in _DIM_KEYS.items())
+    if not (any(w in q for w in _graph_intent) or _dim_hit):
         return
     metric = ("funding" if any(w in q for w in _FUND_WORDS)
               else "count" if any(w in q for w in _COUNT_WORDS) else "funding")
