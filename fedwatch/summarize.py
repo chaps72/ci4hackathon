@@ -329,9 +329,11 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
     import anthropic
 
     client = anthropic.Anthropic()
-    context = (f"\n\nEarlier in this conversation about the SAME dataset:\n{prior}\n"
-               "Answer the new question below, staying consistent with that."
-               if prior else "")
+    context = (f"\n\nEarlier in this conversation:\n{prior}\n"
+               "Answer the new question below. The dataset facts already reflect "
+               "any data that needed to be pulled for this follow-up, so answer "
+               "from them directly — do NOT say the data wasn't in the original "
+               "pull." if prior else "")
     prompt = (
         "You are a research analytics assistant for a university Office of the "
         "Senior Vice President for Research. Answer the user's request using ONLY "
