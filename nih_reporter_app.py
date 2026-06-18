@@ -40,6 +40,9 @@ PANEL = "#f5f5f7"         # Apple light gray
 EMORY_BLUE = ACCENT
 EMORY_LIGHT_BLUE = ACCENT_HOVER
 EMORY_GOLD = ACCENT_2
+# Emory Research brand accents — a light touch over the clean base.
+EMORY_NAVY = "#012169"
+EMORY_BRAND_GOLD = "#f2a900"
 
 _APPLE_FONT = ("-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', "
                "'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif")
@@ -81,8 +84,15 @@ h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important
 a {{ color: {ACCENT}; text-decoration: none; }}
 a:hover {{ text-decoration: underline; }}
 [data-testid="stMetricValue"], .stDataFrame {{ font-variant-numeric: tabular-nums; }}
-.nih-header {{ text-align: center; padding: 14px 0 22px 0; margin-bottom: 8px; }}
-.nih-header h1 {{ color: {INK} !important; margin: 0; font-size: 2.1rem;
+/* Tame oversized headings the model may emit inside answers */
+.stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{ font-size: 1.1rem !important;
+    font-weight: 600 !important; margin: 0.6rem 0 0.25rem !important;
+    letter-spacing: -0.01em; }}
+.nih-header {{ text-align: center; padding: 14px 0 18px 0; margin-bottom: 8px;
+    border-bottom: 2px solid {EMORY_BRAND_GOLD}; }}
+.nih-eyebrow {{ color: {EMORY_NAVY}; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; }}
+.nih-header h1 {{ color: {INK} !important; margin: 2px 0 0 0; font-size: 2.1rem;
     font-weight: 600; letter-spacing: -0.03em; }}
 .nih-header p {{ color: {MUTED}; margin: 7px 0 0 0; font-size: 1.02rem;
     font-weight: 400; }}
@@ -98,18 +108,26 @@ a:hover {{ text-decoration: underline; }}
 </style>""", unsafe_allow_html=True)
 
 st.markdown(
-    '<div class="nih-header"><h1>NIH RePORTER</h1>'
+    '<div class="nih-header"><div class="nih-eyebrow">Emory Research</div>'
+    '<h1>NIH RePORTER</h1>'
     '<p>NIH/HHS award intelligence · live from the NIH RePORTER API</p></div>',
     unsafe_allow_html=True)
 
-# Always-available "New query" reset at the very top (prominent).
-if st.columns([5, 2])[1].button("＋ New query", type="primary",
-                                use_container_width=True,
-                                help="Clear everything and start a new question."):
-    for _k in ("ask_answer", "ask_engine", "follow_thread", "ask_question",
-               "asked_question", "clarify_q", "clarify_for", "skip_clarify"):
+_RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
+               "asked_question", "clarify_q", "clarify_for", "skip_clarify")
+
+
+def reset_query():
+    for _k in _RESET_KEYS:
         st.session_state.pop(_k, None)
     st.rerun()
+
+
+# Always-available "New query" reset at the very top (prominent).
+if st.columns([5, 2])[1].button("＋ New query", type="primary",
+                                use_container_width=True, key="newq_top",
+                                help="Clear everything and start a new question."):
+    reset_query()
 
 
 def _secret(name: str, default: str = "") -> str:
@@ -185,6 +203,7 @@ def build_facts(items: list) -> str:
         exact[c] = exact.get(c, 0) + 1
     lines = [
         f"Filters: {st.session_state.get('rep_query', '')}.",
+        "NIH RePORTER project data is available from FY1985 onward (no earlier years exist).",
         f"Awards in result set: {a['count']}. Total funding: {reporter.fmt_money(a['total_amount'])}. "
         f"Median award: {reporter.fmt_money(a['median_amount'])}. Largest: {reporter.fmt_money(a['max_amount'])}.",
         f"Distinct principal investigators: {len(dist['counts'])}.",
@@ -322,14 +341,34 @@ def build_workbook(items: list, query: str, summary_md: str = "") -> bytes:
         _clean_df(awards).to_excel(xl, sheet_name="Awards", index=False)
         if not investigators.empty:
             _clean_df(investigators).to_excel(xl, sheet_name="Investigators", index=False)
+        from openpyxl.chart import BarChart, Reference
+        fund_keys = {"by_ic": "funding_by_ic", "by_activity": "funding_by_activity",
+                     "by_app_type": "funding_by_app_type", "by_fy": "funding_by_fy",
+                     "by_org": "funding_by_org"}
         for sheet, key in (("By IC", "by_ic"), ("By activity", "by_activity"),
                            ("By application type", "by_app_type"),
                            ("By fiscal year", "by_fy"), ("By organization", "by_org")):
             d = agg.get(key) or {}
-            if d:
-                _clean_df(pd.DataFrame({"Value": [str(k) for k in d],
-                                        "Grants": list(d.values())})
-                          ).to_excel(xl, sheet_name=sheet[:31], index=False)
+            if not d:
+                continue
+            fd = agg.get(fund_keys[key]) or {}
+            sn = sheet[:31]
+            _clean_df(pd.DataFrame({"Value": [str(k) for k in d],
+                                    "Grants": list(d.values()),
+                                    "Funding ($)": [fd.get(k, 0) for k in d]})
+                      ).to_excel(xl, sheet_name=sn, index=False)
+            # Native bar chart of funding by category, on the same sheet.
+            ws = xl.book[sn]
+            n = len(d)
+            chart = BarChart()
+            chart.type = "bar"
+            chart.title = sheet
+            chart.legend = None
+            chart.add_data(Reference(ws, min_col=3, min_row=1, max_row=n + 1),
+                           titles_from_data=True)
+            chart.set_categories(Reference(ws, min_col=1, min_row=2, max_row=n + 1))
+            chart.height, chart.width = max(6, min(22, n * 0.55)), 16
+            ws.add_chart(chart, "E2")
         if summary_md:
             _clean_df(pd.DataFrame({"Report": summary_md.split("\n")})).to_excel(
                 xl, sheet_name="Report", index=False)
@@ -411,6 +450,9 @@ def maybe_chart(question: str, agg: dict, items: list):
         dim = "fy" if len(fys) > 1 else "ic"
     _, fund_key, count_key, dim_label = _DIM_KEYS[dim]
     data = agg.get(fund_key if metric == "funding" else count_key) or {}
+    if not data:  # explicit chart request -> always show something sensible
+        data = agg.get("funding_by_ic") or agg.get("by_ic") or {}
+        dim, dim_label = "ic", "Institute / Center"
     rows = list(data.items())
     if dim != "fy":
         rows = rows[:15]
@@ -648,6 +690,31 @@ def run_report(q: str):
         st.session_state.pop(_k, None)
 
 
+# Suggested one-click next steps shown under a report (label, follow-up prompt).
+NEXT_STEPS = [
+    ("Plot a chart", "Plot the most relevant breakdown of this data as a bar chart."),
+    ("By institute", "Break this down by NIH institute (IC) and show a bar chart."),
+    ("By mechanism", "Break this down by activity code / mechanism and show a bar chart."),
+    ("By fiscal year", "Show this by fiscal year as a bar chart."),
+    ("Top PIs", "List the top principal investigators by total funding."),
+]
+
+
+def run_followup(fq: str):
+    """Answer a follow-up against the current result set (no new fetch)."""
+    items = st.session_state.get("rep_items") or []
+    prior = ["Original question: " + st.session_state.get(
+                 "asked_question", st.session_state.get("ask_question", "")),
+             "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
+    for t in st.session_state.get("follow_thread", [])[-4:]:
+        prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
+    with st.spinner("Working on it…"):
+        ans, eng = summarize.custom_report(fq, build_facts(items),
+                                           prior="\n\n".join(prior))
+    st.session_state.setdefault("follow_thread", []).append(
+        {"q": fq, "a": ans, "engine": eng})
+
+
 # Fetch whenever the filters change (or on first load), so the AI answers and
 # reports always reflect the current filters — no stale data, no button needed.
 if "rep_items" not in st.session_state or st.session_state.get("filter_sig") != filter_sig():
@@ -784,6 +851,14 @@ else:
                          file_name="nih_report.md", mime="text/markdown",
                          use_container_width=True)
 
+    # ---- Suggested next steps: one-click follow-ups (charts, breakdowns) ----
+    st.caption("Suggested next steps")
+    ns_cols = st.columns(len(NEXT_STEPS))
+    for _col, (_lbl, _fq) in zip(ns_cols, NEXT_STEPS):
+        if _col.button(_lbl, key=f"ns_{_lbl}", use_container_width=True):
+            run_followup(_fq)
+            st.rerun()
+
     # ---- Follow-up: builds on the original question + the data it produced ----
     st.markdown("### Ask a follow-up about this report")
     st.caption("Builds on the question and the exact data above — same result set, "
@@ -803,17 +878,13 @@ else:
                         "Break the total down by mechanism.")
         follow_go = st.form_submit_button("Ask follow-up")
     if follow_go and follow_q.strip():
-        prior = ["Original question: " + st.session_state.get(
-                     "asked_question", st.session_state.get("ask_question", "")),
-                 "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
-        for t in st.session_state.get("follow_thread", [])[-4:]:
-            prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
-        with st.spinner("Analyzing these results..."):
-            f_ans, f_eng = summarize.custom_report(
-                follow_q, build_facts(rep_items), prior="\n\n".join(prior))
-        st.session_state.setdefault("follow_thread", []).append(
-            {"q": follow_q, "a": f_ans, "engine": f_eng})
+        run_followup(follow_q)
         st.rerun()
+
+    st.write("")
+    if st.button("＋ New query", type="primary", key="newq_bottom",
+                 help="Clear everything and start a new question."):
+        reset_query()
 
 # The data dashboard and manual filters belong to the report view only — the
 # start screen stays just the search box and example reports.

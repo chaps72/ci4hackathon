@@ -100,6 +100,12 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
             "trend", "past years", "earlier years", "year by year", "yearly",
             "every year", "by year")) and len(out["fiscal_years"]) <= 1:
         out["fiscal_years"] = [current_fy - i for i in range(6)]
+    # 'Entire history' / 'as far back as possible' -> last 10 FYs (data goes back
+    # to FY1985, but pulls are capped for performance).
+    if any(w in q for w in ("entire history", "all available years", "as far back",
+                            "since 1985", "full history", "all-time", "all time",
+                            "every year since", "as early as")):
+        out["fiscal_years"] = [current_fy - i for i in range(10)]
     if (re.search(r"\bactive\b", q) or re.search(r"\bongoing\b", q)
         or "currently funded" in q or "currently held" in q) and \
             any(w in q for w in ("grant", "award", "project", "fund", "portfolio", "pi")):
@@ -157,6 +163,10 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         f"years', return a RANGE of fiscal years (FY{current_fy} and the 5 prior: "
         f"[{current_fy}, {current_fy-1}, {current_fy-2}, {current_fy-3}, "
         f"{current_fy-4}, {current_fy-5}]) — never just one year. "
+        "NIH RePORTER project data goes back to FY1985; if the user asks for the "
+        "'entire history', 'all available years', 'as far back as possible', or "
+        f"'since 1985', return the last 10 fiscal years ({current_fy} down to "
+        f"{current_fy-9}) — pulls are capped for performance. "
         "If the user names specific months or a calendar date range (e.g. 'April, "
         "May and June', 'since March', 'between Jan 1 and Mar 31'), set date_from "
         f"and date_to as YYYY-MM-DD, assuming year {current_fy} unless a year is "
@@ -288,7 +298,12 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "the chart separately; just provide the relevant per-category breakdown "
         "(the facts include funding and counts by fiscal year, IC, activity code, "
         "application type, state, and organization). "
-        "The request has already been clarified if needed, so just answer it."
+        "ALWAYS begin your answer by stating the fiscal year(s) or date window the "
+        "data covers (e.g. 'FY2026:' or 'April–May 2026:'), so the reader knows the "
+        "period. NIH RePORTER project data only goes back to FY1985. "
+        "FORMATTING: do NOT use markdown headings (#, ##, ###); use short **bold** "
+        "lead-ins and bullets, keep it clean. The request has already been "
+        "clarified if needed, so just answer it."
         f"{context}\n\n"
         f"User request:\n{question}\n\n"
         f"Dataset facts:\n{facts_md}"
