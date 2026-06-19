@@ -20,9 +20,10 @@ enum LabSceneBuilder {
 
         root.children.removeAll()
 
-        // Position the whole bench ~0.8 m in front of the user at table height.
+        // Lift the whole bench up near eye level and pull it ~0.7 m in front so
+        // the objects (not just the floating labels) are clearly in view.
         // (In a mixed immersive space the origin sits on the floor.)
-        root.position = [0, 0, -0.8]
+        root.position = [0, 0.35, -0.7]
 
         root.addChild(makeBench())
         root.addChild(makeReagentRack(model: model))
@@ -300,10 +301,11 @@ enum LabSceneBuilder {
         UnlitMaterial(color: color)
     }
 
-    /// A translucent "glass" look for tube and bottle bodies.
+    /// A frosted "glass" look for tube and bottle bodies — kept fairly opaque so
+    /// the glassware is easy to see against passthrough.
     private static func glassy() -> UnlitMaterial {
-        var material = UnlitMaterial(color: UIColor(white: 0.9, alpha: 0.25))
-        material.blending = .transparent(opacity: 0.25)
+        var material = UnlitMaterial(color: UIColor(white: 0.85, alpha: 0.55))
+        material.blending = .transparent(opacity: 0.55)
         return material
     }
 }
