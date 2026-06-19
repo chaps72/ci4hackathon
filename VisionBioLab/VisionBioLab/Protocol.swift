@@ -14,6 +14,19 @@ struct ReagentColor: Equatable, Hashable {
     var uiColor: UIColor { UIColor(red: r, green: g, blue: b, alpha: 1.0) }
 }
 
+extension Array where Element == Reagent {
+    /// The average color of these reagents — used to tint the mixed reaction.
+    var blendedColor: ReagentColor {
+        guard !isEmpty else { return ReagentColor(r: 0.8, g: 0.8, b: 0.8) }
+        let n = Double(count)
+        return ReagentColor(
+            r: reduce(0) { $0 + $1.color.r } / n,
+            g: reduce(0) { $0 + $1.color.g } / n,
+            b: reduce(0) { $0 + $1.color.b } / n
+        )
+    }
+}
+
 /// One reagent the user can load into the pipette and dispense.
 struct Reagent: Identifiable, Equatable, Hashable {
     let id: String

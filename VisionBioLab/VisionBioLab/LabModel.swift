@@ -26,6 +26,12 @@ final class LabModel {
     /// Whether the last action was an error (used for red styling).
     private(set) var lastActionWasError: Bool = false
 
+    /// True once the completed master mix has been vortex-mixed.
+    private(set) var isMixed: Bool = false
+
+    /// All reagents are in the tube and it's ready to be mixed.
+    var canMix: Bool { isComplete && !isMixed }
+
     /// The step the user should do next, if any remain.
     var currentStep: ProtocolStep? {
         guard currentStepIndex < steps.count else { return nil }
@@ -78,6 +84,15 @@ final class LabModel {
         }
     }
 
+    /// Vortex-mix the completed master mix to finish the experiment.
+    func mix() {
+        guard canMix else { return }
+        isMixed = true
+        loadedReagent = nil
+        lastActionWasError = false
+        statusMessage = "🧪 Mixed! Reaction assembled and ready to run."
+    }
+
     /// Empty the pipette without dispensing.
     func emptyPipette() {
         loadedReagent = nil
@@ -90,6 +105,7 @@ final class LabModel {
         dispensedReagents = []
         currentStepIndex = 0
         loadedReagent = nil
+        isMixed = false
     }
 
     /// Full reset back to the starting state.

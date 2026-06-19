@@ -20,12 +20,25 @@ tube resets — just like the real bench.
 
 ## How to use it
 
+You can work either by tapping or by physically grabbing the pipette:
+
+**Tap mode**
 1. **Tap a reagent** (a bottle in 3D, or a button in the window) to draw it up
    into the pipette.
 2. **Tap the Eppendorf tube** (or the *Dispense* button) to add it.
+
+**Grab mode**
+1. **Grab the pipette** and drag its tip onto a reagent bottle — releasing
+   there draws that reagent up.
+2. **Drag the pipette onto the tube** and release to dispense. The pipette
+   springs back to its stand.
+
+Then, for both modes:
 3. Follow the protocol **in order** (water → buffer → dNTPs → template →
    polymerase last). A wrong order shows an error and empties the tube.
-4. Finish all five steps to complete the master mix. **Restart** to try again.
+4. Once all five reagents are in, **Mix / run reaction** (the button, or drop
+   the pipette on the full tube) — the layers blend into the finished reaction.
+5. **Restart** to try again.
 
 Both the 3D scene and the window drive the same shared state, so you can use
 whichever is more convenient.

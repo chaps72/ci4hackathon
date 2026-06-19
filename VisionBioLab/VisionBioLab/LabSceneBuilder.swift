@@ -6,14 +6,16 @@ import simd
 /// RealityKit primitives — no external 3D assets required.
 enum LabSceneBuilder {
 
-    // Name prefixes used to identify what the user tapped.
+    // Names used to identify what the user tapped / dragged.
     static let reagentPrefix = "reagent:"
     static let tubeName = "eppendorf"
+    static let pipetteName = "pipette"
 
-    /// Build the whole bench into `root`. `pipetteLiquid` and `eppendorfLiquids`
-    /// are passed in so the view can recolor / refill them later without
-    /// rebuilding the scene.
+    /// Build the whole bench into `root`. `pipette`, `pipetteLiquid` and
+    /// `eppendorfLiquids` are passed in so the view can drag / recolor / refill
+    /// them later without rebuilding the scene.
     static func build(root: Entity,
+                      pipette: Entity,
                       pipetteLiquid: ModelEntity,
                       eppendorfLiquids: Entity,
                       model: LabModel) {
@@ -27,7 +29,7 @@ enum LabSceneBuilder {
 
         root.addChild(makeBench())
         root.addChild(makeReagentRack(model: model))
-        root.addChild(makePipette(liquid: pipetteLiquid))
+        root.addChild(makePipette(into: pipette, liquid: pipetteLiquid))
         root.addChild(makeEppendorf(liquids: eppendorfLiquids))
         root.addChild(makeTitleLabel())
     }
@@ -105,9 +107,12 @@ enum LabSceneBuilder {
 
     // MARK: - Pipette
 
-    private static func makePipette(liquid: ModelEntity) -> Entity {
-        let pipette = Entity()
-        let benchTopY: Float = 0.92
+    /// Resting position of the pipette on its stand (in `root` space). The view
+    /// snaps the pipette back here after a drag.
+    static let pipetteHome: SIMD3<Float> = [0.42, 0.945, 0.0]
+
+    private static func makePipette(into pipette: Entity, liquid: ModelEntity) -> Entity {
+        pipette.children.removeAll()
 
         let bodyHeight: Float = 0.18
         let body = ModelEntity(
@@ -143,8 +148,15 @@ enum LabSceneBuilder {
         pipette.addChild(tip)
         pipette.addChild(liquid)
 
+        // Make the pipette grabbable (a generous capsule so it's easy to catch).
+        pipette.name = pipetteName
+        let grab = ShapeResource.generateCapsule(height: 0.24, radius: 0.05)
+        pipette.components.set(CollisionComponent(shapes: [grab]))
+        pipette.components.set(InputTargetComponent())
+        pipette.components.set(HoverEffectComponent())
+
         // Stand the pipette upright on the right side of the bench.
-        pipette.position = [0.42, benchTopY + 0.025, 0.0]
+        pipette.position = pipetteHome
         return pipette
     }
 
@@ -210,14 +222,28 @@ enum LabSceneBuilder {
         }
     }
 
-    /// Rebuild the stack of liquid layers inside the Eppendorf tube.
-    static func refreshEppendorf(_ container: Entity, dispensed: [Reagent]) {
+    /// Rebuild the liquid inside the Eppendorf tube. While dispensing it shows
+    /// stacked colored layers; once mixed it becomes one blended column.
+    static func refreshEppendorf(_ container: Entity, dispensed: [Reagent], mixed: Bool) {
         container.children.removeAll()
         guard !dispensed.isEmpty else { return }
 
-        // Stack thin disks from the bottom of the tube upward.
         let layerHeight: Float = 0.006
-        var y: Float = 0.004
+
+        if mixed {
+            // One uniform column of the blended reaction color.
+            let totalHeight = layerHeight * Float(dispensed.count)
+            let blob = ModelEntity(
+                mesh: .generateCylinder(height: totalHeight, radius: 0.011),
+                materials: [unlit(dispensed.blendedColor)]
+            )
+            blob.position = [0, 0.004 + totalHeight / 2, 0]
+            container.addChild(blob)
+            return
+        }
+
+        // Stack thin disks from the bottom of the tube upward.
+        var y: Float = 0.004 + layerHeight / 2
         for reagent in dispensed {
             let layer = ModelEntity(
                 mesh: .generateCylinder(height: layerHeight, radius: 0.011),
@@ -226,6 +252,18 @@ enum LabSceneBuilder {
             layer.position = [0, y, 0]
             container.addChild(layer)
             y += layerHeight
+        }
+    }
+
+    /// Briefly shake the tube's contents to suggest vortex-mixing.
+    static func playMixAnimation(_ container: Entity) {
+        let original = container.transform
+        var shaken = original
+        shaken.rotation = simd_quatf(angle: .pi / 12, axis: [0, 0, 1])
+        container.move(to: shaken, relativeTo: container.parent, duration: 0.12)
+        // Settle back shortly after.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+            container.move(to: original, relativeTo: container.parent, duration: 0.12)
         }
     }
 
@@ -249,6 +287,43 @@ enum LabSceneBuilder {
             current = e.parent
         }
         return .none
+    }
+
+    /// Is the dragged entity (or one of its ancestors) the pipette?
+    static func isPipette(_ entity: Entity) -> Bool {
+        var current: Entity? = entity
+        while let e = current {
+            if e.name == pipetteName { return true }
+            current = e.parent
+        }
+        return false
+    }
+
+    /// Find the reagent bottle or tube nearest to a world-space point (the
+    /// dropped pipette tip), within `threshold` meters.
+    static func dropTarget(near worldPos: SIMD3<Float>,
+                           in root: Entity,
+                           threshold: Float = 0.16) -> Hit {
+        var best: (hit: Hit, dist: Float)?
+
+        func consider(_ entity: Entity, _ hit: Hit) {
+            let d = simd_distance(entity.position(relativeTo: nil), worldPos)
+            if d <= threshold, best == nil || d < best!.dist {
+                best = (hit, d)
+            }
+        }
+
+        func walk(_ entity: Entity) {
+            if entity.name == tubeName {
+                consider(entity, .tube)
+            } else if entity.name.hasPrefix(reagentPrefix) {
+                consider(entity, .reagent(String(entity.name.dropFirst(reagentPrefix.count))))
+            }
+            for child in entity.children { walk(child) }
+        }
+
+        walk(root)
+        return best?.hit ?? .none
     }
 
     // MARK: - Helpers

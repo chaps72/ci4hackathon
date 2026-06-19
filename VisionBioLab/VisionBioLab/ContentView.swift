@@ -107,6 +107,15 @@ struct ContentView: View {
                     .disabled(model.loadedReagent == nil || model.isComplete)
 
                     Button {
+                        model.mix()
+                    } label: {
+                        Label("Mix / run reaction", systemImage: "tornado")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.purple)
+                    .disabled(!model.canMix)
+
+                    Button {
                         model.emptyPipette()
                     } label: {
                         Label("Empty pipette", systemImage: "arrow.uturn.backward")
