@@ -1157,17 +1157,17 @@ if "rep_items" not in st.session_state or st.session_state.get("filter_sig") != 
         awards, rep_err = run_query()
     store_results(awards, rep_err)
 
-rep_items = st.session_state.get("rep_items")
+rep_items = st.session_state.get("rep_items") or []
 
-if st.session_state.get("rep_sample"):
-    st.warning(f"Live NIH RePORTER API unreachable from this environment "
-               f"({st.session_state.get('rep_error')}); showing bundled sample "
-               "awards so the report still renders. (Benchmarking needs the live API.)")
-
-if not rep_items:
-    st.warning("No NIH awards matched these filters. Try a longer look-back, "
-               "broader terms, fewer filters, or add a fiscal year.")
-    st.stop()
+# These notices belong to a produced report — never block the start screen.
+if st.session_state.get("ask_answer"):
+    if st.session_state.get("rep_sample"):
+        st.warning("Live NIH RePORTER API unreachable right now "
+                   f"({st.session_state.get('rep_error')}); showing bundled sample "
+                   "awards so the report still renders.")
+    if not rep_items:
+        st.info("This query matched no NIH awards. Try a longer look-back, broader "
+                "terms, fewer filters, or a fiscal year.")
 
 agg = reporter.aggregate(rep_items)
 
