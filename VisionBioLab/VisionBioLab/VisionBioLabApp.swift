@@ -4,7 +4,7 @@ import SwiftUI
 struct VisionBioLabApp: App {
     /// One shared model drives both the window and the immersive scene.
     @State private var model = LabModel()
-    @State private var immersionStyle: ImmersionStyle = .mixed
+    @State private var immersionStyle: ImmersionStyle = .full
 
     var body: some Scene {
         WindowGroup {
@@ -13,11 +13,11 @@ struct VisionBioLabApp: App {
         }
         .windowResizability(.contentSize)
 
-        // The 3D lab bench, shown in mixed immersion so it sits in your room.
+        // The full virtual lab room (fully immersive — replaces passthrough).
         ImmersiveSpace(id: "Lab") {
             ImmersiveLabView()
                 .environment(model)
         }
-        .immersionStyle(selection: $immersionStyle, in: .mixed)
+        .immersionStyle(selection: $immersionStyle, in: .full)
     }
 }

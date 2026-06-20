@@ -10,11 +10,15 @@ tube resets — just like the real bench.
 
 ## What's in the lab
 
-- **A lab bench** floating in your room (mixed immersion / passthrough).
-- **Reagent bottles** (color-coded): Nuclease-free Water, Reaction Buffer (10×),
-  dNTP Mix, Template DNA, DNA Polymerase.
+- **A full virtual lab room** (fully immersive — walls, floor, ceiling light
+  panels, and a back counter with glassware) that replaces passthrough.
+- **A workbench** in front of you holding everything.
+- **Labeled reagent bottles** (color-coded) in a rack — Nuclease-free Water,
+  Reaction Buffer (10×), dNTP Mix, Template DNA, DNA Polymerase — each with a
+  cap that pops open when you draw from it.
 - **A pipette** whose tip shows the color of whatever is currently loaded.
-- **An Eppendorf tube** that fills with colored liquid layers as you dispense.
+- **An Eppendorf tube** in a stand that fills with colored liquid layers as you
+  dispense.
 - **A protocol sheet** (the app window) listing the ordered steps with live
   check-marks and a status readout.
 

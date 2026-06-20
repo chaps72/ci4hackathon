@@ -38,7 +38,7 @@ struct ImmersiveLabView: View {
                 }
         )
         // Grab and drag the pipette around the bench.
-        .gesture(
+        .simultaneousGesture(
             DragGesture()
                 .targetedToAnyEntity()
                 .onChanged { value in
@@ -52,9 +52,10 @@ struct ImmersiveLabView: View {
                     guard dragging else { return }
                     dragging = false
 
-                    // What did we drop the pipette on?
-                    let worldPos = pipette.position(relativeTo: nil)
-                    handleHit(LabSceneBuilder.dropTarget(near: worldPos, in: sceneRoot))
+                    // Use the pipette tip (not its origin) to decide what we
+                    // dropped onto.
+                    let tipPos = pipette.convert(position: [0, -0.06, 0], to: nil)
+                    handleHit(LabSceneBuilder.dropTarget(near: tipPos, in: sceneRoot))
 
                     // Return the pipette to its stand.
                     var home = pipette.transform
@@ -63,8 +64,11 @@ struct ImmersiveLabView: View {
                 }
         )
         // Keep the 3D visuals in sync with the model.
-        .onChange(of: model.loadedReagent) { _, loaded in
+        .onChange(of: model.loadedReagent) { old, loaded in
             LabSceneBuilder.refreshPipette(pipetteLiquid, loaded: loaded)
+            // Uncap the bottle being drawn from; recap the previous one.
+            if let old { LabSceneBuilder.setBottleOpen(id: old.id, in: sceneRoot, open: false) }
+            if let loaded { LabSceneBuilder.setBottleOpen(id: loaded.id, in: sceneRoot, open: true) }
         }
         .onChange(of: model.dispensedReagents) { _, dispensed in
             LabSceneBuilder.refreshEppendorf(eppendorfLiquids,

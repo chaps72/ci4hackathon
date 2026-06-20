@@ -12,6 +12,11 @@ struct ReagentColor: Equatable, Hashable {
 
     /// Color for RealityKit materials.
     var uiColor: UIColor { UIColor(red: r, green: g, blue: b, alpha: 1.0) }
+
+    /// A darker shade, used for bottle caps.
+    func darker(_ factor: Double = 0.6) -> ReagentColor {
+        ReagentColor(r: r * factor, g: g * factor, b: b * factor)
+    }
 }
 
 extension Array where Element == Reagent {
