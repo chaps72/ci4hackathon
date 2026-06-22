@@ -90,9 +90,26 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
     if any(w in q for w in ("all institutions", "across institutions", "nationwide",
                             "every institution", "all universities", "any institution")):
         out["all_institutions"] = True
-    # Comparison / trend intent: pull a range of fiscal years, not just the one
-    # the user named, so "compare FY26 to previous years" has prior years to use.
-    if any(w in q for w in (
+    # Weekly / monthly grouping (including conversational phrasings) — detected
+    # FIRST so a weekly/monthly comparison doesn't get treated as a year comparison.
+    if any(w in q for w in ("weekly", "per week", "by week", "each week",
+                            "week by week", "week-by-week", "week over week",
+                            "this week", "last week", "past week", "previous week",
+                            "recent week", "few weeks", "couple weeks", "couple of weeks",
+                            "last several weeks", "weeks ago", "per-week")):
+        out["group_by"] = "week"
+    elif any(w in q for w in ("monthly", "per month", "by month", "each month",
+                              "month by month", "month over month", "this month",
+                              "last month", "recent month", "few months")):
+        out["group_by"] = "month"
+    # Recent weekly/monthly activity without explicit dates -> bound the pull so
+    # week/month buckets (and a week-over-week comparison) are actually possible.
+    if (out["group_by"] and not out["fiscal_years"] and not out["date_from"]
+            and not out["days_back"]):
+        out["days_back"] = 70 if out["group_by"] == "week" else 210
+    # Year comparison/trend -> a RANGE of fiscal years. Skipped when the question
+    # is a weekly/monthly comparison (group_by set above).
+    if not out["group_by"] and any(w in q for w in (
             "compare", "comparison", "versus", " vs ", "year over year",
             "year-over-year", "previous year", "previous fiscal", "prior year",
             "prior fiscal", "previous years", "prior years", "over the years",
@@ -102,21 +119,14 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
         out["fiscal_years"] = [current_fy - i for i in range(6)]
     # 'Entire history' / 'as far back as possible' -> last 10 FYs (data goes back
     # to FY1985, but pulls are capped for performance).
-    if any(w in q for w in ("entire history", "all available years", "as far back",
-                            "since 1985", "full history", "all-time", "all time",
-                            "every year since", "as early as")):
+    if not out["group_by"] and any(w in q for w in (
+            "entire history", "all available years", "as far back", "since 1985",
+            "full history", "all-time", "all time", "every year since", "as early as")):
         out["fiscal_years"] = [current_fy - i for i in range(10)]
     if (re.search(r"\bactive\b", q) or re.search(r"\bongoing\b", q)
         or "currently funded" in q or "currently held" in q) and \
             any(w in q for w in ("grant", "award", "project", "fund", "portfolio", "pi")):
         out["active_only"] = True
-    # Weekly / monthly grouping.
-    if any(w in q for w in ("weekly", "per week", "by week", "each week",
-                            "week by week", "week-by-week", "week over week")):
-        out["group_by"] = "week"
-    elif any(w in q for w in ("monthly", "per month", "by month", "each month",
-                              "month by month", "month over month")):
-        out["group_by"] = "month"
     # Named months -> an award-notice date range in the current FY year.
     months = sorted({n for name, n in _MONTHS.items()
                      if re.search(r"\b" + name + r"\b", q)})
@@ -152,6 +162,21 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
 
     client = anthropic.Anthropic()
     prompt = (
+        "You translate a research-office question into an NIH RePORTER data pull. "
+        "FIRST, reason about what the person is actually trying to learn — the "
+        "real-world question behind the words — then choose the parameters that "
+        "would best ANSWER it. Do not keyword-match. Think it through: What entity "
+        "is in focus (an institution, a PI, a topic, the whole NIH)? What time "
+        "frame would actually answer this (a single year, a multi-year trend, a "
+        "recent window, specific months)? What grain (week, month, year, or none)? "
+        "Pick the pull that a knowledgeable analyst would run to answer the "
+        "question — not the most literal reading of any one word. For example "
+        "'how is our funding trending' implies several years even though no number "
+        "is given; 'what came in this week vs the last few weeks' implies a recent "
+        "window grouped by week, NOT a 7-day cutoff; 'compare A to B' only means "
+        "multiple fiscal years if A and B are years. When the question is "
+        "self-evidently about home turf, the institution is Emory. Use the field "
+        "rules below to encode that reasoned intent.\n\n"
         "Extract NIH RePORTER search parameters from the user's request below. "
         f"The current NIH fiscal year is FY{current_fy}. Convert relative time "
         "windows to explicit values: 'last N fiscal years' means the N most recent "
@@ -171,9 +196,14 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         "May and June', 'since March', 'between Jan 1 and Mar 31'), set date_from "
         f"and date_to as YYYY-MM-DD, assuming year {current_fy} unless a year is "
         "given (date_from = first day of the earliest month, date_to = last day of "
-        "the latest month). If the user wants a weekly or monthly breakdown ('on a "
-        "weekly basis', 'per week', 'by month'), set group_by to 'week' or 'month' "
-        "(do NOT treat 'weekly' as days_back=7). "
+        "the latest month). If the user wants a weekly or monthly breakdown — "
+        "including conversational phrasings like 'this week', 'last week', 'the "
+        "previous few weeks', 'week over week', 'on a weekly basis', 'per week', "
+        "'by month', 'this month' — set group_by to 'week' or 'month'. Do NOT treat "
+        "'weekly'/'this week' as days_back=7. For RECENT weekly activity with no "
+        "explicit dates (e.g. 'this week vs the previous few weeks'), ALSO set "
+        "days_back to about 70 (≈10 weeks) so weekly buckets and a week-over-week "
+        "comparison are possible; for recent monthly activity set days_back ≈ 210. "
         f"Only use IC abbreviations from this list: {', '.join(ic_list)}. "
         f"Only use activity codes from: {', '.join(activity_list)}. "
         "IMPORTANT: 'newly_added' means projects RECENTLY ADDED TO THE RePORTER "
@@ -193,7 +223,7 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
     )
     try:
         resp = client.messages.create(
-            model=MODEL, max_tokens=600,
+            model=MODEL, max_tokens=1600, thinking={"type": "adaptive"},
             messages=[{"role": "user", "content": prompt}])
         text = next((b.text for b in resp.content if b.type == "text"), "")
         data = json.loads(_extract_json(text))
@@ -336,7 +366,13 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
                "pull." if prior else "")
     prompt = (
         "You are a research analytics assistant for a university Office of the "
-        "Senior Vice President for Research. Answer the user's request using ONLY "
+        "Senior Vice President for Research. Before writing, reason about what the "
+        "person actually wants to KNOW — the decision or insight behind the "
+        "question — and answer THAT, not a literal restatement of the words. Use "
+        "judgment about what's worth surfacing in this specific dataset (the "
+        "outliers, the trend, the concentration, the surprise), rather than "
+        "mechanically reciting every field. "
+        "Answer the user's request using ONLY "
         "the dataset facts provided below, which were computed deterministically "
         "from NIH RePORTER data. Do not invent or recompute numbers - quote the "
         "figures given. If the facts do not contain enough to answer (e.g. the "
@@ -347,9 +383,12 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "awards in the current result set, not an investigator's full career. "
         "PRIORITIZE GRAPHS over long lists/tables. Keep the narrative to a SHORT "
         "intro — 2 to 4 sentences with the headline numbers (totals, the standout "
-        "items) — because an interactive graph is shown right below your answer "
-        "and the user can flip it between breakdowns (institute, fiscal year, "
-        "mechanism, etc.). Do NOT reproduce a long table or a long bulleted list of "
+        "items) — because one or more graphs are shown right below your answer "
+        "(an interactive one the user can flip between breakdowns — institute, "
+        "fiscal year, mechanism, etc. — plus extra complementary charts when more "
+        "than one cut of the data is illuminating). Refer to 'the charts below' "
+        "rather than describing every number. Do NOT reproduce a long table or a "
+        "long bulleted list of "
         "every category; mention the top few and say the rest is in the graph. "
         "Never refuse a chart request. "
         "ALWAYS begin your answer by stating the fiscal year(s) or date window the "
