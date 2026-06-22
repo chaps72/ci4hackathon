@@ -655,6 +655,70 @@ def _chart_png(title: str, data: dict, vertical: bool, money: bool) -> bytes:
     return buf.getvalue()
 
 
+# Categorical dimension -> (funding_key, count_key, label) for building a view.
+_CAT_VIEW = {
+    "ic": ("funding_by_ic", "by_ic", "institute / center"),
+    "activity": ("funding_by_activity", "by_activity", "mechanism"),
+    "app_type": ("funding_by_app_type", "by_app_type", "application type"),
+    "org": ("funding_by_org", "by_org", "institution"),
+    "state": ("funding_by_state", "by_state", "state"),
+}
+
+
+def _view_series(dim: str, items: list, agg: dict, is_funding: bool):
+    """Build one chart's data for a dimension. Returns (series, horizontal, title)
+    or None when there's nothing to plot for that dimension."""
+    ylabel = "Funding ($)" if is_funding else "Awards"
+    if dim in ("week", "month"):
+        data = reporter.by_period(items, dim, "funding" if is_funding else "count")
+        return (pd.Series(data, name=ylabel), True, f"{ylabel} by {dim}") if data else None
+    if dim == "fy":
+        raw = agg.get("funding_by_fy") if is_funding else agg.get("by_fy")
+        data = {f"FY{k}": v for k, v in (raw or {}).items()}
+        return (pd.Series(data, name=ylabel), True,
+                f"{ylabel} by fiscal year") if data else None
+    fk, ck, lbl = _CAT_VIEW[dim]
+    raw = (agg.get(fk) if is_funding else agg.get(ck)) or {}
+    data = {str(k): v for k, v in list(raw.items())[:15]}
+    return (pd.Series(data, name=ylabel), False,
+            f"{ylabel} by {lbl}") if data else None
+
+
+def complementary_charts(items: list, scope: dict, agg: dict, primary_dim: str,
+                         is_funding: bool, key_prefix: str, limit: int = 2):
+    """Render up to `limit` extra charts on dimensions DISTINCT from the primary
+    one — only when they have at least two categories of real data, so a report
+    shows more than one graph when it genuinely adds insight (and just one when
+    it doesn't). Returns the number of extra charts drawn."""
+    fys = [y for y in (scope.get("fiscal_years") or []) if str(y).isdigit()]
+    multi_year = len(set(fys)) > 1
+    if primary_dim in ("week", "month", "fy"):
+        order = ["ic", "activity", "app_type"]
+    elif primary_dim == "ic":
+        order = (["fy"] if multi_year else []) + ["activity", "app_type"]
+    else:
+        order = ["ic"] + (["fy"] if multi_year else []) + ["activity"]
+
+    specs = []
+    for dim in order:
+        if dim == primary_dim:
+            continue
+        spec = _view_series(dim, items, agg, is_funding)
+        if not spec or len(spec[0]) < 2:  # one bar isn't a useful extra view
+            continue
+        specs.append(spec)
+        if len(specs) >= limit:
+            break
+    if not specs:
+        return 0
+    st.caption("Other useful views of this same data")
+    for i, (series, horizontal, title) in enumerate(specs):
+        st.markdown(f"**{title}**")
+        st.bar_chart(series, color=EMORY_BLUE, horizontal=horizontal,
+                     height=max(160, 30 * len(series)) if horizontal else 300)
+    return len(specs)
+
+
 def chart_explorer(items: list, question: str, scope: dict, key_prefix="exp"):
     """A graph with a smart default plus controls to flip the breakdown/metric.
     Computes its own aggregate from the items it's handed, so it always matches
@@ -687,7 +751,7 @@ def chart_explorer(items: list, question: str, scope: dict, key_prefix="exp"):
         vertical, title = False, f"{ylabel} by {sel}"
     if not data:
         st.caption("No data for this view.")
-        return
+        return d, is_f
     st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE,
                  horizontal=not vertical,
                  height=320 if vertical else max(180, 32 * len(data)))
@@ -698,6 +762,7 @@ def chart_explorer(items: list, question: str, scope: dict, key_prefix="exp"):
                            key=f"{key_prefix}_png")
     except Exception:  # noqa: BLE001 - PNG is best-effort
         pass
+    return d, is_f
 
 
 def maybe_chart(question: str, items: list, scope: dict = None):
@@ -712,7 +777,7 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         "spending", "compare", "comparison", "trend", "over time", "rank")
     _dim_hit = any(any(k in q for k in kw) for _d, (kw, *_rest) in _DIM_KEYS.items())
     if not (any(w in q for w in _graph_intent) or _dim_hit):
-        return
+        return None
     metric = ("count" if any(w in q for w in _COUNT_WORDS)
               else "funding" if any(w in q for w in _FUND_WORDS) else "funding")
 
@@ -744,7 +809,7 @@ def maybe_chart(question: str, items: list, scope: dict = None):
             ylabel = "Funding ($)" if pmetric == "funding" else "New awards"
             st.markdown(f"**{ylabel} by {period}**{wsfx}")
             st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE, height=300)
-            return
+            return period, pmetric == "funding"
 
     dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
     cat_dim = next((d for d, (kw, *_) in _DIM_KEYS.items()
@@ -761,14 +826,14 @@ def maybe_chart(question: str, items: list, scope: dict = None):
                               index=[str(c) for c in top])
             st.markdown(f"**Funding ($) by {_DIM_KEYS[cat_dim][3]} and fiscal year**")
             st.bar_chart(df, stack=False, height=max(200, 34 * len(top)), horizontal=True)
-            return
+            return cat_dim, True
         d = agg.get("funding_by_fy") if metric == "funding" else agg.get("by_fy")
         if d:
             ylabel = "Funding ($)" if metric == "funding" else "Awards"
             st.markdown(f"**{ylabel} by fiscal year**")
             st.bar_chart(pd.Series({f"FY{k}": v for k, v in d.items()}, name=ylabel),
                          color=EMORY_BLUE, height=300)
-            return
+            return "fy", metric == "funding"
 
     # 3) Single fiscal year / no multi-year -> a breakdown within that window,
     #    titled with the window so it lines up with the text.
@@ -781,11 +846,12 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         dim_label = "Institute / Center"
     rows = list(data.items())[:15]
     if not rows:
-        return
+        return None
     ylabel = "Funding ($)" if metric == "funding" else "Awards"
     st.markdown(f"**{ylabel} by {dim_label}**{wsfx}")
     st.bar_chart(pd.Series({str(k): v for k, v in rows}, name=ylabel),
                  color=EMORY_BLUE, horizontal=True, height=max(160, 30 * len(rows)))
+    return dim, metric == "funding"
 
 
 # ============================ Filter state ============================
@@ -1099,6 +1165,45 @@ def _needs_refetch(fparsed: dict, fq: str) -> bool:
     return any(w in ql for w in _REFETCH_WORDS)
 
 
+# Phrasings that signal the follow-up is a brand-new search, not a refinement of
+# the current result set — so we should NOT inherit the old filters.
+_FRESH_WORDS = ("instead", "rather", "new search", "start over", "starting over",
+                "from scratch", "switch to", "switch the", "change to", "forget",
+                "ignore the previous", "ignore previous", "ignore that", "reset",
+                "brand new", "different institution", "different university",
+                "different topic", "different question", "never mind", "nevermind",
+                "scratch that", "actually, ", "let's look at", "now show me")
+# Phrasings that keep us anchored to the SAME result set (a true refinement).
+_REFINE_WORDS = ("of those", "of these", "of that", "of the above", "within that",
+                 "within these", "within those", "among those", "among these",
+                 "from that set", "from those", "in that set", "drill", "break "
+                 "down", "break it down", "broken down", "same set", "same data",
+                 "also", "add", "include", "as well", "plus", "both")
+
+
+def _is_fresh_search(base: dict, fparsed: dict, fq: str) -> bool:
+    """True when a follow-up should run as a NEW search rather than inherit the
+    original filters. Triggers on explicit 'new search' language or when the
+    follow-up names a different institution / topic / PI than the current pull.
+    Refinement language ('of those', 'break down', 'also') always stays anchored."""
+    ql = fq.lower()
+    if any(w in ql for w in _REFINE_WORDS):
+        return False
+    if any(w in ql for w in _FRESH_WORDS):
+        return True
+    # A different explicit institution / topic / PI focus = a new search.
+    if fparsed.get("all_institutions") and not base.get("all_institutions"):
+        return True
+    for k in ("organization", "topic", "pi_name"):
+        nv = (fparsed.get(k) or "").strip().lower()
+        if not nv:
+            continue
+        bv = (base.get(k) or "").strip().lower()
+        if nv != bv:  # naming a focus the base didn't have, or a different one
+            return True
+    return False
+
+
 def _merge_parse(base: dict, add: dict, fq: str) -> dict:
     """Merge follow-up criteria over the original. Lists union when the follow-up
     is additive ('also/add/include'), otherwise the follow-up replaces."""
@@ -1131,12 +1236,18 @@ def run_followup(fq: str):
     fparsed, _ = summarize.parse_query(
         fq, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
     if _needs_refetch(fparsed, fq):
-        merged = _merge_parse(scope, fparsed, fq)
-        with st.spinner("Pulling the data needed for this…"):
+        # A follow-up that points somewhere new (different institution/topic, or
+        # "instead/new search") starts clean instead of inheriting old filters; a
+        # true refinement ("of those", "break down") merges over the current pull.
+        fresh = _is_fresh_search(scope, fparsed, fq)
+        merged = fparsed if fresh else _merge_parse(scope, fparsed, fq)
+        with st.spinner("Starting a new search…" if fresh
+                        else "Pulling the data needed for this…"):
             awards, err, label2 = ai_fetch(merged)
         if not err and awards:
             items, scope, label = awards, merged, label2
-            note = f"_Pulled data for: {label}._\n\n"
+            note = (f"_New search: {label}._\n\n" if fresh
+                    else f"_Pulled data for: {label}._\n\n")
     prior = ["Original question: " + st.session_state.get(
                  "asked_question", st.session_state.get("ask_question", "")),
              "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
@@ -1299,11 +1410,16 @@ else:
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
-    chart_explorer(rep_items,
-                   st.session_state.get("asked_question",
-                                        st.session_state.get("ask_question", "")),
-                   st.session_state.get("last_parsed"),
-                   key_prefix=f"main{st.session_state.get('report_seq', 0)}")
+    _prim = chart_explorer(rep_items,
+                           st.session_state.get("asked_question",
+                                                st.session_state.get("ask_question", "")),
+                           st.session_state.get("last_parsed"),
+                           key_prefix=f"main{st.session_state.get('report_seq', 0)}")
+    if _prim:
+        complementary_charts(rep_items, st.session_state.get("last_parsed") or {},
+                             agg, _prim[0], _prim[1],
+                             key_prefix=f"main{st.session_state.get('report_seq', 0)}",
+                             limit=2)
 
     _bench = st.session_state.get("benchmark")
     if _bench and _bench.get("rows"):
@@ -1395,8 +1511,9 @@ else:
 
     # ---- Follow-up: builds on the original question + the data it produced ----
     st.markdown("### Ask a follow-up about this report")
-    st.caption("Builds on the question and the exact data above — same result set, "
-               "no new search.")
+    st.caption("Refinements like 'of those, which are at the med school' reuse the "
+               "data above; if you point somewhere new — a different institution, "
+               "topic, or 'start a new search' — it pulls fresh data automatically.")
     # The conversation so far renders first; the input box always sits at the
     # very bottom, directly under the most recent answer.
     for _ti, turn in enumerate(st.session_state.get("follow_thread", [])):
@@ -1404,7 +1521,12 @@ else:
         with st.container(border=True):
             ai_md(turn["a"])
             # Chart this turn's OWN data snapshot (matches its answer).
-            maybe_chart(turn["q"], turn.get("items", rep_items), turn.get("scope"))
+            _fitems = turn.get("items", rep_items)
+            _fscope = turn.get("scope") or {}
+            _fprim = maybe_chart(turn["q"], _fitems, _fscope)
+            if _fprim:
+                complementary_charts(_fitems, _fscope, reporter.aggregate(_fitems),
+                                     _fprim[0], _fprim[1], key_prefix=f"f{_ti}", limit=1)
 
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
