@@ -32,15 +32,19 @@ You can work either by tapping or by physically grabbing the pipette:
 2. **Tap the Eppendorf tube** (or the *Dispense* button) to add it.
 
 **Grab mode (direct manipulation)**
-1. **Pick up and move** the reagent bottles and the tube — they stay where you
-   place them.
-2. **Grab the pipette** and **dip its tip into a reagent bottle** to draw it up.
-3. **Dip the pipette into the tube** to dispense. The pipette springs back to
-   its stand.
 
-On a real Vision Pro you can use both hands (e.g. hold a bottle in one hand and
-the pipette in the other); in the simulator you grab one thing at a time with
-the mouse.
+Everything is grabbable with your hands via RealityKit's ManipulationComponent —
+on a real Vision Pro you can use **both hands at once** (e.g. hold a reagent in
+one hand and the pipette in the other). Objects stay where you release them.
+
+1. **Pick up and move** the reagent bottles, the tube, and the pipette.
+2. **Dip the pipette tip into a reagent bottle** to draw it up (the cap pops
+   open and the tip changes color).
+3. **Dip the pipette tip into the tube** to dispense. Dip into the full tube to
+   mix.
+
+In the simulator you only have a mouse, so you grab one object at a time;
+two-handed manipulation requires a real device.
 
 Then, for both modes:
 3. Follow the protocol **in order** (water → buffer → dNTPs → template →

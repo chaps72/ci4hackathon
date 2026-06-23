@@ -232,7 +232,7 @@ enum LabSceneBuilder {
         labelText.position = [0, 0.07, bodyRadius + 0.005]
         bottle.addChild(labelText)
 
-        makeInteractive(bottle, size: [0.1, 0.36, 0.1], center: [0, 0.11, 0])
+        makeManipulable(bottle, size: [0.1, 0.36, 0.1], center: [0, 0.11, 0])
         return bottle
     }
 
@@ -283,7 +283,7 @@ enum LabSceneBuilder {
         pipette.addChild(liquid)
 
         pipette.name = pipetteName
-        makeInteractive(pipette, size: [0.1, 0.42, 0.1], center: [0, 0.09, 0])
+        makeManipulable(pipette, size: [0.1, 0.42, 0.1], center: [0, 0.09, 0])
         pipette.position = pipetteHome
         return pipette
     }
@@ -332,7 +332,7 @@ enum LabSceneBuilder {
         liquids.position = [0, 0.001, 0]
         tube.addChild(liquids)
 
-        makeInteractive(tube, size: [0.1, 0.16, 0.1], center: [0, 0.03, 0])
+        makeManipulable(tube, size: [0.1, 0.16, 0.1], center: [0, 0.03, 0])
 
         let label = makeTextEntity("Eppendorf tube", fontSize: 0.015,
                                    color: .white, maxWidth: 0.2)
@@ -410,6 +410,15 @@ enum LabSceneBuilder {
         case reagent(String)
         case tube
         case none
+
+        /// Stable identifier used to debounce repeated dips into the same target.
+        var dipID: String? {
+            switch self {
+            case .reagent(let id): return "reagent:" + id
+            case .tube: return "tube"
+            case .none: return nil
+            }
+        }
     }
 
     static func classifyTap(on entity: Entity) -> Hit {
@@ -480,14 +489,24 @@ enum LabSceneBuilder {
         return nil
     }
 
-    private static func makeInteractive(_ entity: Entity,
+    /// Make an entity directly grabbable with the hands (native two-handed
+    /// translate / rotate via RealityKit's ManipulationComponent). Objects stay
+    /// where you release them.
+    private static func makeManipulable(_ entity: Entity,
                                         size: SIMD3<Float>,
                                         center: SIMD3<Float> = .zero) {
         let shape = ShapeResource.generateBox(size: size)
             .offsetBy(translation: center)
-        entity.components.set(CollisionComponent(shapes: [shape]))
-        entity.components.set(InputTargetComponent())
-        entity.components.set(HoverEffectComponent())
+        ManipulationComponent.configureEntity(
+            entity,
+            hoverEffect: HoverEffectComponent(),
+            allowedInputTypes: .all,
+            collisionShapes: [shape]
+        )
+        if var manipulation = entity.components[ManipulationComponent.self] {
+            manipulation.releaseBehavior = .stay
+            entity.components.set(manipulation)
+        }
     }
 
     private static func box(_ w: Float, _ h: Float, _ d: Float,
