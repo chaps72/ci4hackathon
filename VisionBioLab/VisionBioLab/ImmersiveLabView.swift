@@ -1,13 +1,15 @@
 import SwiftUI
 import RealityKit
 
-/// The immersive 3D lab bench. Reads from the shared `LabModel` and updates the
+/// The immersive 3D lab. Reads from the shared `LabModel` and updates the
 /// tube / pipette visuals as the user works through the protocol.
 ///
-/// Two ways to interact:
+/// Interaction:
 ///  • Tap a reagent to load the pipette, tap the tube to dispense.
-///  • Or grab the pipette and drag it onto a reagent (to draw it up) and onto
-///    the tube (to dispense). Drop the full tube to mix the reaction.
+///  • Or grab things directly: pick up and move the reagent bottles / tube, and
+///    grab the pipette and dip it into a bottle (draws it up) and into the tube
+///    (dispenses). On a real Vision Pro you can use both hands at once; in the
+///    simulator you grab one thing at a time with the mouse.
 struct ImmersiveLabView: View {
     @Environment(LabModel.self) private var model
 
@@ -18,7 +20,8 @@ struct ImmersiveLabView: View {
     @State private var eppendorfLiquids = Entity()
 
     // Drag bookkeeping.
-    @State private var dragging = false
+    @State private var draggedEntity: Entity?
+    @State private var dragOffset: SIMD3<Float>?
 
     var body: some View {
         RealityView { content in
@@ -37,30 +40,41 @@ struct ImmersiveLabView: View {
                     handleHit(LabSceneBuilder.classifyTap(on: value.entity))
                 }
         )
-        // Grab and drag the pipette around the bench.
+        // Grab and move the pipette / bottles / tube directly.
         .simultaneousGesture(
             DragGesture()
                 .targetedToAnyEntity()
                 .onChanged { value in
-                    guard LabSceneBuilder.isPipette(value.entity),
-                          let parent = pipette.parent else { return }
-                    dragging = true
-                    pipette.position = value.convert(value.location3D,
-                                                     from: .local, to: parent)
+                    // Figure out what we grabbed (once per drag).
+                    let grabbed: Entity
+                    if let current = draggedEntity {
+                        grabbed = current
+                    } else if let root = LabSceneBuilder.grabbable(value.entity) {
+                        grabbed = root
+                        draggedEntity = root
+                    } else {
+                        return
+                    }
+
+                    guard let parent = grabbed.parent else { return }
+                    let pointer = value.convert(value.location3D, from: .local, to: parent)
+                    if dragOffset == nil { dragOffset = grabbed.position - pointer }
+                    grabbed.position = pointer + (dragOffset ?? .zero)
                 }
-                .onEnded { value in
-                    guard dragging else { return }
-                    dragging = false
+                .onEnded { _ in
+                    defer { draggedEntity = nil; dragOffset = nil }
+                    guard let grabbed = draggedEntity else { return }
 
-                    // Use the pipette tip (not its origin) to decide what we
-                    // dropped onto.
-                    let tipPos = pipette.convert(position: [0, -0.06, 0], to: nil)
-                    handleHit(LabSceneBuilder.dropTarget(near: tipPos, in: sceneRoot))
+                    // Only the pipette triggers loading / dispensing — based on
+                    // where its tip ends up. Bottles and the tube just stay put.
+                    if grabbed.name == LabSceneBuilder.pipetteName {
+                        let tip = grabbed.convert(position: [0, -0.06, 0], to: nil)
+                        handleHit(LabSceneBuilder.dropTarget(near: tip, in: sceneRoot))
 
-                    // Return the pipette to its stand.
-                    var home = pipette.transform
-                    home.translation = LabSceneBuilder.pipetteHome
-                    pipette.move(to: home, relativeTo: pipette.parent, duration: 0.25)
+                        var home = grabbed.transform
+                        home.translation = LabSceneBuilder.pipetteHome
+                        grabbed.move(to: home, relativeTo: grabbed.parent, duration: 0.25)
+                    }
                 }
         )
         // Keep the 3D visuals in sync with the model.

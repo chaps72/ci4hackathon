@@ -433,6 +433,20 @@ enum LabSceneBuilder {
         return false
     }
 
+    /// Walk up from a touched entity to the grabbable root it belongs to
+    /// (the pipette, a reagent bottle, or the tube), if any.
+    static func grabbable(_ entity: Entity) -> Entity? {
+        var current: Entity? = entity
+        while let e = current {
+            if e.name == pipetteName || e.name == tubeName
+                || e.name.hasPrefix(reagentPrefix) {
+                return e
+            }
+            current = e.parent
+        }
+        return nil
+    }
+
     /// Find the reagent bottle or tube nearest a world-space point (the dropped
     /// pipette tip), within `threshold` meters.
     static func dropTarget(near worldPos: SIMD3<Float>,
