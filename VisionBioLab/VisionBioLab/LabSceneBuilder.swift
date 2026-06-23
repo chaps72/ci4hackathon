@@ -24,7 +24,8 @@ enum LabSceneBuilder {
     private static let capOpenLocal: SIMD3<Float> = [0.05, 0.275, 0]
 
     /// Resting position of the pipette on the bench (local to the bench group).
-    static let pipetteHome: SIMD3<Float> = [0.46, benchTopY, 0.06]
+    /// Raised so the tip clears the worktop when standing in its holder.
+    static let pipetteHome: SIMD3<Float> = [0.46, benchTopY + 0.09, 0.06]
 
     // MARK: - Build
 
@@ -46,6 +47,7 @@ enum LabSceneBuilder {
         bench.position = benchGroupOffset
         bench.addChild(makeWorkbench())
         bench.addChild(makeReagentRack(model: model))
+        bench.addChild(makePipetteStand())
         bench.addChild(makePipette(into: pipette, liquid: pipetteLiquid))
         bench.addChild(makeEppendorf(liquids: eppendorfLiquids))
         bench.addChild(makeTitleLabel())
@@ -238,54 +240,99 @@ enum LabSceneBuilder {
 
     // MARK: - Pipette
 
+    /// A micropipette built from primitives: plunger button, tip-ejector, an
+    /// ergonomic body with a volume window, a metal shaft, and a translucent
+    /// disposable tip. The origin sits where the tip meets the shaft (y = 0),
+    /// with the tip pointing down.
     private static func makePipette(into pipette: Entity, liquid: ModelEntity) -> Entity {
         pipette.children.removeAll()
 
-        let bodyHeight: Float = 0.2
-        let body = ModelEntity(
-            mesh: .generateCylinder(height: bodyHeight, radius: 0.011),
-            materials: [unlit(0.12, 0.42, 0.82)]
-        )
-        body.position = [0, bodyHeight / 2, 0]
-        pipette.addChild(body)
+        let bodyWhite = unlit(0.93, 0.94, 0.96)
+        let accent = unlit(0.12, 0.45, 0.85)
+        let metal = unlit(0.55, 0.57, 0.60)
+        let darkGrey = unlit(0.20, 0.21, 0.24)
 
-        // A lighter grip band.
-        let grip = ModelEntity(
-            mesh: .generateCylinder(height: 0.05, radius: 0.013),
-            materials: [unlit(0.85, 0.87, 0.90)]
-        )
-        grip.position = [0, bodyHeight * 0.62, 0]
-        pipette.addChild(grip)
+        func part(_ mesh: MeshResource, _ material: UnlitMaterial, _ pos: SIMD3<Float>) {
+            let e = ModelEntity(mesh: mesh, materials: [material])
+            e.position = pos
+            pipette.addChild(e)
+        }
 
-        let plunger = ModelEntity(
-            mesh: .generateCylinder(height: 0.035, radius: 0.013),
-            materials: [unlit(0.95, 0.35, 0.25)]
-        )
-        plunger.position = [0, bodyHeight + 0.018, 0]
-        pipette.addChild(plunger)
-
-        // Disposable tip — a downward cone.
+        // Translucent disposable tip (cone pointing down from the origin).
         let tip = ModelEntity(
-            mesh: .generateCone(height: 0.06, radius: 0.009),
-            materials: [unlit(0.85, 0.86, 0.90)]
+            mesh: .generateCone(height: 0.07, radius: 0.012),
+            materials: [translucent(0.9, 0.93, 0.97, 0.35)]
         )
-        tip.position = [0, -0.03, 0]
+        tip.position = [0, -0.035, 0]
         tip.scale = [1, -1, 1]
         pipette.addChild(tip)
 
-        // Colored liquid in the tip; hidden until something is loaded.
+        // Colored liquid drawn up into the tip; hidden until loaded.
         liquid.model = ModelComponent(
-            mesh: .generateCylinder(height: 0.025, radius: 0.006),
+            mesh: .generateCone(height: 0.045, radius: 0.009),
             materials: [unlit(0.7, 0.7, 0.72)]
         )
-        liquid.position = [0, -0.02, 0]
+        liquid.position = [0, -0.03, 0]
+        liquid.scale = [1, -1, 1]
         liquid.isEnabled = false
         pipette.addChild(liquid)
 
+        // Thin metal shaft.
+        part(.generateCylinder(height: 0.05, radius: 0.0055), metal, [0, 0.025, 0])
+
+        // Lower body (holds the volume window).
+        part(.generateCylinder(height: 0.055, radius: 0.013), bodyWhite, [0, 0.075, 0])
+        part(.generateBox(width: 0.017, height: 0.026, depth: 0.006, cornerRadius: 0.002),
+             darkGrey, [0, 0.08, 0.013])
+
+        // Colored channel band.
+        part(.generateCylinder(height: 0.013, radius: 0.0182), accent, [0, 0.108, 0])
+
+        // Upper ergonomic body / handle.
+        part(.generateCylinder(height: 0.062, radius: 0.017), bodyWhite, [0, 0.14, 0])
+
+        // Finger hook at the back of the handle.
+        part(.generateBox(width: 0.022, height: 0.04, depth: 0.012, cornerRadius: 0.003),
+             bodyWhite, [0, 0.155, -0.022])
+
+        // Plunger shaft + button on top.
+        part(.generateCylinder(height: 0.022, radius: 0.007), metal, [0, 0.182, 0])
+        part(.generateCylinder(height: 0.02, radius: 0.015), accent, [0, 0.203, 0])
+
+        // Tip-ejector arm + button down the side.
+        part(.generateBox(width: 0.006, height: 0.075, depth: 0.01, cornerRadius: 0.002),
+             metal, [0.019, 0.13, 0])
+        part(.generateCylinder(height: 0.016, radius: 0.008), darkGrey, [0.019, 0.185, 0])
+
         pipette.name = pipetteName
-        makeManipulable(pipette, size: [0.1, 0.42, 0.1], center: [0, 0.09, 0])
+        makeManipulable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
         pipette.position = pipetteHome
         return pipette
+    }
+
+    /// A simple holder the pipette rests in.
+    private static func makePipetteStand() -> Entity {
+        let stand = Entity()
+        let standColor = unlit(0.30, 0.32, 0.36)
+
+        let base = box(0.1, 0.03, 0.1, standColor)
+        base.position = [0.46, benchTopY + 0.015, 0.06]
+        stand.addChild(base)
+
+        let post = ModelEntity(
+            mesh: .generateCylinder(height: 0.24, radius: 0.008),
+            materials: [standColor]
+        )
+        post.position = [0.46, benchTopY + 0.14, 0.015]
+        stand.addChild(post)
+
+        let cradle = ModelEntity(
+            mesh: .generateBox(width: 0.05, height: 0.008, depth: 0.04, cornerRadius: 0.002),
+            materials: [standColor]
+        )
+        cradle.position = [0.46, benchTopY + 0.22, 0.04]
+        stand.addChild(cradle)
+        return stand
     }
 
     // MARK: - Eppendorf tube
@@ -564,6 +611,14 @@ enum LabSceneBuilder {
     private static func glassy() -> UnlitMaterial {
         var material = UnlitMaterial(color: UIColor(white: 0.85, alpha: 0.45))
         material.blending = .transparent(opacity: 0.45)
+        return material
+    }
+
+    /// A tinted translucent material (e.g. a clear plastic pipette tip).
+    private static func translucent(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat,
+                                    _ a: CGFloat) -> UnlitMaterial {
+        var material = UnlitMaterial(color: UIColor(red: r, green: g, blue: b, alpha: a))
+        material.blending = .transparent(opacity: .init(floatLiteral: Float(a)))
         return material
     }
 }
