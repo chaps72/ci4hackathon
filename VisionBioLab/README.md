@@ -24,34 +24,21 @@ tube resets — just like the real bench.
 
 ## How to use it
 
-You can work either by tapping or by physically grabbing the pipette:
+The interaction is deliberately simple — you don't grab anything by hand:
 
-**Tap mode**
-1. **Tap a reagent** (a bottle in 3D, or a button in the window) to draw it up
-   into the pipette.
-2. **Tap the Eppendorf tube** (or the *Dispense* button) to add it.
-
-**Grab mode (direct manipulation)**
-
-Everything is grabbable with your hands via RealityKit's ManipulationComponent —
-on a real Vision Pro you can use **both hands at once** (e.g. hold a reagent in
-one hand and the pipette in the other). Objects stay where you release them.
-
-1. **Pick up and move** the reagent bottles, the tube, and the pipette.
-2. **Dip the pipette tip into a reagent bottle** to draw it up (the cap pops
-   open and the tip changes color).
-3. **Dip the pipette tip into the tube** to dispense. Dip into the full tube to
-   mix.
-
-In the simulator you only have a mouse, so you grab one object at a time;
-two-handed manipulation requires a real device.
-
-Then, for both modes:
-3. Follow the protocol **in order** (water → buffer → dNTPs → template →
-   polymerase last). A wrong order shows an error and empties the tube.
-4. Once all five reagents are in, **Mix / run reaction** (the button, or drop
-   the pipette on the full tube) — the layers blend into the finished reaction.
+1. **Look at a reagent bottle and pinch** (in the simulator, point at it and
+   click). The pipette flies over, uncaps the bottle, and draws the reagent up.
+2. **Look at the Eppendorf tube and pinch.** The pipette moves over and
+   dispenses; a colored layer appears in the tube.
+3. Repeat, following the protocol **in order** (water → buffer → dNTPs →
+   template → polymerase last). A wrong order shows an error and empties the
+   tube.
+4. Once all five reagents are in, **pinch the tube** (or press *Mix / run
+   reaction* in the window) to vortex-mix the reaction.
 5. **Restart** to try again.
+
+You can also drive everything from the app **window** (reagent buttons, Dispense,
+Mix, Restart) if you prefer buttons to looking around.
 
 Both the 3D scene and the window drive the same shared state, so you can use
 whichever is more convenient.

@@ -1,19 +1,10 @@
 import SwiftUI
 import RealityKit
 
-/// Retains scene subscriptions and the running dip state across frames.
-@MainActor
-final class LabRuntime {
-    var subscriptions: [EventSubscription] = []
-    var didSetup = false
-    /// Identifier of the target the pipette tip is currently dipped into, so we
-    /// only act once per dip (not every frame).
-    var currentDip: String?
-}
-
-/// The immersive 3D lab. Reads from the shared `LabModel`, lets you grab objects
-/// with your hands (RealityKit ManipulationComponent — two-handed on device),
-/// and draws / dispenses when you dip the pipette tip into a bottle or the tube.
+/// The immersive 3D lab. The interaction is deliberately simple: **tap a reagent
+/// bottle, then tap the tube.** The pipette animates itself — flying over the
+/// bottle, drawing the liquid up, then moving to the tube and dispensing — so it
+/// looks like you're running the experiment without any fiddly grabbing.
 struct ImmersiveLabView: View {
     @Environment(LabModel.self) private var model
 
@@ -21,7 +12,9 @@ struct ImmersiveLabView: View {
     @State private var pipette = Entity()
     @State private var pipetteLiquid = ModelEntity()
     @State private var eppendorfLiquids = Entity()
-    @State private var runtime = LabRuntime()
+
+    /// True while the pipette animation is playing (ignore taps until done).
+    @State private var busy = false
 
     var body: some View {
         RealityView { content in
@@ -31,18 +24,14 @@ struct ImmersiveLabView: View {
                                   eppendorfLiquids: eppendorfLiquids,
                                   model: model)
             content.add(sceneRoot)
-
-            setUpDipDetection(content)
         }
-        // Tap a reagent / the tube as a quick alternative to dipping.
         .gesture(
             SpatialTapGesture()
                 .targetedToAnyEntity()
                 .onEnded { value in
-                    handleHit(LabSceneBuilder.classifyTap(on: value.entity))
+                    handleTap(LabSceneBuilder.classifyTap(on: value.entity))
                 }
         )
-        // Keep the 3D visuals in sync with the model.
         .onChange(of: model.loadedReagent) { old, loaded in
             LabSceneBuilder.refreshPipette(pipetteLiquid, loaded: loaded)
             if let old { LabSceneBuilder.setBottleOpen(id: old.id, in: sceneRoot, open: false) }
@@ -61,46 +50,73 @@ struct ImmersiveLabView: View {
         }
     }
 
-    /// Every frame, check whether the pipette tip has been dipped into a bottle
-    /// (draw up) or the tube (dispense / mix), acting once per dip.
-    private func setUpDipDetection(_ content: RealityViewContent) {
-        guard !runtime.didSetup else { return }
-        runtime.didSetup = true
+    // MARK: - Interaction
 
-        let model = self.model
-        let root = sceneRoot
-        let pip = pipette
-        let runtime = self.runtime
-
-        let token = content.subscribe(to: SceneEvents.Update.self) { _ in
-            let tip = pip.convert(position: [0, -0.06, 0], to: nil)
-            let hit = LabSceneBuilder.dropTarget(near: tip, in: root, threshold: 0.2)
-
-            // Only act when the tip enters a new target.
-            guard hit.dipID != runtime.currentDip else { return }
-            runtime.currentDip = hit.dipID
-
-            switch hit {
-            case .reagent(let id):
-                if let reagent = LabProtocol.reagent(id) { model.loadPipette(with: reagent) }
-            case .tube:
-                if model.canMix { model.mix() } else { model.dispenseIntoTube() }
-            case .none:
-                break
-            }
-        }
-        runtime.subscriptions.append(token)
-    }
-
-    /// Apply a tap interaction with a reagent bottle or the tube.
-    private func handleHit(_ hit: LabSceneBuilder.Hit) {
+    private func handleTap(_ hit: LabSceneBuilder.Hit) {
+        guard !busy else { return }
         switch hit {
         case .reagent(let id):
-            if let reagent = LabProtocol.reagent(id) { model.loadPipette(with: reagent) }
+            // Pick up a reagent only if the pipette is free.
+            guard model.loadedReagent == nil, !model.isComplete,
+                  let reagent = LabProtocol.reagent(id) else { return }
+            drawReagent(reagent)
         case .tube:
-            if model.canMix { model.mix() } else { model.dispenseIntoTube() }
+            if model.canMix { model.mix(); return }
+            guard model.loadedReagent != nil else { return }
+            dispenseIntoTube()
         case .none:
             break
         }
+    }
+
+    /// Tap a bottle → pipette flies over, uncaps, and draws the reagent up.
+    private func drawReagent(_ reagent: Reagent) {
+        let name = LabSceneBuilder.reagentPrefix + reagent.id
+        guard let bottle = LabSceneBuilder.entity(named: name, in: sceneRoot),
+              let parent = pipette.parent else { return }
+        let base = bottle.position(relativeTo: parent)
+        visit(x: base.x, z: base.z, mouthY: base.y + 0.19) {
+            model.loadPipette(with: reagent)
+        }
+    }
+
+    /// Tap the tube → pipette flies over and dispenses what it's holding.
+    private func dispenseIntoTube() {
+        guard let tube = LabSceneBuilder.entity(named: LabSceneBuilder.tubeName, in: sceneRoot),
+              let parent = pipette.parent else { return }
+        let base = tube.position(relativeTo: parent)
+        visit(x: base.x, z: base.z, mouthY: base.y + 0.06) {
+            model.dispenseIntoTube()
+        }
+    }
+
+    // MARK: - Pipette animation
+
+    /// Fly the pipette from its stand → above the target → down into it → back
+    /// up → home, running `bottomAction` (draw / dispense) at the lowest point.
+    private func visit(x: Float, z: Float, mouthY: Float,
+                       bottomAction: @escaping () -> Void) {
+        busy = true
+        let hoverY = mouthY + 0.16
+        let dipY = mouthY + 0.03
+        let home = LabSceneBuilder.pipetteHome
+
+        move(to: [x, hoverY, z], duration: 0.5)                 // travel over target
+        after(0.55) { move(to: [x, dipY, z], duration: 0.3) }   // dip in
+        after(0.95, bottomAction)                               // draw / dispense
+        after(1.2) { move(to: [x, hoverY, z], duration: 0.3) }  // lift out
+        after(1.6) { move(to: home, duration: 0.5) }            // return to stand
+        after(2.2) { busy = false }
+    }
+
+    private func move(to translation: SIMD3<Float>, duration: Double) {
+        guard let parent = pipette.parent else { return }
+        var t = pipette.transform
+        t.translation = translation
+        pipette.move(to: t, relativeTo: parent, duration: duration)
+    }
+
+    private func after(_ seconds: Double, _ action: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: action)
     }
 }

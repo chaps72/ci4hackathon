@@ -234,7 +234,7 @@ enum LabSceneBuilder {
         labelText.position = [0, 0.07, bodyRadius + 0.005]
         bottle.addChild(labelText)
 
-        makeManipulable(bottle, size: [0.1, 0.36, 0.1], center: [0, 0.11, 0])
+        makeTappable(bottle, size: [0.1, 0.36, 0.1], center: [0, 0.11, 0])
         return bottle
     }
 
@@ -305,7 +305,7 @@ enum LabSceneBuilder {
         part(.generateCylinder(height: 0.016, radius: 0.008), darkGrey, [0.019, 0.185, 0])
 
         pipette.name = pipetteName
-        makeManipulable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
+        makeTappable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
         pipette.position = pipetteHome
         return pipette
     }
@@ -379,7 +379,7 @@ enum LabSceneBuilder {
         liquids.position = [0, 0.001, 0]
         tube.addChild(liquids)
 
-        makeManipulable(tube, size: [0.1, 0.16, 0.1], center: [0, 0.03, 0])
+        makeTappable(tube, size: [0.1, 0.16, 0.1], center: [0, 0.03, 0])
 
         let label = makeTextEntity("Eppendorf tube", fontSize: 0.015,
                                    color: .white, maxWidth: 0.2)
@@ -536,24 +536,20 @@ enum LabSceneBuilder {
         return nil
     }
 
-    /// Make an entity directly grabbable with the hands (native two-handed
-    /// translate / rotate via RealityKit's ManipulationComponent). Objects stay
-    /// where you release them.
-    private static func makeManipulable(_ entity: Entity,
-                                        size: SIMD3<Float>,
-                                        center: SIMD3<Float> = .zero) {
+    /// Make an entity reliably tappable (gaze + pinch) with a hover highlight.
+    private static func makeTappable(_ entity: Entity,
+                                     size: SIMD3<Float>,
+                                     center: SIMD3<Float> = .zero) {
         let shape = ShapeResource.generateBox(size: size)
             .offsetBy(translation: center)
-        ManipulationComponent.configureEntity(
-            entity,
-            hoverEffect: HoverEffectComponent(),
-            allowedInputTypes: .all,
-            collisionShapes: [shape]
-        )
-        if var manipulation = entity.components[ManipulationComponent.self] {
-            manipulation.releaseBehavior = .stay
-            entity.components.set(manipulation)
-        }
+        entity.components.set(CollisionComponent(shapes: [shape]))
+        entity.components.set(InputTargetComponent())
+        entity.components.set(HoverEffectComponent())
+    }
+
+    /// Public lookup used by the view to animate the pipette toward a target.
+    static func entity(named name: String, in root: Entity) -> Entity? {
+        findEntity(named: name, in: root)
     }
 
     private static func box(_ w: Float, _ h: Float, _ d: Float,
