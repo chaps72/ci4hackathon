@@ -296,34 +296,49 @@ def clarify(question: str) -> str:
         return ""
 
 
-# Fallback suggestions when no API key (still varied, graph-leaning).
+# Fallback suggestions when no API key — one trend, one comparison, one
+# concentration angle, one strategic angle.
 _FALLBACK_SUGGESTIONS = [
-    ("Funding by institute", "Show total funding by NIH institute (IC) as a bar chart."),
-    ("Trend over years", "Show total funding by fiscal year as a bar chart, and note the trend."),
-    ("New vs. renewal", "Break down new vs. renewal vs. continuation awards, with a chart."),
-    ("Top PIs", "Who are the top principal investigators by total funding? Show a chart."),
-    ("Mechanism mix", "Break funding down by activity code / mechanism, with a chart."),
+    ("Trend over years", "Show the trend over the last 5 fiscal years as a chart, "
+     "and note whether it is growing or shrinking."),
+    ("Peer benchmark", "Benchmark this against peer institutions (Duke, "
+     "Vanderbilt, Johns Hopkins) with a comparison chart."),
+    ("Concentration risk", "How concentrated is this funding among the top PIs "
+     "and the largest institute? Quote the shares and what they imply."),
+    ("Renewal pipeline", "Which of these projects end within the next 12 months, "
+     "and how many dollars are at stake?"),
 ]
 
 
 def suggest_followups(question: str, facts_md: str) -> list:
-    """Propose 4 useful NEXT analyses for this result set — favoring ones that
-    produce a graph and angles the user may not have considered. Returns a list
-    of (button_label, follow_up_prompt) tuples."""
+    """Propose 4 useful NEXT analyses for this result set — four DIFFERENT kinds
+    of analytical move, each chart-friendly and grounded in what the data shows.
+    Returns a list of (button_label, follow_up_prompt) tuples."""
     if not claude_available():
         return _FALLBACK_SUGGESTIONS[:4]
     import anthropic
 
     client = anthropic.Anthropic()
     prompt = (
-        "You are suggesting next analytical steps for an NIH RePORTER report at a "
-        "university research office. Given the user's question and the dataset "
-        "facts, propose 4 useful FOLLOW-UP analyses they likely haven't considered "
-        "— prefer ones that produce a GRAPH (breakdowns, trends over fiscal years, "
-        "comparisons, concentration/share, mechanism or institute mix) and make "
-        "them specific to THIS data. Respond with ONLY a JSON array of 4 objects "
-        "{\"label\": <button text, max 4 words>, \"prompt\": <full instruction to "
-        "run, one sentence>}. No prose.\n\n"
+        "You advise a university research office on what to look at next in an "
+        "NIH RePORTER result set. Read the user's question and the dataset facts, "
+        "notice what is actually interesting in THIS data (a spike, a dominant "
+        "institute, a concentration, an expiring cluster), and propose 4 follow-up "
+        "analyses — one of EACH kind, so they are genuinely different moves:\n"
+        "1. TREND: a change-over-time view (fiscal years, or weeks/months for "
+        "recent windows).\n"
+        "2. MIX: a breakdown along a dimension the user has NOT already asked "
+        "about (institute, mechanism, application type, PI).\n"
+        "3. COMPARISON: peers, prior years, or share-of-total context.\n"
+        "4. STRATEGIC ANGLE they likely haven't considered: e.g. concentration/"
+        "dependency risk, the renewal pipeline (projects ending within 12 months), "
+        "rising investigators, new-money vs continuation, or the research themes "
+        "in the abstracts.\n"
+        "Anchor each in a specific fact when possible ('NCI is 40% of the total — "
+        "how dependent are we?'), never repeat the user's original cut, and phrase "
+        "each prompt so it produces a chart. Respond with ONLY a JSON array of 4 "
+        "objects {\"label\": <button text, max 4 words>, \"prompt\": <full "
+        "instruction to run, one sentence>}, in the order above. No prose.\n\n"
         f"Question: {question}\n\nDataset facts:\n{facts_md[:2500]}"
     )
     try:
@@ -396,7 +411,12 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "period. NIH RePORTER project data only goes back to FY1985. "
         "FORMATTING: do NOT use markdown headings (#, ##, ###); use short **bold** "
         "lead-ins and bullets, keep it clean. The request has already been "
-        "clarified if needed, so just answer it."
+        "clarified if needed, so just answer it. "
+        "End with ONE line — '**Worth exploring next:** …' — proposing a single "
+        "specific further analysis THIS data supports and the user did not ask "
+        "for, picked from what stands out in the facts (a concentration worth "
+        "probing, projects ending soon, a trend worth extending, a peer "
+        "comparison). One sentence, no list."
         f"{context}\n\n"
         f"User request:\n{question}\n\n"
         f"Dataset facts:\n{facts_md}"
