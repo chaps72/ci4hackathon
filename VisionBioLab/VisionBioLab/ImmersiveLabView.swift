@@ -1,10 +1,10 @@
 import SwiftUI
 import RealityKit
 
-/// The immersive 3D lab. The interaction is deliberately simple: **tap a reagent
-/// bottle, then tap the tube.** The pipette animates itself — flying over the
-/// bottle, drawing the liquid up, then moving to the tube and dispensing — so it
-/// looks like you're running the experiment without any fiddly grabbing.
+/// The immersive 3D lab. Two ways to work:
+///  • **Tap** a reagent bottle then the tube — the pipette animates itself.
+///  • **Grab the pipette and dip it** into a bottle to draw up, then into the
+///    tube to dispense.
 struct ImmersiveLabView: View {
     @Environment(LabModel.self) private var model
 
@@ -16,6 +16,11 @@ struct ImmersiveLabView: View {
 
     /// True while the pipette animation is playing (ignore taps until done).
     @State private var busy = false
+
+    // Manual pipette-drag bookkeeping.
+    @State private var draggingPipette = false
+    @State private var dragOffset: SIMD3<Float> = .zero
+    @State private var hoveredBottle: String?
 
     var body: some View {
         RealityView { content in
@@ -33,6 +38,41 @@ struct ImmersiveLabView: View {
                 .targetedToAnyEntity()
                 .onEnded { value in
                     handleTap(LabSceneBuilder.classifyTap(on: value.entity))
+                }
+        )
+        // Grab the pipette and dip it into a bottle / the tube.
+        .simultaneousGesture(
+            DragGesture()
+                .targetedToAnyEntity()
+                .onChanged { value in
+                    guard !busy, LabSceneBuilder.isPipette(value.entity),
+                          let parent = pipette.parent else { return }
+                    let pointer = value.convert(value.location3D, from: .local, to: parent)
+                    if !draggingPipette {
+                        draggingPipette = true
+                        dragOffset = pipette.position - pointer
+                    }
+                    pipette.position = pointer + dragOffset
+
+                    // Open the cap of whatever bottle the tip is near.
+                    let tip = pipette.convert(position: [0, -0.06, 0], to: nil)
+                    hoverCap(for: LabSceneBuilder.target(near: tip, in: sceneRoot))
+                }
+                .onEnded { _ in
+                    guard draggingPipette else { return }
+                    draggingPipette = false
+
+                    let tip = pipette.convert(position: [0, -0.06, 0], to: nil)
+                    applyDip(LabSceneBuilder.target(near: tip, in: sceneRoot))
+
+                    // Re-cap a hovered bottle we didn't actually draw from.
+                    if let h = hoveredBottle, h != model.loadedReagent?.id {
+                        LabSceneBuilder.setBottleOpen(id: h, in: sceneRoot, open: false)
+                    }
+                    hoveredBottle = nil
+
+                    // Return the pipette to its stand.
+                    move(to: LabSceneBuilder.pipetteHome, duration: 0.3)
                 }
         )
         .onChange(of: model.loadedReagent) { old, loaded in
@@ -92,6 +132,37 @@ struct ImmersiveLabView: View {
             if model.canMix { model.mix(); return }
             guard model.loadedReagent != nil else { return }
             dispenseIntoTube()
+        case .none:
+            break
+        }
+    }
+
+    /// While dragging, open the cap of the bottle the tip is over (and close the
+    /// previously-hovered one).
+    private func hoverCap(for hit: LabSceneBuilder.Hit) {
+        let newID: String?
+        if case .reagent(let id) = hit { newID = id } else { newID = nil }
+        guard newID != hoveredBottle else { return }
+        if let old = hoveredBottle, old != model.loadedReagent?.id {
+            LabSceneBuilder.setBottleOpen(id: old, in: sceneRoot, open: false)
+        }
+        if let newID { LabSceneBuilder.setBottleOpen(id: newID, in: sceneRoot, open: true) }
+        hoveredBottle = newID
+    }
+
+    /// Draw up / dispense based on where the pipette tip was dipped.
+    private func applyDip(_ hit: LabSceneBuilder.Hit) {
+        switch hit {
+        case .reagent(let id):
+            guard model.loadedReagent == nil, !model.isComplete,
+                  let reagent = LabProtocol.reagent(id) else { return }
+            model.loadPipette(with: reagent)
+        case .tube:
+            if model.canMix {
+                model.mix()
+            } else if model.loadedReagent != nil {
+                model.dispenseIntoTube()
+            }
         case .none:
             break
         }

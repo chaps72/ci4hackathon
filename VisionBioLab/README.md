@@ -24,15 +24,21 @@ tube resets — just like the real bench.
 
 ## How to use it
 
-The interaction is deliberately simple — you don't grab anything by hand:
+Two ways to work — use whichever feels better:
 
-1. **Look at a reagent bottle and pinch** (in the simulator, point at it and
-   click). The pipette flies over, uncaps the bottle, and draws the reagent up.
-2. **Look at the Eppendorf tube and pinch.** The pipette moves over and
-   dispenses; a colored layer appears in the tube.
-3. Repeat, following the protocol **in order** (water → buffer → dNTPs →
-   template → polymerase last). A wrong order shows an error and empties the
-   tube.
+**Tap (hands-free):**
+1. **Look at a reagent bottle and pinch.** The pipette flies over, uncaps the
+   bottle, and draws the reagent up.
+2. **Look at the tube and pinch.** The pipette dispenses; a colored layer appears.
+
+**Grab the pipette (hands-on):**
+1. **Pinch and hold the pipette, then dip its tip into a bottle** — the cap
+   opens as you approach and it draws the reagent up on release.
+2. **Dip the pipette into the tube** to dispense. It returns to its stand.
+
+Then, for both:
+3. Follow the protocol **in order** (water → buffer → dNTPs → template →
+   polymerase last). A wrong order shows an error and empties the tube.
 4. Once all five reagents are in, **pinch the tube** (or press *Mix / run
    reaction* in the window) to vortex-mix the reaction.
 5. **Restart** to try again.

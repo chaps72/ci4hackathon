@@ -478,6 +478,39 @@ enum LabSceneBuilder {
         return .none
     }
 
+    /// True if the entity (or an ancestor) is the pipette.
+    static func isPipette(_ entity: Entity) -> Bool {
+        var current: Entity? = entity
+        while let e = current {
+            if e.name == pipetteName { return true }
+            current = e.parent
+        }
+        return false
+    }
+
+    /// The reagent bottle or tube nearest a world-space point (the pipette tip),
+    /// within `threshold` meters — used to detect dipping.
+    static func target(near worldPos: SIMD3<Float>,
+                       in root: Entity,
+                       threshold: Float = 0.2) -> Hit {
+        var best: (hit: Hit, dist: Float)?
+
+        func consider(_ entity: Entity, _ hit: Hit) {
+            let d = simd_distance(entity.position(relativeTo: nil), worldPos)
+            if d <= threshold, best == nil || d < best!.dist { best = (hit, d) }
+        }
+        func walk(_ entity: Entity) {
+            if entity.name == tubeName {
+                consider(entity, .tube)
+            } else if entity.name.hasPrefix(reagentPrefix) {
+                consider(entity, .reagent(String(entity.name.dropFirst(reagentPrefix.count))))
+            }
+            for child in entity.children { walk(child) }
+        }
+        walk(root)
+        return best?.hit ?? .none
+    }
+
     // MARK: - Helpers
 
     private static func findEntity(named name: String, in root: Entity) -> Entity? {
