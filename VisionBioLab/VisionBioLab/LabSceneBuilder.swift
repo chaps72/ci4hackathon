@@ -33,6 +33,7 @@ enum LabSceneBuilder {
                       pipette: Entity,
                       pipetteLiquid: ModelEntity,
                       eppendorfLiquids: Entity,
+                      guidance: ModelEntity,
                       model: LabModel) {
 
         root.children.removeAll()
@@ -50,7 +51,10 @@ enum LabSceneBuilder {
         bench.addChild(makePipetteStand())
         bench.addChild(makePipette(into: pipette, liquid: pipetteLiquid))
         bench.addChild(makeEppendorf(liquids: eppendorfLiquids))
-        bench.addChild(makeTitleLabel())
+
+        let panel = makeGuidancePanel(text: guidance)
+        panel.position = [0, benchTopY + 0.46, -0.1]
+        bench.addChild(panel)
         root.addChild(bench)
     }
 
@@ -558,11 +562,47 @@ enum LabSceneBuilder {
                     materials: [material])
     }
 
-    private static func makeTitleLabel() -> Entity {
-        let label = makeTextEntity("Virtual Bio Lab — Pipetting Protocol",
-                                   fontSize: 0.03, color: .white, maxWidth: 0.9)
-        label.position = [0, benchTopY + 0.5, -0.1]
-        return label
+    // MARK: - Guidance sign
+
+    /// A signboard above the bench that tells the user the next step.
+    private static func makeGuidancePanel(text guidance: ModelEntity) -> Entity {
+        let panel = Entity()
+
+        let board = ModelEntity(
+            mesh: .generateBox(width: 0.7, height: 0.22, depth: 0.01, cornerRadius: 0.02),
+            materials: [unlit(0.97, 0.97, 0.98)]
+        )
+        panel.addChild(board)
+
+        // Header strip.
+        let strip = ModelEntity(
+            mesh: .generateBox(width: 0.7, height: 0.045, depth: 0.011, cornerRadius: 0.01),
+            materials: [unlit(0.12, 0.45, 0.85)]
+        )
+        strip.position = [0, 0.087, 0.001]
+        panel.addChild(strip)
+
+        let header = makeTextEntity("VIRTUAL BIO LAB", fontSize: 0.026,
+                                    color: .white, maxWidth: 0.66)
+        header.position = [0, 0.082, 0.008]
+        panel.addChild(header)
+
+        panel.addChild(guidance)
+        return panel
+    }
+
+    /// Update the guidance sign's text.
+    static func setGuidance(_ guidance: ModelEntity, text: String) {
+        let mesh = MeshResource.generateText(
+            text,
+            extrusionDepth: 0.001,
+            font: .systemFont(ofSize: 0.03),
+            containerFrame: CGRect(x: 0, y: 0, width: 0.62, height: 0.14),
+            alignment: .center,
+            lineBreakMode: .byWordWrapping
+        )
+        guidance.model = ModelComponent(mesh: mesh, materials: [UnlitMaterial(color: .black)])
+        guidance.position = [-0.31, -0.07, 0.008]
     }
 
     /// Returns a container entity holding centered text, so callers can freely

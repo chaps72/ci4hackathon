@@ -12,6 +12,7 @@ struct ImmersiveLabView: View {
     @State private var pipette = Entity()
     @State private var pipetteLiquid = ModelEntity()
     @State private var eppendorfLiquids = Entity()
+    @State private var guidanceText = ModelEntity()
 
     /// True while the pipette animation is playing (ignore taps until done).
     @State private var busy = false
@@ -22,8 +23,10 @@ struct ImmersiveLabView: View {
                                   pipette: pipette,
                                   pipetteLiquid: pipetteLiquid,
                                   eppendorfLiquids: eppendorfLiquids,
+                                  guidance: guidanceText,
                                   model: model)
             content.add(sceneRoot)
+            updateGuidance()
         }
         .gesture(
             SpatialTapGesture()
@@ -36,18 +39,43 @@ struct ImmersiveLabView: View {
             LabSceneBuilder.refreshPipette(pipetteLiquid, loaded: loaded)
             if let old { LabSceneBuilder.setBottleOpen(id: old.id, in: sceneRoot, open: false) }
             if let loaded { LabSceneBuilder.setBottleOpen(id: loaded.id, in: sceneRoot, open: true) }
+            updateGuidance()
         }
         .onChange(of: model.dispensedReagents) { _, dispensed in
             LabSceneBuilder.refreshEppendorf(eppendorfLiquids,
                                              dispensed: dispensed,
                                              mixed: model.isMixed)
+            updateGuidance()
         }
         .onChange(of: model.isMixed) { _, mixed in
             LabSceneBuilder.refreshEppendorf(eppendorfLiquids,
                                              dispensed: model.dispensedReagents,
                                              mixed: mixed)
             if mixed { LabSceneBuilder.playMixAnimation(eppendorfLiquids) }
+            updateGuidance()
         }
+    }
+
+    /// Refresh the floating sign with the next instruction.
+    private func updateGuidance() {
+        LabSceneBuilder.setGuidance(guidanceText, text: guidanceMessage())
+    }
+
+    private func guidanceMessage() -> String {
+        if model.isMixed {
+            return "Done! Reaction assembled.\nPress Restart to run again."
+        }
+        if model.canMix {
+            return "All reagents added!\nTap the tube to MIX."
+        }
+        if let loaded = model.loadedReagent {
+            return "Pipette holds \(loaded.name).\nNow tap the tube to dispense."
+        }
+        let prefix = model.lastActionWasError ? "Out of order — tube reset.\n" : ""
+        if let step = model.currentStep {
+            return prefix + "Step \(step.order) of \(model.steps.count): tap the \(step.reagent.name) bottle."
+        }
+        return ""
     }
 
     // MARK: - Interaction
