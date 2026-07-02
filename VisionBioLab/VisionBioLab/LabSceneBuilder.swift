@@ -17,7 +17,9 @@ enum LabSceneBuilder {
     // Bench geometry (in the bench group's local space; the group sits in front
     // of the user, so these Y values are roughly world height in meters).
     private static let benchTopY: Float = 0.99
-    private static let benchGroupOffset: SIMD3<Float> = [0, 0, -0.6]
+    // Pushed back so the app's control window (which floats near eye level)
+    // doesn't sit on top of the bench.
+    private static let benchGroupOffset: SIMD3<Float> = [0, 0, -1.05]
 
     // Cap rest / lifted positions, local to a bottle.
     private static let capClosedLocal: SIMD3<Float> = [0, 0.205, 0]
@@ -53,7 +55,7 @@ enum LabSceneBuilder {
         bench.addChild(makeEppendorf(liquids: eppendorfLiquids))
 
         let panel = makeGuidancePanel(text: guidance)
-        panel.position = [0, benchTopY + 0.46, -0.1]
+        panel.position = [0, benchTopY + 0.34, -0.13]
         bench.addChild(panel)
         root.addChild(bench)
     }
@@ -461,17 +463,9 @@ enum LabSceneBuilder {
         case reagent(String)
         case tube
         case none
-
-        /// Stable identifier used to debounce repeated dips into the same target.
-        var dipID: String? {
-            switch self {
-            case .reagent(let id): return "reagent:" + id
-            case .tube: return "tube"
-            case .none: return nil
-            }
-        }
     }
 
+    /// Identify what the user tapped by walking up to a named ancestor.
     static func classifyTap(on entity: Entity) -> Hit {
         var current: Entity? = entity
         while let e = current {
@@ -482,52 +476,6 @@ enum LabSceneBuilder {
             current = e.parent
         }
         return .none
-    }
-
-    static func isPipette(_ entity: Entity) -> Bool {
-        var current: Entity? = entity
-        while let e = current {
-            if e.name == pipetteName { return true }
-            current = e.parent
-        }
-        return false
-    }
-
-    /// Walk up from a touched entity to the grabbable root it belongs to
-    /// (the pipette, a reagent bottle, or the tube), if any.
-    static func grabbable(_ entity: Entity) -> Entity? {
-        var current: Entity? = entity
-        while let e = current {
-            if e.name == pipetteName || e.name == tubeName
-                || e.name.hasPrefix(reagentPrefix) {
-                return e
-            }
-            current = e.parent
-        }
-        return nil
-    }
-
-    /// Find the reagent bottle or tube nearest a world-space point (the dropped
-    /// pipette tip), within `threshold` meters.
-    static func dropTarget(near worldPos: SIMD3<Float>,
-                           in root: Entity,
-                           threshold: Float = 0.25) -> Hit {
-        var best: (hit: Hit, dist: Float)?
-
-        func consider(_ entity: Entity, _ hit: Hit) {
-            let d = simd_distance(entity.position(relativeTo: nil), worldPos)
-            if d <= threshold, best == nil || d < best!.dist { best = (hit, d) }
-        }
-        func walk(_ entity: Entity) {
-            if entity.name == tubeName {
-                consider(entity, .tube)
-            } else if entity.name.hasPrefix(reagentPrefix) {
-                consider(entity, .reagent(String(entity.name.dropFirst(reagentPrefix.count))))
-            }
-            for child in entity.children { walk(child) }
-        }
-        walk(root)
-        return best?.hit ?? .none
     }
 
     // MARK: - Helpers
