@@ -260,40 +260,73 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         return heuristic, "heuristic"
 
 
-def clarify(question: str) -> str:
-    """Return ONE short clarifying question if the request is genuinely ambiguous
-    in a way that would change the data pulled or the answer; otherwise ''.
+# Below this confidence (0-100) in its best reading of a request, the triage
+# asks ONE clarifying question before running; at or above it, it just runs.
+CLARIFY_CONFIDENCE = 75
 
-    Conservative by design — most requests run with sensible defaults (home org
-    Emory, etc.) and need no clarification.
+_NO_CLARIFY = {"confidence": 100, "reading": "", "question": ""}
+
+
+def clarify(question: str) -> dict:
+    """Reason through a request BEFORE running it and self-rate confidence.
+
+    The model works out what the person is actually trying to learn, sketches
+    the report it would build (scope, window, breakdown), and rates 0-100 how
+    confident it is that this reading matches the person's intent. Returns
+    ``{"confidence": int, "reading": str, "question": str}`` — ``question`` is
+    non-empty ONLY when confidence is below ``CLARIFY_CONFIDENCE``, so callers
+    can simply run whenever it is empty.
     """
     if not claude_available():
-        return ""
+        return dict(_NO_CLARIFY)
     import anthropic
 
     client = anthropic.Anthropic()
     prompt = (
         "You triage NIH RePORTER analytics requests for a university research "
-        "office before they run. Decide whether the request is missing a detail "
-        "that would MATERIALLY change the data pulled or the answer — e.g. an "
-        "ambiguous or unstated time window for a trend, dollars vs. counts, which "
-        "institution, or which institute. Defaults that DON'T need asking: home "
-        "institution is Emory; no window means all available data. Be "
-        "conservative — most requests are clear enough. If a detail is genuinely "
-        "needed, reply with ONE short question (max 25 words) and nothing else. "
-        "If it's clear enough to run, reply with exactly 'OK'.\n\n"
+        "office before they run. Work through the request step by step:\n"
+        "1. What is the person actually trying to LEARN or decide — the intent "
+        "behind the words?\n"
+        "2. What report would a knowledgeable analyst build to answer it: which "
+        "institution(s), what time window, what breakdown or comparison, dollars "
+        "or counts?\n"
+        "3. Are there OTHER materially different readings a reasonable person "
+        "could mean? A reading is materially different only if it changes the "
+        "data pulled or the shape of the answer — not the wording.\n"
+        "Then rate your CONFIDENCE 0-100 that your single best reading matches "
+        "their intent. Calibrate honestly: 90+ = any analyst would read it the "
+        "same way; 75-89 = minor ambiguity but the sensible default reading is "
+        "clearly best; below 75 = a genuinely different report could be what "
+        "they want (ambiguous entity, ambiguous window for a trend, unclear "
+        "metric, unclear comparison target).\n"
+        "Standing defaults that do NOT lower confidence: home institution is "
+        "Emory when none is named; no stated window means all available data; "
+        "funding questions default to dollars. Most requests are clear enough "
+        f"to run. Only if confidence is below {CLARIFY_CONFIDENCE} write ONE "
+        "short question (max 25 words) that would resolve the biggest "
+        "ambiguity; otherwise the question MUST be an empty string.\n"
+        "Respond with ONLY a JSON object: {\"reading\": <one sentence — the "
+        "report you would build>, \"confidence\": <integer 0-100>, "
+        "\"question\": <string, empty unless confidence is below "
+        f"{CLARIFY_CONFIDENCE}>}}.\n\n"
         f"Request: {question}"
     )
     try:
         resp = client.messages.create(
-            model=MODEL, max_tokens=120,
+            model=MODEL, max_tokens=800, thinking={"type": "adaptive"},
             messages=[{"role": "user", "content": prompt}])
-        text = next((b.text for b in resp.content if b.type == "text"), "").strip()
-        if not text or text.upper().startswith("OK") or "?" not in text:
-            return ""
-        return text
-    except Exception:  # noqa: BLE001
-        return ""
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        data = json.loads(_extract_json(text))
+        conf = max(0, min(100, int(data.get("confidence", 100))))
+        q = (data.get("question") or "").strip()
+        # Enforce the contract both ways: confident -> no question; unsure
+        # without a question -> run anyway rather than block on nothing.
+        if conf >= CLARIFY_CONFIDENCE or "?" not in q:
+            q = ""
+        return {"confidence": conf, "reading": (data.get("reading") or "").strip(),
+                "question": q}
+    except Exception:  # noqa: BLE001 - never block a report on triage failure
+        return dict(_NO_CLARIFY)
 
 
 # Fallback suggestions when no API key — one trend, one comparison, one

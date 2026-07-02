@@ -140,7 +140,8 @@ st.markdown(
     unsafe_allow_html=True)
 
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
-               "asked_question", "clarify_q", "clarify_for", "skip_clarify",
+               "asked_question", "clarify_q", "clarify_for", "clarify_reading",
+               "clarify_conf", "report_reading", "skip_clarify",
                "suggestions", "report_pdf", "benchmark")
 
 
@@ -1143,13 +1144,16 @@ def maybe_benchmark(question: str, scope: dict):
     return {"rows": rows, "errors": errs, "fys": fys}
 
 
-def run_report(q: str):
+def run_report(q: str, reading: str = ""):
     """Parse the question, pull the matching awards, and write the report.
+    ``reading`` is the triage step's one-sentence interpretation of the request;
+    it anchors the parse and the answer so all stages work from the same intent.
     Progress renders as a staged research log rather than a generic spinner."""
+    qa = q + (f"\n\n[The request was read as: {reading}]" if reading else "")
     with st.status("🔬 Researching your question…", expanded=True) as _prog:
         st.write(f"_{_stage('parse')}_")
         parsed, _ = summarize.parse_query(
-            q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+            qa, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
         st.write(f"_{_stage('fetch')}_")
         awards, err, label = ai_fetch(parsed)
         st.session_state.rep_sample = bool(err)
@@ -1160,20 +1164,21 @@ def run_report(q: str):
         st.session_state.last_parsed = parsed   # scope drives charts + follow-ups
         st.session_state.filter_sig = filter_sig()
         st.write(f"_🧮 Cross-tabulating {len(awards)} award record(s)…_")
-        bench = maybe_benchmark(q, parsed)
+        bench = maybe_benchmark(qa, parsed)
         st.session_state.benchmark = bench
-        facts = build_facts(awards, q)
+        facts = build_facts(awards, qa)
         if bench and bench.get("rows"):
             facts += ("\n\nPeer benchmark — total NIH funding by institution for FY "
                       + ", ".join(str(y) for y in bench["fys"]) + ": "
                       + "; ".join(f"{r['org']}: {reporter.fmt_money(r['total_amount'])} "
                                   f"({r['awards']} awards)" for r in bench["rows"]))
         st.write(f"_{_stage('write')}_")
-        answer, engine = summarize.custom_report(q, facts)
+        answer, engine = summarize.custom_report(qa, facts)
         _prog.update(label="🔬 Analysis complete", state="complete", expanded=False)
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
+    st.session_state.report_reading = reading
     try:
         st.query_params["q"] = q  # reflect in the URL for a shareable link
     except Exception:  # noqa: BLE001
@@ -1182,7 +1187,8 @@ def run_report(q: str):
     # New report id so the graph explorer gets fresh widgets (and its scope-matched
     # default), instead of keeping the previous report's selection.
     st.session_state.report_seq = st.session_state.get("report_seq", 0) + 1
-    for _k in ("clarify_q", "clarify_for", "suggestions", "report_pdf"):
+    for _k in ("clarify_q", "clarify_for", "clarify_reading", "clarify_conf",
+               "suggestions", "report_pdf"):
         st.session_state.pop(_k, None)
 
 
@@ -1417,42 +1423,57 @@ if not st.session_state.get("ask_answer"):
     if st.session_state.get("clarify_q"):
         _cl, _cc, _cr = st.columns([1, 2.4, 1])
         with _cc:
-            st.info("**Quick clarification** — " + st.session_state["clarify_q"])
+            _reading = st.session_state.get("clarify_reading", "")
+            _conf = st.session_state.get("clarify_conf")
+            _head = "**Before I run this, a quick check**"
+            if isinstance(_conf, int):
+                _head += f" — I'm about {_conf}% sure I've read it right"
+            body = _head + ".\n\n"
+            if _reading:
+                body += f"My best reading: _{_reading}_\n\n"
+            body += "**" + st.session_state["clarify_q"] + "**"
+            st.info(body)
             with st.form("clarify_form", clear_on_submit=False):
                 clar_ans = st.text_input("Your answer", label_visibility="collapsed",
                                          placeholder="Type your answer…")
                 cf1, cf2 = st.columns(2)
                 cont = cf1.form_submit_button("Use my answer", type="primary",
                                               use_container_width=True)
-                anyway = cf2.form_submit_button("Skip — use defaults",
-                                                use_container_width=True)
-            st.caption("**Use my answer**: run the report using what you typed above. "
-                       "**Skip — use defaults**: run it now without answering "
-                       "(home institution = Emory, all available data).")
+                anyway = cf2.form_submit_button(
+                    "That reading is right — run it" if _reading
+                    else "Run it as asked", use_container_width=True)
+            st.caption("**Use my answer**: run the report with what you typed. "
+                       "The other button runs it now using the reading above.")
         if cont and clar_ans.strip():
             run_report(st.session_state["clarify_for"]
                        + f"\n\n[Clarification] {st.session_state['clarify_q']} "
                        + f"User's answer: {clar_ans.strip()}")
             st.rerun()
         elif anyway:
-            run_report(st.session_state["clarify_for"])
+            run_report(st.session_state["clarify_for"],
+                       reading=st.session_state.get("clarify_reading", ""))
             st.rerun()
 
     elif (ask_clicked and st.session_state.ask_question.strip()) \
             or st.session_state.pop("run_ask", False):
         q = st.session_state.ask_question
         skip = st.session_state.pop("skip_clarify", False)
-        cq = ""
+        tri = dict(summarize._NO_CLARIFY)
         if not skip:
             with st.spinner(_stage("clarify")):
-                cq = summarize.clarify(q)
-        if cq:
-            # Ask first; don't run the report until the user answers.
-            st.session_state.clarify_q = cq
+                tri = summarize.clarify(q)
+        if tri.get("question"):
+            # Not confident enough in a single reading — ask BEFORE running,
+            # and show the best reading so the user can simply confirm it.
+            st.session_state.clarify_q = tri["question"]
             st.session_state.clarify_for = q
+            st.session_state.clarify_reading = tri.get("reading", "")
+            st.session_state.clarify_conf = tri.get("confidence", 0)
             st.rerun()
         else:
-            run_report(q)
+            # Confident reading — run it, and carry the reading through so the
+            # data pull and the narrative work from the same interpretation.
+            run_report(q, reading=tri.get("reading", ""))
             st.rerun()
 
 else:
@@ -1460,6 +1481,8 @@ else:
     st.subheader("Your report")
     st.caption("Question: " + st.session_state.get("asked_question",
                                                    st.session_state.get("ask_question", "")))
+    if st.session_state.get("report_reading"):
+        st.caption("🧭 Read as: " + st.session_state["report_reading"])
     st.caption("🔗 Shareable: the link in your browser's address bar reopens this "
                "report — copy it to share.")
     with st.container(border=True):
