@@ -28,6 +28,7 @@ def main() -> int:
     min_level = os.environ.get("ALERT_MIN_LEVEL", "CRITICAL").upper()
     seen_file = os.environ.get("SEEN_FILE", ".fedwatch_seen.json")
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
+    slack = os.environ.get("SLACK_WEBHOOK_URL", "")
     smtp_host = os.environ.get("SMTP_HOST", "")
 
     watchlist = [w.strip() for w in os.environ.get(
@@ -79,6 +80,12 @@ def main() -> int:
         notify.send_teams(webhook, new, title, app_url=app_url)
         print(f"Teams: sent {len(new)} item(s).")
         sent_somewhere = True
+    if slack:
+        lines = [f"*[{i['level']}]* <{i.get('url','')}|{i['title'][:120]}> — {i.get('agency','')} · {i.get('date','')}"
+                 for i in new]
+        notify.send_slack(slack, "\n".join(lines), title)
+        print(f"Slack: sent {len(new)} item(s).")
+        sent_somewhere = True
     if smtp_host:
         notify.send_email(
             smtp_host,
@@ -93,7 +100,7 @@ def main() -> int:
         sent_somewhere = True
 
     if not sent_somewhere:
-        print("SKIPPED DELIVERY: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
+        print("SKIPPED DELIVERY: no TEAMS_WEBHOOK_URL, SLACK_WEBHOOK_URL, or SMTP_HOST secret configured.")
         print("Scan itself succeeded - items found this run:")
         for i in new:
             print(f"  [{i['level']}] {i.get('date', '')} {i['title'][:90]}")

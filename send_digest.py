@@ -23,8 +23,9 @@ from fedwatch.relevance import filter_relevant
 
 def main() -> int:
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
+    slack = os.environ.get("SLACK_WEBHOOK_URL", "")
     smtp_host = os.environ.get("SMTP_HOST", "")
-    if not webhook and not smtp_host:
+    if not webhook and not slack and not smtp_host:
         print("SKIPPED: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
         return 0
 
@@ -45,6 +46,9 @@ def main() -> int:
     if webhook:
         notify.send_teams_summary(webhook, summary, title=title, app_url=app_url)
         print("Teams: weekly digest posted.")
+    if slack:
+        notify.send_slack(slack, summary, title=title)
+        print("Slack: weekly digest posted.")
     if smtp_host:
         notify.send_email(
             smtp_host,

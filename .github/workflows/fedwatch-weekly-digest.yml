@@ -24,6 +24,7 @@ jobs:
       - name: Send weekly digest
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           FEDWATCH_APP_URL: ${{ secrets.FEDWATCH_APP_URL }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
