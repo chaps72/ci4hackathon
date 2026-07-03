@@ -93,8 +93,11 @@ def main() -> int:
         sent_somewhere = True
 
     if not sent_somewhere:
-        print("WARNING: no TEAMS_WEBHOOK_URL or SMTP_HOST configured; nothing sent.")
-        return 1
+        print("SKIPPED DELIVERY: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
+        print("Scan itself succeeded - items found this run:")
+        for i in new:
+            print(f"  [{i['level']}] {i.get('date', '')} {i['title'][:90]}")
+        return 0
 
     seen.update(i["id"] for i in new)
     with open(seen_file, "w") as f:

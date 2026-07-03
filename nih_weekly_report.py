@@ -22,7 +22,7 @@ import os
 import sys
 from datetime import datetime
 
-from fedwatch import emailer, notify, reporter, summarize
+from fedwatch import notify, reporter, summarize
 
 
 def main() -> int:
@@ -31,8 +31,9 @@ def main() -> int:
     smtp_host = os.environ.get("SMTP_HOST", "")
     if not (teams or slack or smtp_host):
         print("WARNING: no TEAMS_WEBHOOK_URL, SLACK_WEBHOOK_URL, or SMTP_HOST "
-              "configured; nothing to send.")
-        return 1
+              "nothing to send.")
+        print("SKIPPED: configure delivery secrets to enable sending.")
+        return 0
 
     org = os.environ.get("NIH_ORG", reporter.DEFAULT_ORG)
     topic = os.environ.get("NIH_TOPIC", "")

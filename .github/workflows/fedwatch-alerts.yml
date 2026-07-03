@@ -1,8 +1,11 @@
 name: FedWatch critical alerts
 
 on:
-  schedule:
-    - cron: "0 13,17,21 * * 1-5"   # 9am / 1pm / 5pm ET, weekdays
+  # Schedule paused 2026-07-03: delivery secrets (TEAMS_WEBHOOK_URL / SMTP_*)
+  # were never configured, so every scheduled run failed with nothing to send.
+  # To resume: add the secrets in Settings > Secrets > Actions, then restore:
+  #   schedule:
+  #     - cron: "0 13,17,21 * * 1-5"
   workflow_dispatch: {}
 
 jobs:

@@ -25,8 +25,8 @@ def main() -> int:
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
     smtp_host = os.environ.get("SMTP_HOST", "")
     if not webhook and not smtp_host:
-        print("WARNING: no TEAMS_WEBHOOK_URL or SMTP_HOST configured; nothing to send.")
-        return 1
+        print("SKIPPED: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
+        return 0
 
     items, errors, used_sample = sources.fetch_all(days_back=7, watchlist=DEFAULT_WATCHLIST)
     if used_sample:

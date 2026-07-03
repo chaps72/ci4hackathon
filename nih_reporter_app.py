@@ -24,7 +24,7 @@ import streamlit as st
 # contain them); strip before writing Excel.
 _ILLEGAL_XLSX = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
-from fedwatch import emailer, notify, reporter, summarize
+from fedwatch import notify, reporter, summarize
 
 st.set_page_config(page_title="NIH RePORTER Weekly Report", page_icon="🔬",
                    layout="wide", initial_sidebar_state="collapsed")
@@ -1388,8 +1388,8 @@ else:
     suggestions = st.session_state.suggestions or NEXT_STEPS
     st.caption("Suggested next steps — ideas you might not have considered")
     ns_cols = st.columns(len(suggestions))
-    for _i, (_col, (_lbl, _fq)) in enumerate(zip(ns_cols, suggestions)):
-        if _col.button(_lbl, key=f"ns_{_i}_{_lbl}", use_container_width=True):
+    for _i, (_c, (_lbl, _fq)) in enumerate(zip(ns_cols, suggestions)):
+        if _c.button(_lbl, key=f"ns_{_i}_{_lbl}", use_container_width=True):
             run_followup(_fq)
             st.rerun()
 
