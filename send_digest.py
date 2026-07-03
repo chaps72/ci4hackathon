@@ -21,6 +21,33 @@ from fedwatch.classify import DEFAULT_WATCHLIST, Classifier, sort_by_priority
 from fedwatch.relevance import filter_relevant
 
 
+
+
+def _nih_focused(items: list) -> list:
+    """Default digest scope: NIH first.
+
+    Keeps NIH/HHS research actions, NIH Guide/Nexus notices, watchlist and
+    tracked items, and OMB/EOP actions (already gated to research-touching).
+    Set FEDWATCH_FOCUS=all to widen to the full portfolio (NSF/DOE/DOD/...).
+    """
+    if os.environ.get("FEDWATCH_FOCUS", "nih").lower() != "nih":
+        return items
+    out = []
+    for i in items:
+        agency = (i.get("agency") or "").lower()
+        source = i.get("source") or ""
+        text = f"{i.get('title', '')} {i.get('summary', '')}".lower()
+        if (source in ("NIH Guide", "NIH Nexus", "OMB Memoranda")
+                or "institutes of health" in agency
+                or "health and human services" in agency
+                or "management and budget" in agency
+                or "executive office" in agency
+                or "nih" in text
+                or i.get("watchlist_targeted") or i.get("watchlist_hits")
+                or i.get("type") == "Tracked Notice"):
+            out.append(i)
+    return out
+
 def main() -> int:
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
     slack = os.environ.get("SLACK_WEBHOOK_URL", "")
@@ -37,7 +64,7 @@ def main() -> int:
         return 0
 
     items, _ = filter_relevant(items)
-    items = sort_by_priority(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items))
+    items = sort_by_priority(_nih_focused(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items)))
     summary, engine = summarize.generate_summary(items, "Executive summary")
     title = f"FedWatch Weekly - week of {datetime.now().strftime('%B %d, %Y')}"
     print(f"Summary generated ({engine} engine, {len(items)} items).")
