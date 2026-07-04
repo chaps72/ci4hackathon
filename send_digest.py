@@ -56,7 +56,8 @@ def main() -> int:
         print("SKIPPED: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
         return 0
 
-    items, errors, used_sample = sources.fetch_all(days_back=7, watchlist=DEFAULT_WATCHLIST)
+    days_back = int(os.environ.get("DIGEST_DAYS_BACK", "7"))
+    items, errors, used_sample = sources.fetch_all(days_back=days_back, watchlist=DEFAULT_WATCHLIST)
     if used_sample:
         print("No live feeds reachable; skipping digest.")
         for err in errors:
@@ -64,9 +65,17 @@ def main() -> int:
         return 0
 
     items, _ = filter_relevant(items)
-    items = sort_by_priority(_nih_focused(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items)))
+    items = _nih_focused(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items))
+    if summarize.claude_available():
+        # AI relevance judgment per item (same brief as the dashboard).
+        items = [i for i in summarize.ai_classify(items) if i.get("relevant", True)]
+    items = sort_by_priority(items)
+    if not items:
+        print("Quiet window - no relevant items; nothing to send.")
+        return 0
     summary, engine = summarize.generate_summary(items, "Executive summary")
-    title = f"FedWatch Weekly - week of {datetime.now().strftime('%B %d, %Y')}"
+    cadence = "Daily" if days_back <= 3 else "Weekly"
+    title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
     print(f"Summary generated ({engine} engine, {len(items)} items).")
 
     app_url = os.environ.get("FEDWATCH_APP_URL", "")
