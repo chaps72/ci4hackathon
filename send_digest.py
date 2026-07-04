@@ -48,7 +48,35 @@ def _nih_focused(items: list) -> list:
             out.append(i)
     return out
 
+def _scheduled_run_guards() -> str:
+    """Reason to skip a scheduled firing, or '' to proceed.
+
+    Two crons fire (19:00 & 20:00 UTC) so one of them is always 3pm in
+    New York regardless of DST; the off-hour firing is skipped here.
+    Manual runs (workflow_dispatch) bypass all guards.
+    """
+    if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
+        return ""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from fedwatch.holidays import is_us_federal_holiday
+
+    now_et = datetime.now(ZoneInfo("America/New_York"))
+    if now_et.hour != 15:
+        return f"off-hour firing ({now_et:%H:%M} ET) - DST twin cron"
+    if now_et.weekday() >= 5:
+        return "weekend"
+    if is_us_federal_holiday(now_et.date()):
+        return f"US federal holiday ({now_et:%Y-%m-%d})"
+    return ""
+
+
 def main() -> int:
+    skip = _scheduled_run_guards()
+    if skip:
+        print(f"SKIPPED scheduled run: {skip}.")
+        return 0
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
     slack = os.environ.get("SLACK_WEBHOOK_URL", "")
     smtp_host = os.environ.get("SMTP_HOST", "")
