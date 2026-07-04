@@ -448,7 +448,8 @@ those lanes are relevant; items outside them are not.
 First decide relevance. relevant=false for items the SVPR would not need: \
 science press releases and discovery stories, podcasts/videos/episodes, \
 individual grant awards ('agency invests $X in...'), prizes, event and \
-seminar announcements, individual funding opportunities, notices about \
+seminar announcements, funding opportunities from agencies outside the \
+portfolio, notices about \
 non-research programs (benefits, customs, etc.), wildlife/environmental \
 permit notices (endangered species recovery permits, incidental take - \
 these authorize 'scientific research' but are not research policy), \
@@ -459,7 +460,10 @@ review panels), Paperwork Reduction Act information-collection boilerplate, \
 and topic-specific health/program RFCs that do not touch research \
 administration. relevant=true for rules, proposed rules, executive orders, \
 OMB/agency guidance, policy notices, compliance/disclosure requirements, \
-budget actions, and RFIs on research policy or research administration.
+budget actions, RFIs on research policy or research administration, and \
+NEW NIH funding opportunities (NOFOs, RFAs, PAs, NOSIs) - the team wants \
+to see new NIH grant mechanisms and RFIs (usually MODERATE; major new \
+programs HIGH).
 
 OMB/EOP memos NOT touching research, grants, or funding (DHS operations, \
 cybersecurity logging, procurement, discount rates, agency reopenings) are \

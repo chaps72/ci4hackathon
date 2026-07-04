@@ -21,6 +21,13 @@ jobs:
       - name: Install dependencies
         run: pip install requests anthropic
 
+      - name: Restore digest seen-state
+        uses: actions/cache@v4
+        with:
+          path: .fedwatch_digest_seen.json
+          key: fedwatch-digest-seen-${{ github.run_id }}
+          restore-keys: fedwatch-digest-seen-
+
       - name: Send daily digest
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

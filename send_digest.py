@@ -12,6 +12,7 @@ Environment variables:
 Usage:  python send_digest.py
 """
 
+import json
 import os
 import sys
 from datetime import datetime
@@ -85,7 +86,9 @@ def main() -> int:
         return 0
 
     days_back = int(os.environ.get("DIGEST_DAYS_BACK", "7"))
-    items, errors, used_sample = sources.fetch_all(days_back=days_back, watchlist=DEFAULT_WATCHLIST)
+    items, errors, used_sample = sources.fetch_all(
+        days_back=days_back, watchlist=DEFAULT_WATCHLIST,
+        include_funding=True)  # standing spec: new NIH grant opportunities belong in the digest
     if used_sample:
         print("No live feeds reachable; skipping digest.")
         for err in errors:
@@ -98,8 +101,17 @@ def main() -> int:
         # AI relevance judgment per item (same brief as the dashboard).
         items = [i for i in summarize.ai_classify(items) if i.get("relevant", True)]
     items = sort_by_priority(items)
+
+    # Never repeat an item across daily digests (seen-state cached by CI).
+    seen_file = os.environ.get("DIGEST_SEEN_FILE", ".fedwatch_digest_seen.json")
+    try:
+        with open(seen_file) as f:
+            seen = set(json.load(f))
+    except (FileNotFoundError, ValueError):
+        seen = set()
+    items = [i for i in items if i["id"] not in seen]
     if not items:
-        print("Quiet window - no relevant items; nothing to send.")
+        print("Quiet window - no new relevant items; nothing to send.")
         return 0
     summary, engine = summarize.generate_summary(items, "Executive summary")
     cadence = "Daily" if days_back <= 3 else "Weekly"
@@ -124,6 +136,10 @@ def main() -> int:
             items, summary_md=summary, title=title,
         )
         print("Email: weekly digest sent.")
+
+    seen.update(i["id"] for i in items)
+    with open(seen_file, "w") as f:
+        json.dump(sorted(seen), f)
     return 0
 
 
