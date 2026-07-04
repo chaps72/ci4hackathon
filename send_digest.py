@@ -109,10 +109,10 @@ def main() -> int:
     app_url = os.environ.get("FEDWATCH_APP_URL", "")
     if webhook:
         notify.send_teams_summary(webhook, summary, title=title, app_url=app_url)
-        print("Teams: weekly digest posted.")
+        print(f"Teams: {cadence.lower()} digest posted.")
     if slack:
         notify.send_slack(slack, summary, title=title)
-        print("Slack: weekly digest posted.")
+        print(f"Slack: {cadence.lower()} digest posted.")
     if smtp_host:
         notify.send_email(
             smtp_host,
