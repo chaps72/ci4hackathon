@@ -52,7 +52,7 @@ def _nih_focused(items: list) -> list:
 def _scheduled_run_guards() -> str:
     """Reason to skip a scheduled firing, or '' to proceed.
 
-    Two crons fire (19:00 & 20:00 UTC) so one of them is always 3pm in
+    Two crons fire (21:00 & 22:00 UTC) so one of them is always 5pm in
     New York regardless of DST; the off-hour firing is skipped here.
     Manual runs (workflow_dispatch) bypass all guards.
     """
@@ -64,7 +64,7 @@ def _scheduled_run_guards() -> str:
     from fedwatch.holidays import is_us_federal_holiday
 
     now_et = datetime.now(ZoneInfo("America/New_York"))
-    if now_et.hour != 15:
+    if now_et.hour != 17:
         return f"off-hour firing ({now_et:%H:%M} ET) - DST twin cron"
     if now_et.weekday() >= 5:
         return "weekend"
