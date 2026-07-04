@@ -101,6 +101,9 @@ def main() -> int:
         # AI relevance judgment per item (same brief as the dashboard).
         items = [i for i in summarize.ai_classify(items) if i.get("relevant", True)]
     items = sort_by_priority(items)
+    # Agent step: assess how each item affects Emory research (grounded in
+    # Emory's research profile). No-op without an API key.
+    items = summarize.analyze_emory_impact(items)
 
     # Never repeat an item across daily digests (seen-state cached by CI).
     seen_file = os.environ.get("DIGEST_SEEN_FILE", ".fedwatch_digest_seen.json")

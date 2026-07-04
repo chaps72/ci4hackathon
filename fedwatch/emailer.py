@@ -78,7 +78,15 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
                 f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
                 f'{e(it.get("date", ""))} &middot; {e(it.get("source", ""))}</div>'
                 f'<div style="padding-top:3px;">{e((it.get("summary") or "")[:400])}</div>'
-                "</td></tr>"
+                + (f'<div style="padding-top:6px;background:#eef1f7;border-radius:4px;'
+                   f'padding:8px 10px;margin-top:6px;font-size:12px;">'
+                   f'<b style="color:{EMORY_BLUE};">Emory impact</b>'
+                   + (f' &middot; <b>{e(it.get("exposure","").upper())} exposure</b>' if it.get("exposure") else "")
+                   + f'<br>{e(it.get("impact",""))}'
+                   + (f'<br><b>Owner:</b> {e(it.get("owner",""))}' if it.get("owner") else "")
+                   + (f' &middot; <b>Action:</b> {e(it.get("action",""))}' if it.get("action") else "")
+                   + '</div>' if it.get("impact") else "")
+                + "</td></tr>"
             )
 
     summary_html = ""
