@@ -17,7 +17,7 @@ import os
 import sys
 from datetime import datetime
 
-from fedwatch import notify, sources, summarize
+from fedwatch import emailer, notify, sources, summarize
 from fedwatch.classify import DEFAULT_WATCHLIST, Classifier, sort_by_priority
 from fedwatch.relevance import filter_relevant
 
@@ -118,12 +118,30 @@ def main() -> int:
     title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
     print(f"Summary generated ({engine} engine, {len(items)} items).")
 
-    app_url = os.environ.get("FEDWATCH_APP_URL", "")
+    # Publish a styled HTML page (GitHub Pages) and link to it from Slack/Teams.
+    import pathlib
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    page_url = os.environ.get("FEDWATCH_APP_URL", "")
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if repo and "/" in repo:
+        owner, name = repo.split("/", 1)
+        page_url = f"https://{owner}.github.io/{name}/digests/{date_str}.html"
+    try:
+        html = emailer.build_html(items, summary, title)
+        ddir = pathlib.Path("docs/digests")
+        ddir.mkdir(parents=True, exist_ok=True)
+        (ddir / f"{date_str}.html").write_text(html, encoding="utf-8")
+        pathlib.Path("docs/index.html").write_text(html, encoding="utf-8")
+        print(f"Digest page written for {date_str}.")
+    except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
+        print(f"Page write failed ({exc}); sending without link.")
+
+    app_url = page_url
     if webhook:
         notify.send_teams_summary(webhook, summary, title=title, app_url=app_url)
         print(f"Teams: {cadence.lower()} digest posted.")
     if slack:
-        notify.send_slack(slack, summary, title=title)
+        notify.send_slack(slack, summary, title=title, link_url=page_url)
         print(f"Slack: {cadence.lower()} digest posted.")
     if smtp_host:
         notify.send_email(

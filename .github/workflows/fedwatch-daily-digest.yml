@@ -1,5 +1,8 @@
 name: FedWatch daily digest
 
+permissions:
+  contents: write
+
 on:
   schedule:
     # Twin crons so one always lands at 3pm America/New_York across DST;
@@ -37,3 +40,15 @@ jobs:
           DIGEST_DAYS_BACK: "2"
           FEDWATCH_FOCUS: nih
         run: python send_digest.py
+
+      - name: Publish digest page
+        run: |
+          if [ -n "$(git status --porcelain docs/)" ]; then
+            git config user.name "FedWatch Bot"
+            git config user.email "noreply@anthropic.com"
+            git add docs/
+            git commit -m "Publish digest page $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "No digest page changes to publish."
+          fi
