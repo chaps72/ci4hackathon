@@ -95,6 +95,12 @@ a:hover {{ text-decoration: underline; }}
 @keyframes nih-pulse {{ 0%,100% {{ opacity: 1; }} 50% {{ opacity: 0.55; }} }}
 .stSpinner p, [data-testid="stExpanderDetails"] .stMarkdown p em {{
     animation: nih-pulse 1.6s ease-in-out infinite; }}
+/* Streamlit's top-right running-man icon -> a researchy microscope */
+[data-testid="stStatusWidget"] img, [data-testid="stStatusWidget"] svg {{
+    display: none !important; }}
+[data-testid="stStatusWidget"]::before {{
+    content: "🔬"; display: inline-block; margin-right: 6px;
+    animation: nih-pulse 1.2s ease-in-out infinite; }}
 /* Tame oversized headings the model may emit inside answers */
 .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{ font-size: 1.1rem !important;
     font-weight: 600 !important; margin: 0.6rem 0 0.25rem !important;
@@ -632,14 +638,24 @@ _EXP_DIMS = {
     "Week (new awards)": "week",
     "Month (new awards)": "month",
 }
+_DIM_TO_LABEL = {v: k for k, v in _EXP_DIMS.items()}
 
 
 def _default_view(question: str, scope: dict, agg: dict):
-    """Pick the graph view (dimension label, metric label) that matches the text.
-    An explicit dimension in the question wins; otherwise fall back to the scope."""
+    """Pick the graph view (dimension label, metric label) that matches the
+    question. The reasoned parse's chart hint wins; then an explicit dimension
+    named in the text; then the pulled scope."""
     q = (question or "").lower()
     scope = scope or {}
-    metric = "Award count" if any(w in q for w in _COUNT_WORDS) else "Funding ($)"
+    if scope.get("chart_metric"):
+        metric = "Funding ($)" if scope["chart_metric"] == "funding" else "Award count"
+    else:
+        metric = "Award count" if any(w in q for w in _COUNT_WORDS) else "Funding ($)"
+
+    # 0) The chart hint from the reasoned parse — it read the whole question.
+    _hint = scope.get("chart_dim")
+    if _hint in _DIM_TO_LABEL:
+        return _DIM_TO_LABEL[_hint], metric
 
     # 1) Explicit dimension named in the question takes priority.
     if any(w in q for w in ("weekly", "per week", "by week", "each week", "week-by-week")):
@@ -821,11 +837,13 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         "by ", "per ", "across", "breakdown", "break down", "distribution",
         "split", "share", "top ", "largest", "leading", "dominant", "funding",
         "spending", "compare", "comparison", "trend", "over time", "rank")
+    hint = scope.get("chart_dim")
     _dim_hit = any(any(k in q for k in kw) for _d, (kw, *_rest) in _DIM_KEYS.items())
-    if not (any(w in q for w in _graph_intent) or _dim_hit):
+    if not (any(w in q for w in _graph_intent) or _dim_hit or hint):
         return None
-    metric = ("count" if any(w in q for w in _COUNT_WORDS)
-              else "funding" if any(w in q for w in _FUND_WORDS) else "funding")
+    metric = scope.get("chart_metric") or (
+        "count" if any(w in q for w in _COUNT_WORDS)
+        else "funding" if any(w in q for w in _FUND_WORDS) else "funding")
 
     fys = sorted({int(y) for y in (scope.get("fiscal_years") or []) if str(y).isdigit()})
     has_range = bool(scope.get("date_from") or scope.get("date_to"))
@@ -837,8 +855,9 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         window = ""
     wsfx = f" — {window}" if window else ""
 
-    # 1) Time series: explicit weekly/monthly, or a calendar date range (-> weekly).
-    period = scope.get("group_by")
+    # 1) Time series: the parse's chart hint, explicit weekly/monthly wording,
+    #    or a calendar date range (-> weekly).
+    period = hint if hint in ("week", "month") else scope.get("group_by")
     if any(w in q for w in ("weekly", "per week", "by week", "each week",
                             "week over week", "week-by-week")):
         period = "week"
@@ -848,8 +867,9 @@ def maybe_chart(question: str, items: list, scope: dict = None):
     elif not period and has_range:
         period = "week"
     if period:
-        pmetric = "count" if any(w in q for w in _COUNT_WORDS) else \
-            ("funding" if any(w in q for w in _FUND_WORDS) else "count")
+        pmetric = scope.get("chart_metric") or (
+            "count" if any(w in q for w in _COUNT_WORDS)
+            else "funding" if any(w in q for w in _FUND_WORDS) else "count")
         data = reporter.by_period(items, period, pmetric)
         if data:
             ylabel = "Funding ($)" if pmetric == "funding" else "New awards"
@@ -857,9 +877,11 @@ def maybe_chart(question: str, items: list, scope: dict = None):
             plot_series(pd.Series(data, name=ylabel), "time")
             return period, pmetric == "funding"
 
-    dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
-    cat_dim = next((d for d, (kw, *_) in _DIM_KEYS.items()
-                    if d != "fy" and any(k in q for k in kw)), None)
+    dim = hint if hint in ("fy", "ic", "activity", "app_type", "org", "state") else \
+        next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
+    cat_dim = dim if dim and dim != "fy" else \
+        next((d for d, (kw, *_) in _DIM_KEYS.items()
+              if d != "fy" and any(k in q for k in kw)), None)
 
     # 2) Multiple fiscal years -> a year comparison (grouped by category, or a trend).
     multi_year = len(fys) > 1
@@ -1286,30 +1308,47 @@ def _merge_parse(base: dict, add: dict, fq: str) -> dict:
 
 
 def run_followup(fq: str):
-    """Answer a follow-up. If it needs data the original pull didn't include, go
-    back and pull that data first. Each turn keeps its OWN data snapshot/scope so
-    its chart matches its own answer (without disturbing the main report)."""
+    """Answer a follow-up through the same reasoned path as the original query:
+    plan how the scope changes (constraints added, changed, or removed), refetch
+    only when needed, then answer. Each turn keeps its OWN data snapshot/scope
+    so its chart matches its own answer (without disturbing the main report)."""
     note = ""
     items = st.session_state.get("rep_items") or []
     scope = st.session_state.get("last_parsed") or {}
     label = st.session_state.get("rep_query", "")
     with st.status("🔬 Working on the follow-up…", expanded=True) as _prog:
         st.write(f"_{_stage('parse')}_")
-        fparsed, _ = summarize.parse_query(
-            fq, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
-        if _needs_refetch(fparsed, fq):
-            # A follow-up that points somewhere new (different institution/topic, or
-            # "instead/new search") starts clean instead of inheriting old filters; a
-            # true refinement ("of those", "break down") merges over the current pull.
-            fresh = _is_fresh_search(scope, fparsed, fq)
-            merged = fparsed if fresh else _merge_parse(scope, fparsed, fq)
-            st.write("_🧭 New direction — starting a fresh search…_" if fresh
-                     else f"_{_stage('fetch')}_")
-            awards, err, label2 = ai_fetch(merged)
-            if not err and awards:
-                items, scope, label = awards, merged, label2
-                note = (f"_New search: {label}._\n\n" if fresh
-                        else f"_Pulled data for: {label}._\n\n")
+        # Same reasoning path as the original query: the model sees the CURRENT
+        # scope and decides whether the pulled data answers the follow-up
+        # (reuse) or the scope must change (refetch) — adding, changing, or
+        # REMOVING constraints as the follow-up implies.
+        plan = summarize.plan_followup(
+            fq, scope, CURRENT_FY, list(reporter.IC_CHOICES),
+            list(reporter.ACTIVITY_CHOICES), n_items=len(items))
+        if plan:
+            if plan["action"] == "refetch":
+                st.write(f"_{_stage('fetch')}_")
+                awards, err, label2 = ai_fetch(plan["scope"])
+                if not err and awards:
+                    items, scope, label = awards, plan["scope"], label2
+                    note = f"_Scope updated for this follow-up: {label}._\n\n"
+            else:
+                scope = plan["scope"]  # same data; chart hints may have moved
+        else:
+            # No API key / planner error: fall back to the keyword heuristics.
+            fparsed, _ = summarize.parse_query(
+                fq, CURRENT_FY, list(reporter.IC_CHOICES),
+                list(reporter.ACTIVITY_CHOICES))
+            if _needs_refetch(fparsed, fq):
+                fresh = _is_fresh_search(scope, fparsed, fq)
+                merged = fparsed if fresh else _merge_parse(scope, fparsed, fq)
+                st.write("_🧭 New direction — starting a fresh search…_" if fresh
+                         else f"_{_stage('fetch')}_")
+                awards, err, label2 = ai_fetch(merged)
+                if not err and awards:
+                    items, scope, label = awards, merged, label2
+                    note = (f"_New search: {label}._\n\n" if fresh
+                            else f"_Pulled data for: {label}._\n\n")
         prior = ["Original question: " + st.session_state.get(
                      "asked_question", st.session_state.get("ask_question", "")),
                  "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]

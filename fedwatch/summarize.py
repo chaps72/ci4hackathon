@@ -50,8 +50,12 @@ _EMPTY_QUERY = {
     "organization": None, "all_institutions": False, "topic": None, "pi_name": None,
     "ic_codes": [], "activity_codes": [], "fiscal_years": [], "days_back": None,
     "newly_added": False, "active_only": False, "date_from": None, "date_to": None,
-    "group_by": None,
+    "group_by": None, "chart_dim": None, "chart_metric": None,
 }
+
+# Chart hints the model may attach to a parse: the one breakdown that best
+# illustrates the question, and whether it is about dollars or counts.
+_CHART_DIMS = ("fy", "ic", "activity", "app_type", "org", "state", "week", "month")
 
 _MONTHS = {"january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
            "july": 7, "august": 8, "september": 9, "october": 10, "november": 11,
@@ -148,6 +152,54 @@ def _extract_json(text: str) -> str:
     return text[start:end + 1] if start != -1 and end != -1 else text
 
 
+def _validated(data: dict, question: str, ic_list, activity_list) -> dict:
+    """Coerce a model-produced criteria dict into a safe, complete one."""
+    return {
+        "organization": (data.get("organization") or None),
+        "all_institutions": bool(data.get("all_institutions")),
+        "topic": (data.get("topic") or None),
+        "pi_name": (data.get("pi_name") or None),
+        "ic_codes": [c for c in (data.get("ic_codes") or []) if c in ic_list],
+        "activity_codes": [c for c in (data.get("activity_codes") or [])
+                           if c in activity_list],
+        "fiscal_years": [int(y) for y in (data.get("fiscal_years") or [])
+                         if str(y).isdigit()],
+        "days_back": int(data["days_back"]) if data.get("days_back") else None,
+        # Only honor 'newly added' when the user literally said it — guards
+        # against 'new awards' being read as the database-added flag.
+        "newly_added": bool(data.get("newly_added"))
+        and bool(re.search(r"newly added|recently added", question or "", re.I)),
+        "active_only": bool(data.get("active_only")),
+        "date_from": _valid_date(data.get("date_from")),
+        "date_to": _valid_date(data.get("date_to")),
+        "group_by": data.get("group_by") if data.get("group_by") in ("week", "month") else None,
+        "chart_dim": data.get("chart_dim") if data.get("chart_dim") in _CHART_DIMS else None,
+        "chart_metric": data.get("chart_metric")
+        if data.get("chart_metric") in ("funding", "count") else None,
+    }
+
+
+# Shared field list for prompts that must emit a criteria JSON object.
+_CRITERIA_FIELDS = (
+    "organization (string or null), all_institutions (boolean), topic (string "
+    "or null), pi_name (string or null), ic_codes (array), activity_codes "
+    "(array), fiscal_years (array of integers), days_back (integer or null), "
+    "newly_added (boolean), active_only (boolean), date_from (YYYY-MM-DD or "
+    "null), date_to (YYYY-MM-DD or null), group_by ('week', 'month', or null), "
+    "chart_dim (one of 'fy','ic','activity','app_type','org','state','week',"
+    "'month', or null), chart_metric ('funding', 'count', or null)")
+
+_CHART_HINT_RULES = (
+    "Also decide how the answer is best SHOWN: set chart_dim to the ONE "
+    "breakdown that best illustrates this question — 'fy' for year trends/"
+    "comparisons, 'week'/'month' for recent activity over time, 'ic' for "
+    "institute mix, 'activity' for mechanism mix, 'app_type' for new-vs-renewal, "
+    "'org' for cross-institution comparisons, 'state' for geography — and "
+    "chart_metric to 'funding' when the question is about dollars, 'count' when "
+    "it is about how many. Leave them null only when no chart fits (e.g. a "
+    "single named award's details).")
+
+
 def parse_query(question: str, current_fy: int, ic_list, activity_list):
     """Extract NIH RePORTER search criteria from a natural-language request.
 
@@ -212,12 +264,9 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         "set it if the user literally says 'newly added to RePORTER' or 'recently "
         "added to the database'. A phrase like 'new awards per week' just means "
         "awards issued in the date window — leave newly_added false. "
+        f"{_CHART_HINT_RULES} "
         "Respond with ONLY a JSON object (no prose, no code fence) with keys: "
-        "organization (string or null), all_institutions (boolean), topic (string "
-        "or null), pi_name (string or null), ic_codes (array), activity_codes "
-        "(array), fiscal_years (array of integers), days_back (integer or null), "
-        "newly_added (boolean), active_only (boolean), date_from (YYYY-MM-DD or "
-        "null), date_to (YYYY-MM-DD or null), group_by ('week', 'month', or null). "
+        f"{_CRITERIA_FIELDS}. "
         "Use null/empty arrays/false when the user does not specify a field."
         f"\n\nRequest: {question}"
     )
@@ -227,25 +276,7 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
             messages=[{"role": "user", "content": prompt}])
         text = next((b.text for b in resp.content if b.type == "text"), "")
         data = json.loads(_extract_json(text))
-        out = {
-            "organization": (data.get("organization") or None),
-            "all_institutions": bool(data.get("all_institutions")),
-            "topic": (data.get("topic") or None),
-            "pi_name": (data.get("pi_name") or None),
-            "ic_codes": [c for c in (data.get("ic_codes") or []) if c in ic_list],
-            "activity_codes": [c for c in (data.get("activity_codes") or []) if c in activity_list],
-            "fiscal_years": [int(y) for y in (data.get("fiscal_years") or [])
-                             if str(y).isdigit()],
-            "days_back": int(data["days_back"]) if data.get("days_back") else None,
-            # Only honor 'newly added' when the user literally said it — guards
-            # against 'new awards' being read as the database-added flag.
-            "newly_added": bool(data.get("newly_added"))
-            and bool(re.search(r"newly added|recently added", question or "", re.I)),
-            "active_only": bool(data.get("active_only")),
-            "date_from": _valid_date(data.get("date_from")),
-            "date_to": _valid_date(data.get("date_to")),
-            "group_by": data.get("group_by") if data.get("group_by") in ("week", "month") else None,
-        }
+        out = _validated(data, question, ic_list, activity_list)
         # Keep heuristic windows if the model missed an explicit one.
         if not out["fiscal_years"] and heuristic["fiscal_years"]:
             out["fiscal_years"] = heuristic["fiscal_years"]
@@ -258,6 +289,80 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         return out, "claude"
     except Exception:  # noqa: BLE001 - fall back to the heuristic
         return heuristic, "heuristic"
+
+
+def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
+                  activity_list, n_items: int = 0):
+    """Reason about how a follow-up changes the data scope — the follow-up
+    analog of ``parse_query``, anchored on the CURRENT scope so constraints can
+    be added, changed, or REMOVED (not just merged on top).
+
+    Returns ``{"action": "reuse"|"refetch", "scope": <full criteria dict>}``,
+    or ``None`` when Claude is unavailable or errors — the caller then falls
+    back to the keyword heuristics.
+    """
+    if not claude_available():
+        return None
+    import anthropic
+
+    client = anthropic.Anthropic()
+    cur = {k: scope.get(k, v) for k, v in _EMPTY_QUERY.items()}
+    prompt = (
+        "You manage the data scope of an ongoing NIH RePORTER analysis "
+        "conversation. The data currently on screen was pulled with the scope "
+        "below; the user has asked a follow-up. FIRST reason about what the "
+        "follow-up actually needs, then decide:\n"
+        "- action 'reuse': it can be answered from the records already pulled "
+        "(a different cut, ranking, or summary of the SAME data). Keep the "
+        "scope's constraints exactly as they are (you may still update "
+        "chart_dim/chart_metric to fit the follow-up).\n"
+        "- action 'refetch': it needs data outside the current pull. Then "
+        "output the COMPLETE new scope: start from the current one and ADD, "
+        "CHANGE, or REMOVE constraints as the follow-up implies. Removing means "
+        "emptying the field — 'all institutes, not just NCI' -> ic_codes: []; "
+        "'not just R01s' -> activity_codes: []; 'drop the topic filter' -> "
+        "topic: null; 'all institutions' -> all_institutions: true and "
+        "organization: null; 'not just active grants' -> active_only: false; "
+        "'beyond this year' -> a wider fiscal_years list.\n"
+        "Constraints the follow-up doesn't mention stay as they are — they are "
+        "the conversation's context. EXCEPTION: if the follow-up clearly starts "
+        "a new direction ('instead', 'new search', a different institution/"
+        "topic/PI as the subject), rebuild the scope from just the new request "
+        "(home institution Emory when none is named).\n"
+        f"The current NIH fiscal year is FY{current_fy}. Time rules: 'last N "
+        "fiscal years' = the N most recent including the current; comparing "
+        "years / trends = a RANGE of years (current and 5 prior if unstated); "
+        "weekly phrasings ('this week', 'previous few weeks') = group_by 'week' "
+        "with days_back about 70, monthly = group_by 'month' with days_back "
+        f"about 210. Only use IC codes from: {', '.join(ic_list)}. Only use "
+        f"activity codes from: {', '.join(activity_list)}. "
+        f"{_CHART_HINT_RULES}\n"
+        "Respond with ONLY a JSON object (no prose): {\"action\": \"reuse\" or "
+        "\"refetch\", \"scope\": {" + _CRITERIA_FIELDS + "}}.\n\n"
+        f"Current scope (JSON): {json.dumps(cur)}\n"
+        f"Records currently pulled: {n_items}\n\n"
+        f"Follow-up: {followup}"
+    )
+    try:
+        resp = client.messages.create(
+            model=MODEL, max_tokens=1600, thinking={"type": "adaptive"},
+            messages=[{"role": "user", "content": prompt}])
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        data = json.loads(_extract_json(text))
+        action = ("refetch" if str(data.get("action", "")).lower() == "refetch"
+                  else "reuse")
+        new_scope = _validated(data.get("scope") or cur, followup,
+                               ic_list, activity_list)
+        if action == "reuse":
+            # Reuse means the SAME data — only the chart hints may move.
+            kept = dict(cur)
+            kept["chart_dim"] = new_scope.get("chart_dim") or cur.get("chart_dim")
+            kept["chart_metric"] = (new_scope.get("chart_metric")
+                                    or cur.get("chart_metric"))
+            new_scope = kept
+        return {"action": action, "scope": new_scope}
+    except Exception:  # noqa: BLE001 - caller falls back to heuristics
+        return None
 
 
 # Below this confidence (0-100) in its best reading of a request, the triage
