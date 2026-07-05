@@ -134,8 +134,10 @@ def main() -> int:
         ddir = pathlib.Path("docs/digests")
         ddir.mkdir(parents=True, exist_ok=True)
         (ddir / f"{date_str}.html").write_text(html, encoding="utf-8")
-        pathlib.Path("docs/index.html").write_text(html, encoding="utf-8")
-        print(f"Digest page written for {date_str}.")
+        dates = sorted({p.stem for p in ddir.glob("*.html") if p.stem[:4].isdigit()})
+        pathlib.Path("docs/index.html").write_text(
+            emailer.build_archive_index(dates), encoding="utf-8")
+        print(f"Digest page written for {date_str}; archive index updated ({len(dates)} total).")
     except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
         print(f"Page write failed ({exc}); sending without link.")
 

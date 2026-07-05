@@ -118,6 +118,40 @@ Reply to the research operations team with questions.</td></tr>
 </body></html>"""
 
 
+
+def build_archive_index(dates: list, title: str = "FedWatch — NIH & Research Policy Digests") -> str:
+    """A browsable index page linking every published daily digest (newest first)."""
+    esc = html.escape
+    rows = []
+    for d in sorted(dates, reverse=True):
+        rows.append(
+            f'<tr><td style="padding:8px 0;border-bottom:1px solid #e3e7ee;'
+            f'font:14px Arial,sans-serif;">'
+            f'<a href="digests/{esc(d)}.html" style="color:{EMORY_BLUE};text-decoration:none;">'
+            f'📄 {esc(d)}</a></td></tr>')
+    latest = f'digests/{esc(sorted(dates, reverse=True)[0])}.html' if dates else "#"
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(title)}</title></head>
+<body style="margin:0;padding:0;background:#ffffff;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:20px;">
+<table role="presentation" width="640" cellpadding="0" cellspacing="0">
+<tr><td style="background:{EMORY_BLUE};padding:18px 20px;border-bottom:4px solid {EMORY_GOLD};">
+<div style="font:bold 22px Georgia,'Times New Roman',serif;color:#ffffff;">FedWatch</div>
+<div style="font:13px Arial,sans-serif;color:#d6deef;padding-top:4px;">
+NIH &amp; Research Policy Digests · Office of the SVPR</div></td></tr>
+<tr><td style="height:16px;"></td></tr>
+<tr><td style="font:14px Arial,sans-serif;color:#2c3e50;padding-bottom:12px;">
+Daily digests of federal research-policy updates affecting Emory, curated and analyzed with Claude.
+Published each weekday at 5pm ET. <a href="{latest}" style="color:{EMORY_LIGHT_BLUE};font-weight:bold;">
+Open the latest &rarr;</a></td></tr>
+<tr><td style="font:bold 13px Arial,sans-serif;color:{EMORY_GRAY};text-transform:uppercase;
+letter-spacing:.06em;padding:6px 0;">Archive</td></tr>
+<tr><td><table width="100%" cellpadding="0" cellspacing="0">{''.join(rows) or '<tr><td style="font:14px Arial,sans-serif;color:#7f8c8d;padding:8px 0;">No digests published yet.</td></tr>'}</table></td></tr>
+<tr><td style="padding-top:20px;border-top:2px solid {EMORY_GOLD};margin-top:12px;
+font:11px Arial,sans-serif;color:{EMORY_GRAY};">Internal awareness tool. Reply to the research operations team with questions.</td></tr>
+</table></td></tr></table></body></html>"""
+
 def build_eml(items: list, summary_md: str = "", title: str = "Federal Research Update",
               sender: str = "fedwatch@your-institution.edu",
               recipients: str = "research-team@your-institution.edu") -> bytes:
