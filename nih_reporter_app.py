@@ -14,8 +14,9 @@ Run with:  streamlit run nih_reporter_app.py
 import base64
 import io
 import os
+import random
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
 import streamlit as st
@@ -31,16 +32,11 @@ st.set_page_config(page_title="NIH RePORTER Weekly Report", page_icon="🔬",
 
 # ---------- Apple-inspired styling (system font, airy, ghost buttons) ----------
 ACCENT = "#012169"        # Emory navy (links, tabs, charts) — professional, not bright
-ACCENT_HOVER = "#1c3a8f"  # lighter navy
-ACCENT_2 = "#8a94ad"      # muted steel-blue secondary chart series
 INK = "#1d1d1f"           # Apple near-black text
 MUTED = "#6e6e73"         # Apple secondary text
 BORDER = "#d2d2d7"        # Apple hairline
 PANEL = "#f5f5f7"         # Apple light gray
-# Chart colors (names kept for existing references).
-EMORY_BLUE = ACCENT
-EMORY_LIGHT_BLUE = ACCENT_HOVER
-EMORY_GOLD = ACCENT_2
+EMORY_BLUE = ACCENT       # chart series color
 # Emory Research brand accents — a light touch over the clean base.
 EMORY_NAVY = "#012169"
 EMORY_BRAND_GOLD = "#f2a900"
@@ -80,12 +76,14 @@ h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important
 .stButton button[kind="secondary"] {{
     font-size: 0.78rem; padding: 0.3rem 0.85rem; min-height: 0; line-height: 1.3;
 }}
-/* New query buttons: soft pastel-Emory fill (targeted by their widget keys) */
-.st-key-newq_top button, .st-key-newq_bottom button {{
+/* New query / briefing buttons: soft pastel-Emory fill (targeted by widget keys) */
+.st-key-newq_top button, .st-key-newq_bottom button, .st-key-newq_exec button,
+.st-key-exec_btn button {{
     background: #e7ecf7 !important; color: {EMORY_NAVY} !important;
     border: 1px solid #d4ddf0 !important;
 }}
-.st-key-newq_top button:hover, .st-key-newq_bottom button:hover {{
+.st-key-newq_top button:hover, .st-key-newq_bottom button:hover,
+.st-key-newq_exec button:hover, .st-key-exec_btn button:hover {{
     background: #d8e2f4 !important; color: {EMORY_NAVY} !important;
     border-color: #bcc9ea !important;
 }}
@@ -93,7 +91,18 @@ h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important
 .stTabs [aria-selected="true"] {{ color: {ACCENT} !important; font-weight: 600; }}
 a {{ color: {ACCENT}; text-decoration: none; }}
 a:hover {{ text-decoration: underline; }}
-[data-testid="stMetricValue"], .stDataFrame {{ font-variant-numeric: tabular-nums; }}
+.stDataFrame {{ font-variant-numeric: tabular-nums; }}
+/* Research-flavored progress: subtle pulse on status/spinner labels */
+[data-testid="stStatusWidget"], .stSpinner > div {{ color: {MUTED}; }}
+@keyframes nih-pulse {{ 0%,100% {{ opacity: 1; }} 50% {{ opacity: 0.55; }} }}
+.stSpinner p, [data-testid="stExpanderDetails"] .stMarkdown p em {{
+    animation: nih-pulse 1.6s ease-in-out infinite; }}
+/* Streamlit's top-right running-man icon -> a researchy microscope */
+[data-testid="stStatusWidget"] img, [data-testid="stStatusWidget"] svg {{
+    display: none !important; }}
+[data-testid="stStatusWidget"]::before {{
+    content: "🔬"; display: inline-block; margin-right: 6px;
+    animation: nih-pulse 1.2s ease-in-out infinite; }}
 /* Tame oversized headings the model may emit inside answers */
 .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {{ font-size: 1.1rem !important;
     font-weight: 600 !important; margin: 0.6rem 0 0.25rem !important;
@@ -116,15 +125,6 @@ a:hover {{ text-decoration: underline; }}
     font-weight: 700; letter-spacing: -0.035em; }}
 .nih-header p {{ color: {MUTED}; margin: 8px 0 0 0; font-size: 1.05rem;
     font-weight: 400; }}
-.kpi {{
-    border: 1px solid {BORDER}; border-radius: 16px; padding: 16px 18px;
-    background: #ffffff; height: 100%;
-}}
-.kpi .num {{ font-weight: 600; font-size: 1.7rem; color: {INK}; line-height: 1.15;
-    letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }}
-.kpi .lab {{ font-size: 0.72rem; color: {MUTED}; text-transform: uppercase;
-    letter-spacing: 0.06em; margin-top: 2px; }}
-.kpi .sub {{ font-size: 0.74rem; color: {MUTED}; margin-top: 3px; }}
 </style>""", unsafe_allow_html=True)
 
 def _emory_brand() -> str:
@@ -148,8 +148,9 @@ st.markdown(
     unsafe_allow_html=True)
 
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
-               "asked_question", "clarify_q", "clarify_for", "skip_clarify",
-               "suggestions", "report_pdf", "benchmark")
+               "asked_question", "clarify_q", "clarify_for", "clarify_reading",
+               "clarify_conf", "report_reading", "skip_clarify",
+               "suggestions", "report_pdf", "benchmark", "exec_brief")
 
 
 def reset_query():
@@ -205,29 +206,31 @@ def ai_md(text: str):
     st.markdown((text or "").replace("$", "\\$"))
 
 
-def fmt_date(d: str) -> str:
-    try:
-        return datetime.strptime((d or "")[:10], "%Y-%m-%d").strftime("%b %d, %Y")
-    except (ValueError, TypeError):
-        return d or ""
+# ---------- Research-flavored progress (loading/thinking states) ----------
+# Each stage has a few rotating phrasings so the wait reads like a research
+# assistant at work, not a generic spinner.
+_STAGE_MSGS = {
+    "parse": ["📖 Reading the research question…",
+              "🔍 Framing the query — scope, window, and grain…",
+              "📋 Translating your question into a search protocol…"],
+    "fetch": ["📡 Querying NIH RePORTER (api.reporter.nih.gov)…",
+              "🗄️ Pulling award notices from the NIH archives…",
+              "📚 Retrieving grant records…"],
+    "crunch": ["🧮 Cross-tabulating awards by institute, mechanism, and year…",
+               "🔬 Running the numbers — totals, medians, distributions…",
+               "🧪 Aggregating the result set…"],
+    "write": ["✍️ Drafting your briefing…",
+              "📝 Synthesizing the findings…",
+              "🖋️ Writing up the analysis…"],
+    "clarify": ["🔎 Reading your question closely…",
+                "🤔 Checking the question is fully specified…"],
+    "bench": ["🏛️ Pulling peer institution portfolios…",
+              "⚖️ Assembling the peer comparison…"],
+}
 
 
-def kpi(col, label, value, sub=""):
-    col.markdown(
-        f'<div class="kpi"><div class="num">{value}</div>'
-        f'<div class="lab">{label}</div>'
-        + (f'<div class="sub">{sub}</div>' if sub else "")
-        + "</div>", unsafe_allow_html=True)
-
-
-def bar(series: dict, title: str, top: int = 12):
-    """Horizontal bar chart from a {label: count} dict."""
-    if not series:
-        st.caption(f"_{title}: no data_")
-        return
-    s = pd.Series(dict(list(series.items())[:top]), name="Awards")
-    s.index.name = title
-    st.bar_chart(s, horizontal=True, color=EMORY_BLUE, height=max(140, 28 * len(s)))
+def _stage(kind: str) -> str:
+    return random.choice(_STAGE_MSGS[kind])
 
 
 # One-click example reports shown front and center (label, question).
@@ -247,12 +250,13 @@ EXAMPLE_REPORTS = [
     ("Largest awards",
      "What are the largest awards in this set? List the top awards with PI, "
      "institute, mechanism, and amount."),
-    ("Funding by institute",
-     "Break down the awards by NIH Institute/Center: counts and total funding, and "
-     "say which areas dominate."),
-    ("New vs. renewal",
-     "How many awards are new vs. renewal vs. continuation, and what does that mix "
-     "suggest about the portfolio?"),
+    ("Peer benchmark",
+     "How does Emory's NIH funding this fiscal year compare to peer institutions "
+     "like Duke, Vanderbilt, and Johns Hopkins? Show a comparison chart."),
+    ("Renewal pipeline",
+     "Which currently active Emory grants end within the next 12 months? How many "
+     "dollars are at stake, which are the largest, and which institutes are most "
+     "exposed?"),
     ("Active grants snapshot",
      "Summarize all currently active grants: how many there are, total active "
      "funding, the leading institutes, and the largest active awards."),
@@ -300,6 +304,43 @@ def build_facts(items: list, question: str = "") -> str:
     sub = sum(1 for it in items if it.get("is_subproject"))
     multi = sum(1 for it in items if it.get("multi_pi"))
     lines.append(f"Grants that are subprojects: {sub}. Multi-PI grants: {multi}.")
+    # Renewal pipeline: projects whose current project period ends within a year
+    # (supports "what's expiring / renewal risk" questions).
+    today = datetime.now().date()
+    ending = []
+    for it in items:
+        try:
+            end = datetime.strptime((it.get("end") or "")[:10], "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+        if today <= end <= today + timedelta(days=365):
+            ending.append((end, it))
+    if ending:
+        ending.sort(key=lambda p: p[0])
+        tot = sum(int(it.get("amount") or 0) for _, it in ending)
+        lines.append(
+            f"Renewal pipeline: {len(ending)} project(s) end within the next 12 "
+            f"months ({reporter.fmt_money(tot)} of window funding at stake). "
+            "Ending soonest: " + "; ".join(
+                f"{e:%b %Y} — PI {it.get('contact_pi') or it.get('pi', '')} "
+                f"({it.get('ic', '')}, {reporter.fmt_money(it.get('amount'))})"
+                for e, it in ending[:8]))
+    # Funding concentration (pre-computed shares, so the model never does math).
+    if a["total_amount"]:
+        pf: dict = {}
+        for it in items:
+            p = (it.get("contact_pi") or it.get("pi") or "").strip()
+            if p:
+                pf[p] = pf.get(p, 0) + int(it.get("amount") or 0)
+        if pf:
+            top5 = sum(sorted(pf.values(), reverse=True)[:5])
+            lines.append(f"Concentration: the top 5 contact PIs hold "
+                         f"{reporter.fmt_money(top5)} = "
+                         f"{100 * top5 / a['total_amount']:.0f}% of total funding.")
+        if a["funding_by_ic"]:
+            ic0, v0 = next(iter(a["funding_by_ic"].items()))
+            lines.append(f"The single largest IC ({ic0}) accounts for "
+                         f"{100 * v0 / a['total_amount']:.0f}% of total funding.")
     def _counts_line(d, n=20):
         return ", ".join(f"{k}: {v}" for k, v in list(d.items())[:n])
 
@@ -519,18 +560,25 @@ def build_pdf(items: list, agg: dict, query: str, answer: str, scope: dict) -> b
         pdf.savefig(fig)
         plt.close(fig)
 
-        def bar_page(title, d, vertical=False, money=True, top=12):
+        def bar_page(title, d, vertical=False, money=True, top=12, line=False):
             if not d:
                 return
-            rows = list(d.items())[:top]
+            rows = list(d.items()) if line else list(d.items())[:top]
             labels = [str(k) for k, _ in rows]
             vals = [v for _, v in rows]
             fig, ax = plt.subplots(figsize=(8.5, 5.6))
-            if vertical:
+            if line:
+                # A long time series reads as a trend line, not a wall of bars.
+                ax.plot(labels, vals, color=navy, linewidth=2, marker="o",
+                        markersize=4)
+                ax.tick_params(axis="x", rotation=45)
+                if money:
+                    ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+            elif vertical:
                 ax.bar(labels, vals, color=navy)
                 ax.tick_params(axis="x", rotation=45)
-                (ax.yaxis if money else ax.yaxis).set_major_formatter(
-                    FuncFormatter(_money_fmt)) if money else None
+                if money:
+                    ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
             else:
                 ax.barh(labels[::-1], vals[::-1], color=navy)
                 if money:
@@ -548,7 +596,8 @@ def build_pdf(items: list, agg: dict, query: str, answer: str, scope: dict) -> b
                      {f"FY{k}": v for k, v in agg["funding_by_fy"].items()}, vertical=True)
         if scope.get("group_by") or scope.get("date_from"):
             wk = reporter.by_period(items, scope.get("group_by") or "week", "funding")
-            bar_page(f"Funding by {scope.get('group_by') or 'week'}", wk, vertical=True)
+            bar_page(f"Funding by {scope.get('group_by') or 'week'}", wk,
+                     vertical=True, line=len(wk) > 8)
         bar_page("Funding by Institute / Center", agg.get("funding_by_ic"))
         bar_page("Funding by activity code / mechanism", agg.get("funding_by_activity"))
         bar_page("Funding by application type", agg.get("funding_by_app_type"))
@@ -580,25 +629,35 @@ _DIM_KEYS = {
 _DIM_FIELD = {"ic": "ic", "activity": "activity_code", "app_type": "app_type",
               "org": "org", "state": "state"}
 
-# Interactive graph-explorer dimensions: label -> (dim, count_key, funding_key).
+# Interactive graph-explorer dimensions: label -> dimension key.
 _EXP_DIMS = {
-    "Fiscal year": ("fy", "by_fy", "funding_by_fy"),
-    "Institute (IC)": ("ic", "by_ic", "funding_by_ic"),
-    "Activity code / mechanism": ("activity", "by_activity", "funding_by_activity"),
-    "Application type": ("app_type", "by_app_type", "funding_by_app_type"),
-    "Organization": ("org", "by_org", "funding_by_org"),
-    "State": ("state", "by_state", "funding_by_state"),
-    "Week (new awards)": ("week", None, None),
-    "Month (new awards)": ("month", None, None),
+    "Fiscal year": "fy",
+    "Institute (IC)": "ic",
+    "Activity code / mechanism": "activity",
+    "Application type": "app_type",
+    "Organization": "org",
+    "State": "state",
+    "Week (new awards)": "week",
+    "Month (new awards)": "month",
 }
+_DIM_TO_LABEL = {v: k for k, v in _EXP_DIMS.items()}
 
 
 def _default_view(question: str, scope: dict, agg: dict):
-    """Pick the graph view (dimension label, metric label) that matches the text.
-    An explicit dimension in the question wins; otherwise fall back to the scope."""
+    """Pick the graph view (dimension label, metric label) that matches the
+    question. The reasoned parse's chart hint wins; then an explicit dimension
+    named in the text; then the pulled scope."""
     q = (question or "").lower()
     scope = scope or {}
-    metric = "Award count" if any(w in q for w in _COUNT_WORDS) else "Funding ($)"
+    if scope.get("chart_metric"):
+        metric = "Funding ($)" if scope["chart_metric"] == "funding" else "Award count"
+    else:
+        metric = "Award count" if any(w in q for w in _COUNT_WORDS) else "Funding ($)"
+
+    # 0) The chart hint from the reasoned parse — it read the whole question.
+    _hint = scope.get("chart_dim")
+    if _hint in _DIM_TO_LABEL:
+        return _DIM_TO_LABEL[_hint], metric
 
     # 1) Explicit dimension named in the question takes priority.
     if any(w in q for w in ("weekly", "per week", "by week", "each week", "week-by-week")):
@@ -627,7 +686,7 @@ def _default_view(question: str, scope: dict, agg: dict):
     return "Institute (IC)", metric
 
 
-def _chart_png(title: str, data: dict, vertical: bool, money: bool) -> bytes:
+def _chart_png(title: str, data: dict, kind: str, money: bool) -> bytes:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -635,7 +694,12 @@ def _chart_png(title: str, data: dict, vertical: bool, money: bool) -> bytes:
     navy, ink = "#012169", "#1d1d1f"
     labels, vals = list(data), list(data.values())
     fig, ax = plt.subplots(figsize=(8, 4.6))
-    if vertical:
+    if kind == "time" and len(data) > 8:
+        ax.plot(labels, vals, color=navy, linewidth=2, marker="o", markersize=4)
+        ax.tick_params(axis="x", rotation=45)
+        if money:
+            ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+    elif kind == "time":
         ax.bar(labels, vals, color=navy)
         ax.tick_params(axis="x", rotation=45)
         if money:
@@ -655,6 +719,82 @@ def _chart_png(title: str, data: dict, vertical: bool, money: bool) -> bytes:
     return buf.getvalue()
 
 
+# Categorical dimension -> (funding_key, count_key, label) for building a view.
+_CAT_VIEW = {
+    "ic": ("funding_by_ic", "by_ic", "institute / center"),
+    "activity": ("funding_by_activity", "by_activity", "mechanism"),
+    "app_type": ("funding_by_app_type", "by_app_type", "application type"),
+    "org": ("funding_by_org", "by_org", "institution"),
+    "state": ("funding_by_state", "by_state", "state"),
+}
+
+
+def plot_series(series: pd.Series, kind: str):
+    """Draw a series with the chart form that fits its job: a long time series
+    is a trend (line), a short one is vertical bars, and categories are
+    horizontal bars ranked top-down."""
+    if kind == "time" and len(series) > 8:
+        st.line_chart(series, color=EMORY_BLUE, height=300)
+    elif kind == "time":
+        st.bar_chart(series, color=EMORY_BLUE, height=300)
+    else:
+        st.bar_chart(series, color=EMORY_BLUE, horizontal=True,
+                     height=max(160, 30 * len(series)))
+
+
+def _view_series(dim: str, items: list, agg: dict, is_funding: bool):
+    """Build one chart's data for a dimension. Returns (series, kind, title) —
+    kind is 'time' or 'cat' — or None when there's nothing to plot."""
+    ylabel = "Funding ($)" if is_funding else "Awards"
+    if dim in ("week", "month"):
+        data = reporter.by_period(items, dim, "funding" if is_funding else "count")
+        return (pd.Series(data, name=ylabel), "time", f"{ylabel} by {dim}") if data else None
+    if dim == "fy":
+        raw = agg.get("funding_by_fy") if is_funding else agg.get("by_fy")
+        data = {f"FY{k}": v for k, v in (raw or {}).items()}
+        return (pd.Series(data, name=ylabel), "time",
+                f"{ylabel} by fiscal year") if data else None
+    fk, ck, lbl = _CAT_VIEW[dim]
+    raw = (agg.get(fk) if is_funding else agg.get(ck)) or {}
+    data = {str(k): v for k, v in list(raw.items())[:15]}
+    return (pd.Series(data, name=ylabel), "cat",
+            f"{ylabel} by {lbl}") if data else None
+
+
+def complementary_charts(items: list, scope: dict, agg: dict, primary_dim: str,
+                         is_funding: bool, limit: int = 2):
+    """Render up to `limit` extra charts on dimensions DISTINCT from the primary
+    one — only when they have at least two categories of real data, so a report
+    shows more than one graph when it genuinely adds insight (and just one when
+    it doesn't). Returns the number of extra charts drawn."""
+    fys = [y for y in (scope.get("fiscal_years") or []) if str(y).isdigit()]
+    multi_year = len(set(fys)) > 1
+    if primary_dim in ("week", "month", "fy"):
+        order = ["ic", "activity", "app_type"]
+    elif primary_dim == "ic":
+        order = (["fy"] if multi_year else []) + ["activity", "app_type"]
+    else:
+        order = ["ic"] + (["fy"] if multi_year else []) + ["activity"]
+
+    specs = []
+    for dim in order:
+        if dim == primary_dim:
+            continue
+        spec = _view_series(dim, items, agg, is_funding)
+        if not spec or len(spec[0]) < 2:  # one bar isn't a useful extra view
+            continue
+        specs.append(spec)
+        if len(specs) >= limit:
+            break
+    if not specs:
+        return 0
+    st.caption("Other useful views of this same data")
+    for series, kind, title in specs:
+        st.markdown(f"**{title}**")
+        plot_series(series, kind)
+    return len(specs)
+
+
 def chart_explorer(items: list, question: str, scope: dict, key_prefix="exp"):
     """A graph with a smart default plus controls to flip the breakdown/metric.
     Computes its own aggregate from the items it's handed, so it always matches
@@ -669,35 +809,24 @@ def chart_explorer(items: list, question: str, scope: dict, key_prefix="exp"):
     metric = c2.radio("Measure", ["Funding ($)", "Award count"],
                       index=0 if mlabel.startswith("Funding") else 1, horizontal=True,
                       key=f"{key_prefix}_metric", label_visibility="collapsed")
-    d, count_key, fund_key = _EXP_DIMS[sel]
+    d = _EXP_DIMS[sel]
     is_f = metric.startswith("Funding")
-    ylabel = "Funding ($)" if is_f else "Awards"
     st.caption(f"{metric} by {sel} — for the data above: "
                f"{st.session_state.get('rep_query', '')}")
-    if d in ("week", "month"):
-        data = reporter.by_period(items, d, "funding" if is_f else "count")
-        vertical, title = True, f"{ylabel} by {d}"
-    elif d == "fy":
-        raw = agg.get("funding_by_fy") if is_f else agg.get("by_fy")
-        data = {f"FY{k}": v for k, v in (raw or {}).items()}
-        vertical, title = True, f"{ylabel} by fiscal year"
-    else:
-        raw = (agg.get(fund_key) if is_f else agg.get(count_key)) or {}
-        data = {str(k): v for k, v in list(raw.items())[:15]}
-        vertical, title = False, f"{ylabel} by {sel}"
-    if not data:
+    spec = _view_series(d, items, agg, is_f)
+    if not spec:
         st.caption("No data for this view.")
-        return
-    st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE,
-                 horizontal=not vertical,
-                 height=320 if vertical else max(180, 32 * len(data)))
+        return d, is_f
+    series, kind, title = spec
+    plot_series(series, kind)
     try:
         st.download_button("Download chart (PNG)",
-                           _chart_png(title, data, vertical, is_f),
+                           _chart_png(title, series.to_dict(), kind, is_f),
                            file_name="nih_chart.png", mime="image/png",
                            key=f"{key_prefix}_png")
     except Exception:  # noqa: BLE001 - PNG is best-effort
         pass
+    return d, is_f
 
 
 def maybe_chart(question: str, items: list, scope: dict = None):
@@ -710,11 +839,13 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         "by ", "per ", "across", "breakdown", "break down", "distribution",
         "split", "share", "top ", "largest", "leading", "dominant", "funding",
         "spending", "compare", "comparison", "trend", "over time", "rank")
+    hint = scope.get("chart_dim")
     _dim_hit = any(any(k in q for k in kw) for _d, (kw, *_rest) in _DIM_KEYS.items())
-    if not (any(w in q for w in _graph_intent) or _dim_hit):
-        return
-    metric = ("count" if any(w in q for w in _COUNT_WORDS)
-              else "funding" if any(w in q for w in _FUND_WORDS) else "funding")
+    if not (any(w in q for w in _graph_intent) or _dim_hit or hint):
+        return None
+    metric = scope.get("chart_metric") or (
+        "count" if any(w in q for w in _COUNT_WORDS)
+        else "funding" if any(w in q for w in _FUND_WORDS) else "funding")
 
     fys = sorted({int(y) for y in (scope.get("fiscal_years") or []) if str(y).isdigit()})
     has_range = bool(scope.get("date_from") or scope.get("date_to"))
@@ -726,8 +857,9 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         window = ""
     wsfx = f" — {window}" if window else ""
 
-    # 1) Time series: explicit weekly/monthly, or a calendar date range (-> weekly).
-    period = scope.get("group_by")
+    # 1) Time series: the parse's chart hint, explicit weekly/monthly wording,
+    #    or a calendar date range (-> weekly).
+    period = hint if hint in ("week", "month") else scope.get("group_by")
     if any(w in q for w in ("weekly", "per week", "by week", "each week",
                             "week over week", "week-by-week")):
         period = "week"
@@ -737,18 +869,21 @@ def maybe_chart(question: str, items: list, scope: dict = None):
     elif not period and has_range:
         period = "week"
     if period:
-        pmetric = "count" if any(w in q for w in _COUNT_WORDS) else \
-            ("funding" if any(w in q for w in _FUND_WORDS) else "count")
+        pmetric = scope.get("chart_metric") or (
+            "count" if any(w in q for w in _COUNT_WORDS)
+            else "funding" if any(w in q for w in _FUND_WORDS) else "count")
         data = reporter.by_period(items, period, pmetric)
         if data:
             ylabel = "Funding ($)" if pmetric == "funding" else "New awards"
             st.markdown(f"**{ylabel} by {period}**{wsfx}")
-            st.bar_chart(pd.Series(data, name=ylabel), color=EMORY_BLUE, height=300)
-            return
+            plot_series(pd.Series(data, name=ylabel), "time")
+            return period, pmetric == "funding"
 
-    dim = next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
-    cat_dim = next((d for d, (kw, *_) in _DIM_KEYS.items()
-                    if d != "fy" and any(k in q for k in kw)), None)
+    dim = hint if hint in ("fy", "ic", "activity", "app_type", "org", "state") else \
+        next((d for d, (kw, *_) in _DIM_KEYS.items() if any(k in q for k in kw)), None)
+    cat_dim = dim if dim and dim != "fy" else \
+        next((d for d, (kw, *_) in _DIM_KEYS.items()
+              if d != "fy" and any(k in q for k in kw)), None)
 
     # 2) Multiple fiscal years -> a year comparison (grouped by category, or a trend).
     multi_year = len(fys) > 1
@@ -761,14 +896,14 @@ def maybe_chart(question: str, items: list, scope: dict = None):
                               index=[str(c) for c in top])
             st.markdown(f"**Funding ($) by {_DIM_KEYS[cat_dim][3]} and fiscal year**")
             st.bar_chart(df, stack=False, height=max(200, 34 * len(top)), horizontal=True)
-            return
+            return cat_dim, True
         d = agg.get("funding_by_fy") if metric == "funding" else agg.get("by_fy")
         if d:
             ylabel = "Funding ($)" if metric == "funding" else "Awards"
             st.markdown(f"**{ylabel} by fiscal year**")
-            st.bar_chart(pd.Series({f"FY{k}": v for k, v in d.items()}, name=ylabel),
-                         color=EMORY_BLUE, height=300)
-            return
+            plot_series(pd.Series({f"FY{k}": v for k, v in d.items()}, name=ylabel),
+                        "time")
+            return "fy", metric == "funding"
 
     # 3) Single fiscal year / no multi-year -> a breakdown within that window,
     #    titled with the window so it lines up with the text.
@@ -781,11 +916,11 @@ def maybe_chart(question: str, items: list, scope: dict = None):
         dim_label = "Institute / Center"
     rows = list(data.items())[:15]
     if not rows:
-        return
+        return None
     ylabel = "Funding ($)" if metric == "funding" else "Awards"
     st.markdown(f"**{ylabel} by {dim_label}**{wsfx}")
-    st.bar_chart(pd.Series({str(k): v for k, v in rows}, name=ylabel),
-                 color=EMORY_BLUE, horizontal=True, height=max(160, 30 * len(rows)))
+    plot_series(pd.Series({str(k): v for k, v in rows}, name=ylabel), "cat")
+    return dim, metric == "funding"
 
 
 # ============================ Filter state ============================
@@ -1026,18 +1161,24 @@ def maybe_benchmark(question: str, scope: dict):
     seen = set()
     orgs = [o for o in orgs if not (o in seen or seen.add(o))]
     fys = scope.get("fiscal_years") or [CURRENT_FY]
-    with st.spinner("Benchmarking against peer institutions…"):
+    with st.spinner(_stage("bench")):
         rows, errs = reporter.compare_orgs(
             orgs, text_query=scope.get("topic") or "",
             ic_codes=scope.get("ic_codes") or None, fiscal_years=fys, limit=4000)
     return {"rows": rows, "errors": errs, "fys": fys}
 
 
-def run_report(q: str):
-    """Parse the question, pull the matching awards, and write the report."""
-    with st.spinner("Reading your request and pulling the matching awards..."):
+def run_report(q: str, reading: str = ""):
+    """Parse the question, pull the matching awards, and write the report.
+    ``reading`` is the triage step's one-sentence interpretation of the request;
+    it anchors the parse and the answer so all stages work from the same intent.
+    Progress renders as a staged research log rather than a generic spinner."""
+    qa = q + (f"\n\n[The request was read as: {reading}]" if reading else "")
+    with st.status("🔬 Researching your question…", expanded=True) as _prog:
+        st.write(f"_{_stage('parse')}_")
         parsed, _ = summarize.parse_query(
-            q, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+            qa, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
+        st.write(f"_{_stage('fetch')}_")
         awards, err, label = ai_fetch(parsed)
         st.session_state.rep_sample = bool(err)
         if err:
@@ -1046,19 +1187,22 @@ def run_report(q: str):
         st.session_state.rep_query = label
         st.session_state.last_parsed = parsed   # scope drives charts + follow-ups
         st.session_state.filter_sig = filter_sig()
-    bench = maybe_benchmark(q, parsed)
-    st.session_state.benchmark = bench
-    facts = build_facts(awards, q)
-    if bench and bench.get("rows"):
-        facts += ("\n\nPeer benchmark — total NIH funding by institution for FY "
-                  + ", ".join(str(y) for y in bench["fys"]) + ": "
-                  + "; ".join(f"{r['org']}: {reporter.fmt_money(r['total_amount'])} "
-                              f"({r['awards']} awards)" for r in bench["rows"]))
-    with st.spinner("Analyzing the data..."):
-        answer, engine = summarize.custom_report(q, facts)
+        st.write(f"_🧮 Cross-tabulating {len(awards)} award record(s)…_")
+        bench = maybe_benchmark(qa, parsed)
+        st.session_state.benchmark = bench
+        facts = build_facts(awards, qa)
+        if bench and bench.get("rows"):
+            facts += ("\n\nPeer benchmark — total NIH funding by institution for FY "
+                      + ", ".join(str(y) for y in bench["fys"]) + ": "
+                      + "; ".join(f"{r['org']}: {reporter.fmt_money(r['total_amount'])} "
+                                  f"({r['awards']} awards)" for r in bench["rows"]))
+        st.write(f"_{_stage('write')}_")
+        answer, engine = summarize.custom_report(qa, facts)
+        _prog.update(label="🔬 Analysis complete", state="complete", expanded=False)
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
+    st.session_state.report_reading = reading
     try:
         st.query_params["q"] = q  # reflect in the URL for a shareable link
     except Exception:  # noqa: BLE001
@@ -1067,17 +1211,160 @@ def run_report(q: str):
     # New report id so the graph explorer gets fresh widgets (and its scope-matched
     # default), instead of keeping the previous report's selection.
     st.session_state.report_seq = st.session_state.get("report_seq", 0) + 1
-    for _k in ("clarify_q", "clarify_for", "suggestions", "report_pdf"):
+    for _k in ("clarify_q", "clarify_for", "clarify_reading", "clarify_conf",
+               "suggestions", "report_pdf"):
         st.session_state.pop(_k, None)
 
 
+def _within_days(date_str: str, days: int) -> bool:
+    try:
+        d = datetime.strptime((date_str or "")[:10], "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return False
+    return (datetime.now().date() - d).days <= days
+
+
+def run_exec_briefing():
+    """One-click weekly executive briefing: this week's new awards in the
+    context of recent weeks, plus fiscal-year-to-date — an AI summary of both
+    up top and 10+ graphs below."""
+    with st.status("🔬 Compiling the weekly executive briefing…", expanded=True) as _prog:
+        st.write(f"_{_stage('fetch')}_")
+        wk_all, wk_err = reporter.fetch_awards(
+            org_names=[reporter.DEFAULT_ORG], use_award_window=True,
+            days_back=70, limit=2000)
+        fy_items, fy_err = reporter.fetch_awards(
+            org_names=[reporter.DEFAULT_ORG], use_award_window=False,
+            fiscal_years=[CURRENT_FY], limit=8000)
+        if wk_err and fy_err:
+            st.error(f"NIH RePORTER is unreachable right now ({fy_err}).")
+            _prog.update(label="Briefing unavailable", state="error")
+            return
+        week_items = [it for it in (wk_all or [])
+                      if _within_days(it.get("award_date"), 7)]
+        st.write(f"_{_stage('crunch')}_")
+        facts = ("SECTION A — THIS WEEK (awards issued in the last 7 days):\n"
+                 + build_facts(week_items)
+                 + "\n\nSECTION B — RECENT WEEKS (last ~10 weeks, for context):\n"
+                 + build_facts(wk_all or [])
+                 + f"\n\nSECTION C — FISCAL YEAR TO DATE (FY{CURRENT_FY}):\n"
+                 + build_facts(fy_items or []))
+        st.write(f"_{_stage('write')}_")
+        q = (f"Write a weekly executive summary for Emory research leadership, "
+             f"dated {datetime.now():%B %d, %Y}. Two parts: (1) THIS WEEK — how "
+             "many new NIH awards, total dollars, the most notable awards (PI, "
+             "institute, amount), and whether the week is above or below the "
+             "recent weekly pace; (2) FISCAL YEAR TO DATE — total awards and "
+             "dollars, the leading institutes and mechanisms, and any momentum "
+             "or concentration worth flagging. Crisp and executive in tone; "
+             "many charts follow below, so keep the narrative tight.")
+        ans, eng = summarize.custom_report(q, facts)
+        _prog.update(label="🔬 Briefing ready", state="complete", expanded=False)
+    st.session_state.exec_brief = {
+        "summary": ans, "engine": eng, "wk": wk_all or [],
+        "week": week_items, "fy": fy_items or [],
+        "note": (f"Recent-weeks pull failed ({wk_err})." if wk_err else
+                 f"FY pull failed ({fy_err})." if fy_err else ""),
+        "date": datetime.now().strftime("%B %d, %Y"),
+    }
+
+
+def _top_pi_funding(items: list, n: int = 12) -> dict:
+    pf: dict = {}
+    for it in items:
+        p = (it.get("contact_pi") or it.get("pi") or "").strip()
+        if p:
+            pf[p] = pf.get(p, 0) + int(it.get("amount") or 0)
+    return dict(sorted(pf.items(), key=lambda kv: kv[1], reverse=True)[:n])
+
+
+def _exec_charts(eb: dict) -> list:
+    """Build the briefing's chart list: (title, series, kind) — weekly context
+    first, then the fiscal year. Only charts with real data are included."""
+    wk_all, week, fy = eb["wk"], eb["week"], eb["fy"]
+    charts = []
+
+    def add(title, data, kind, money=False):
+        if data and len(data) >= (2 if kind != "cat" else 1):
+            name = "Funding ($)" if money else "Awards"
+            charts.append((title, pd.Series(
+                {str(k): v for k, v in list(data.items())[:15]}, name=name), kind))
+
+    add("New awards by week — last ~10 weeks",
+        reporter.by_period(wk_all, "week", "count"), "time")
+    add("Funding by week — last ~10 weeks",
+        reporter.by_period(wk_all, "week", "funding"), "time", money=True)
+    aw = reporter.aggregate(week)
+    add("This week — funding by institute", aw.get("funding_by_ic"), "cat", money=True)
+    add("This week — awards by mechanism", aw.get("by_activity"), "cat")
+    af = reporter.aggregate(fy)
+    add(f"FY{CURRENT_FY} — funding by month",
+        reporter.by_period(fy, "month", "funding"), "time", money=True)
+    add(f"FY{CURRENT_FY} — new awards by month",
+        reporter.by_period(fy, "month", "count"), "time")
+    add(f"FY{CURRENT_FY} — funding by institute", af.get("funding_by_ic"),
+        "cat", money=True)
+    add(f"FY{CURRENT_FY} — awards by institute", af.get("by_ic"), "cat")
+    add(f"FY{CURRENT_FY} — funding by mechanism", af.get("funding_by_activity"),
+        "cat", money=True)
+    add(f"FY{CURRENT_FY} — funding by application type",
+        af.get("funding_by_app_type"), "cat", money=True)
+    add(f"FY{CURRENT_FY} — top investigators by funding", _top_pi_funding(fy),
+        "cat", money=True)
+    largest = {f"{(it.get('contact_pi') or it.get('pi') or '?').split(';')[0][:28]} · "
+               f"{it.get('ic', '')}": int(it.get("amount") or 0)
+               for it in sorted(fy, key=lambda i: int(i.get("amount") or 0),
+                                reverse=True)[:10]}
+    add(f"FY{CURRENT_FY} — largest awards", largest, "cat", money=True)
+    return charts
+
+
+def render_exec_brief():
+    eb = st.session_state.exec_brief
+    st.subheader("Weekly executive briefing")
+    st.caption(f"Week ending {eb['date']} · {reporter.DEFAULT_ORG.title()} · "
+               "NIH RePORTER")
+    if eb.get("note"):
+        st.warning(eb["note"])
+    aw, af = reporter.aggregate(eb["week"]), reporter.aggregate(eb["fy"])
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("New awards this week", aw["count"])
+    m2.metric("Funding this week", reporter.fmt_money(aw["total_amount"]))
+    m3.metric(f"FY{CURRENT_FY} awards to date", af["count"])
+    m4.metric(f"FY{CURRENT_FY} funding to date",
+              reporter.fmt_money(af["total_amount"]))
+    with st.container(border=True):
+        ai_md(eb["summary"])
+        if eb.get("engine") == "claude":
+            st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
+    charts = _exec_charts(eb)
+    st.markdown(f"### The week and the year in {len(charts)} graphs")
+    cols = st.columns(2)
+    for i, (title, series, kind) in enumerate(charts):
+        with cols[i % 2]:
+            st.markdown(f"**{title}**")
+            plot_series(series, kind)
+    st.download_button("Download briefing (Markdown)", eb["summary"],
+                       file_name="nih_weekly_executive_briefing.md",
+                       mime="text/markdown")
+    st.write("")
+    if st.button("＋ New query", type="primary", key="newq_exec",
+                 help="Clear the briefing and start a new question."):
+        reset_query()
+
+
 # Suggested one-click next steps shown under a report (label, follow-up prompt).
+# Fallback when the AI can't tailor suggestions — one trend, one mix, one
+# comparison, one strategic angle.
 NEXT_STEPS = [
-    ("Plot a chart", "Plot the most relevant breakdown of this data as a bar chart."),
-    ("By institute", "Break this down by NIH institute (IC) and show a bar chart."),
-    ("By mechanism", "Break this down by activity code / mechanism and show a bar chart."),
-    ("By fiscal year", "Show this by fiscal year as a bar chart."),
-    ("Top PIs", "List the top principal investigators by total funding."),
+    ("Trend over years", "Show the trend over the last 5 fiscal years as a chart, "
+     "and note whether it is growing or shrinking."),
+    ("Concentration risk", "How concentrated is this funding among the top PIs and "
+     "the largest institute? Quote the shares and what they imply."),
+    ("Peer benchmark", "Benchmark this against peer institutions (Duke, Vanderbilt, "
+     "Johns Hopkins) with a comparison chart."),
+    ("Renewal pipeline", "Which of these projects end within the next 12 months, "
+     "and how many dollars are at stake?"),
 ]
 
 _REFETCH_WORDS = (
@@ -1097,6 +1384,45 @@ def _needs_refetch(fparsed: dict, fq: str) -> bool:
                                     "pi_name", "topic")):
         return True
     return any(w in ql for w in _REFETCH_WORDS)
+
+
+# Phrasings that signal the follow-up is a brand-new search, not a refinement of
+# the current result set — so we should NOT inherit the old filters.
+_FRESH_WORDS = ("instead", "rather", "new search", "start over", "starting over",
+                "from scratch", "switch to", "switch the", "change to", "forget",
+                "ignore the previous", "ignore previous", "ignore that", "reset",
+                "brand new", "different institution", "different university",
+                "different topic", "different question", "never mind", "nevermind",
+                "scratch that", "actually, ", "let's look at", "now show me")
+# Phrasings that keep us anchored to the SAME result set (a true refinement).
+_REFINE_WORDS = ("of those", "of these", "of that", "of the above", "within that",
+                 "within these", "within those", "among those", "among these",
+                 "from that set", "from those", "in that set", "drill", "break "
+                 "down", "break it down", "broken down", "same set", "same data",
+                 "also", "add", "include", "as well", "plus", "both")
+
+
+def _is_fresh_search(base: dict, fparsed: dict, fq: str) -> bool:
+    """True when a follow-up should run as a NEW search rather than inherit the
+    original filters. Triggers on explicit 'new search' language or when the
+    follow-up names a different institution / topic / PI than the current pull.
+    Refinement language ('of those', 'break down', 'also') always stays anchored."""
+    ql = fq.lower()
+    if any(w in ql for w in _REFINE_WORDS):
+        return False
+    if any(w in ql for w in _FRESH_WORDS):
+        return True
+    # A different explicit institution / topic / PI focus = a new search.
+    if fparsed.get("all_institutions") and not base.get("all_institutions"):
+        return True
+    for k in ("organization", "topic", "pi_name"):
+        nv = (fparsed.get(k) or "").strip().lower()
+        if not nv:
+            continue
+        bv = (base.get(k) or "").strip().lower()
+        if nv != bv:  # naming a focus the base didn't have, or a different one
+            return True
+    return False
 
 
 def _merge_parse(base: dict, add: dict, fq: str) -> dict:
@@ -1121,30 +1447,61 @@ def _merge_parse(base: dict, add: dict, fq: str) -> dict:
 
 
 def run_followup(fq: str):
-    """Answer a follow-up. If it needs data the original pull didn't include, go
-    back and pull that data first. Each turn keeps its OWN data snapshot/scope so
-    its chart matches its own answer (without disturbing the main report)."""
+    """Answer a follow-up through the same reasoned path as the original query:
+    plan how the scope changes (constraints added, changed, or removed), refetch
+    only when needed, then answer. Each turn keeps its OWN data snapshot/scope
+    so its chart matches its own answer (without disturbing the main report)."""
     note = ""
     items = st.session_state.get("rep_items") or []
     scope = st.session_state.get("last_parsed") or {}
     label = st.session_state.get("rep_query", "")
-    fparsed, _ = summarize.parse_query(
-        fq, CURRENT_FY, list(reporter.IC_CHOICES), list(reporter.ACTIVITY_CHOICES))
-    if _needs_refetch(fparsed, fq):
-        merged = _merge_parse(scope, fparsed, fq)
-        with st.spinner("Pulling the data needed for this…"):
-            awards, err, label2 = ai_fetch(merged)
-        if not err and awards:
-            items, scope, label = awards, merged, label2
-            note = f"_Pulled data for: {label}._\n\n"
+    # The conversation so far — built up front so BOTH the scope planner and
+    # the answer see it: the planner resolves references ('that year', 'those
+    # grants'), the answer relates the follow-up to what was already said.
     prior = ["Original question: " + st.session_state.get(
                  "asked_question", st.session_state.get("ask_question", "")),
              "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
     for t in st.session_state.get("follow_thread", [])[-4:]:
         prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
-    with st.spinner("Working on it…"):
+    history = "\n".join(p[:500] for p in prior)  # condensed for the planner
+    with st.status("🔬 Working on the follow-up…", expanded=True) as _prog:
+        st.write(f"_{_stage('parse')}_")
+        # Same reasoning path as the original query: the model sees the CURRENT
+        # scope, the conversation, and decides whether the pulled data answers
+        # the follow-up (reuse) or the scope must change (refetch) — adding,
+        # changing, or REMOVING constraints as the follow-up implies.
+        plan = summarize.plan_followup(
+            fq, scope, CURRENT_FY, list(reporter.IC_CHOICES),
+            list(reporter.ACTIVITY_CHOICES), n_items=len(items),
+            history=history)
+        if plan:
+            if plan["action"] == "refetch":
+                st.write(f"_{_stage('fetch')}_")
+                awards, err, label2 = ai_fetch(plan["scope"])
+                if not err and awards:
+                    items, scope, label = awards, plan["scope"], label2
+                    note = f"_Scope updated for this follow-up: {label}._\n\n"
+            else:
+                scope = plan["scope"]  # same data; chart hints may have moved
+        else:
+            # No API key / planner error: fall back to the keyword heuristics.
+            fparsed, _ = summarize.parse_query(
+                fq, CURRENT_FY, list(reporter.IC_CHOICES),
+                list(reporter.ACTIVITY_CHOICES))
+            if _needs_refetch(fparsed, fq):
+                fresh = _is_fresh_search(scope, fparsed, fq)
+                merged = fparsed if fresh else _merge_parse(scope, fparsed, fq)
+                st.write("_🧭 New direction — starting a fresh search…_" if fresh
+                         else f"_{_stage('fetch')}_")
+                awards, err, label2 = ai_fetch(merged)
+                if not err and awards:
+                    items, scope, label = awards, merged, label2
+                    note = (f"_New search: {label}._\n\n" if fresh
+                            else f"_Pulled data for: {label}._\n\n")
+        st.write(f"_{_stage('write')}_")
         ans, eng = summarize.custom_report(fq, build_facts(items, fq),
                                            prior="\n\n".join(prior))
+        _prog.update(label="🔬 Follow-up ready", state="complete", expanded=False)
     st.session_state.setdefault("follow_thread", []).append(
         {"q": fq, "a": note + ans, "engine": eng, "items": items,
          "scope": scope, "query": label})
@@ -1153,7 +1510,7 @@ def run_followup(fq: str):
 # Fetch whenever the filters change (or on first load), so the AI answers and
 # reports always reflect the current filters — no stale data, no button needed.
 if "rep_items" not in st.session_state or st.session_state.get("filter_sig") != filter_sig():
-    with st.spinner("Loading NIH awards..."):
+    with st.spinner("🔭 Scanning the latest NIH award notices…"):
         awards, rep_err = run_query()
     store_results(awards, rep_err)
 
@@ -1200,7 +1557,11 @@ if "pending_q" in st.session_state:
     st.session_state.ask_question = st.session_state.pop("pending_q")
 st.session_state.setdefault("ask_question", "")
 
-if not st.session_state.get("ask_answer"):
+if st.session_state.get("exec_brief"):
+    # ----- One-click weekly executive briefing view -----
+    render_exec_brief()
+
+elif not st.session_state.get("ask_answer"):
     # Shareable link: a ?q=… in the URL auto-runs that report once on load.
     _qp = st.query_params.get("q")
     if _qp and not st.session_state.get("_q_consumed"):
@@ -1217,6 +1578,10 @@ if not st.session_state.get("ask_answer"):
                      placeholder="Ask anything about NIH funding…")
         ask_clicked = st.button("Generate report", type="primary",
                                 use_container_width=True)
+        if st.button("📊 Weekly executive briefing — this week + FY to date, "
+                     "10+ graphs", use_container_width=True, key="exec_btn"):
+            run_exec_briefing()
+            st.rerun()
 
     st.write("")
     # Smaller example buttons so the input box stands out. Examples are well-formed,
@@ -1249,42 +1614,57 @@ if not st.session_state.get("ask_answer"):
     if st.session_state.get("clarify_q"):
         _cl, _cc, _cr = st.columns([1, 2.4, 1])
         with _cc:
-            st.info("**Quick clarification** — " + st.session_state["clarify_q"])
+            _reading = st.session_state.get("clarify_reading", "")
+            _conf = st.session_state.get("clarify_conf")
+            _head = "**Before I run this, a quick check**"
+            if isinstance(_conf, int):
+                _head += f" — I'm about {_conf}% sure I've read it right"
+            body = _head + ".\n\n"
+            if _reading:
+                body += f"My best reading: _{_reading}_\n\n"
+            body += "**" + st.session_state["clarify_q"] + "**"
+            st.info(body)
             with st.form("clarify_form", clear_on_submit=False):
                 clar_ans = st.text_input("Your answer", label_visibility="collapsed",
                                          placeholder="Type your answer…")
                 cf1, cf2 = st.columns(2)
                 cont = cf1.form_submit_button("Use my answer", type="primary",
                                               use_container_width=True)
-                anyway = cf2.form_submit_button("Skip — use defaults",
-                                                use_container_width=True)
-            st.caption("**Use my answer**: run the report using what you typed above. "
-                       "**Skip — use defaults**: run it now without answering "
-                       "(home institution = Emory, all available data).")
+                anyway = cf2.form_submit_button(
+                    "That reading is right — run it" if _reading
+                    else "Run it as asked", use_container_width=True)
+            st.caption("**Use my answer**: run the report with what you typed. "
+                       "The other button runs it now using the reading above.")
         if cont and clar_ans.strip():
             run_report(st.session_state["clarify_for"]
                        + f"\n\n[Clarification] {st.session_state['clarify_q']} "
                        + f"User's answer: {clar_ans.strip()}")
             st.rerun()
         elif anyway:
-            run_report(st.session_state["clarify_for"])
+            run_report(st.session_state["clarify_for"],
+                       reading=st.session_state.get("clarify_reading", ""))
             st.rerun()
 
     elif (ask_clicked and st.session_state.ask_question.strip()) \
             or st.session_state.pop("run_ask", False):
         q = st.session_state.ask_question
         skip = st.session_state.pop("skip_clarify", False)
-        cq = ""
+        tri = dict(summarize._NO_CLARIFY)
         if not skip:
-            with st.spinner("Reading your request…"):
-                cq = summarize.clarify(q)
-        if cq:
-            # Ask first; don't run the report until the user answers.
-            st.session_state.clarify_q = cq
+            with st.spinner(_stage("clarify")):
+                tri = summarize.clarify(q)
+        if tri.get("question"):
+            # Not confident enough in a single reading — ask BEFORE running,
+            # and show the best reading so the user can simply confirm it.
+            st.session_state.clarify_q = tri["question"]
             st.session_state.clarify_for = q
+            st.session_state.clarify_reading = tri.get("reading", "")
+            st.session_state.clarify_conf = tri.get("confidence", 0)
             st.rerun()
         else:
-            run_report(q)
+            # Confident reading — run it, and carry the reading through so the
+            # data pull and the narrative work from the same interpretation.
+            run_report(q, reading=tri.get("reading", ""))
             st.rerun()
 
 else:
@@ -1292,6 +1672,8 @@ else:
     st.subheader("Your report")
     st.caption("Question: " + st.session_state.get("asked_question",
                                                    st.session_state.get("ask_question", "")))
+    if st.session_state.get("report_reading"):
+        st.caption("🧭 Read as: " + st.session_state["report_reading"])
     st.caption("🔗 Shareable: the link in your browser's address bar reopens this "
                "report — copy it to share.")
     with st.container(border=True):
@@ -1299,11 +1681,14 @@ else:
         st.caption("Covering: " + st.session_state.get("rep_query", ""))
         if st.session_state.get("ask_engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
-    chart_explorer(rep_items,
-                   st.session_state.get("asked_question",
-                                        st.session_state.get("ask_question", "")),
-                   st.session_state.get("last_parsed"),
-                   key_prefix=f"main{st.session_state.get('report_seq', 0)}")
+    _prim = chart_explorer(rep_items,
+                           st.session_state.get("asked_question",
+                                                st.session_state.get("ask_question", "")),
+                           st.session_state.get("last_parsed"),
+                           key_prefix=f"main{st.session_state.get('report_seq', 0)}")
+    if _prim:
+        complementary_charts(rep_items, st.session_state.get("last_parsed") or {},
+                             agg, _prim[0], _prim[1], limit=2)
 
     _bench = st.session_state.get("benchmark")
     if _bench and _bench.get("rows"):
@@ -1334,7 +1719,7 @@ else:
         elif dlc3.button("Create PDF report", use_container_width=True,
                          help="Narrative plus several bar charts."):
             try:
-                with st.spinner("Building the PDF report…"):
+                with st.spinner("📊 Compositing the narrative and charts into a PDF…"):
                     st.session_state.report_pdf = build_pdf(
                         rep_items, agg, st.session_state.get("rep_query", ""),
                         st.session_state.ask_answer, st.session_state.get("last_parsed"))
@@ -1388,15 +1773,16 @@ else:
     suggestions = st.session_state.suggestions or NEXT_STEPS
     st.caption("Suggested next steps — ideas you might not have considered")
     ns_cols = st.columns(len(suggestions))
-    for _i, (_c, (_lbl, _fq)) in enumerate(zip(ns_cols, suggestions)):
-        if _c.button(_lbl, key=f"ns_{_i}_{_lbl}", use_container_width=True):
+    for _i, (_nc, (_lbl, _fq)) in enumerate(zip(ns_cols, suggestions)):
+        if _nc.button(_lbl, key=f"ns_{_i}_{_lbl}", use_container_width=True):
             run_followup(_fq)
             st.rerun()
 
     # ---- Follow-up: builds on the original question + the data it produced ----
     st.markdown("### Ask a follow-up about this report")
-    st.caption("Builds on the question and the exact data above — same result set, "
-               "no new search.")
+    st.caption("Refinements like 'of those, which are at the med school' reuse the "
+               "data above; if you point somewhere new — a different institution, "
+               "topic, or 'start a new search' — it pulls fresh data automatically.")
     # The conversation so far renders first; the input box always sits at the
     # very bottom, directly under the most recent answer.
     for _ti, turn in enumerate(st.session_state.get("follow_thread", [])):
@@ -1404,7 +1790,12 @@ else:
         with st.container(border=True):
             ai_md(turn["a"])
             # Chart this turn's OWN data snapshot (matches its answer).
-            maybe_chart(turn["q"], turn.get("items", rep_items), turn.get("scope"))
+            _fitems = turn.get("items", rep_items)
+            _fscope = turn.get("scope") or {}
+            _fprim = maybe_chart(turn["q"], _fitems, _fscope)
+            if _fprim:
+                complementary_charts(_fitems, _fscope, reporter.aggregate(_fitems),
+                                     _fprim[0], _fprim[1], limit=1)
 
     with st.form("followup_form", clear_on_submit=True):
         follow_q = st.text_input(
