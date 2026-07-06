@@ -125,6 +125,8 @@ a:hover {{ text-decoration: underline; }}
     font-weight: 700; letter-spacing: -0.035em; }}
 .nih-header p {{ color: {MUTED}; margin: 8px 0 0 0; font-size: 1.05rem;
     font-weight: 400; }}
+.nih-header p.build {{ color: #b6b6bb; font-size: 0.66rem; margin-top: 5px;
+    letter-spacing: 0.04em; }}
 </style>""", unsafe_allow_html=True)
 
 def _emory_brand() -> str:
@@ -141,10 +143,28 @@ def _emory_brand() -> str:
             '<span class="bar"></span><span class="res">RESEARCH</span></div>')
 
 
+@st.cache_resource(show_spinner=False)
+def _build_stamp() -> str:
+    """The deployed code's commit (short SHA + date) — shown in the header so
+    it's always visible whether the site is running the latest version."""
+    try:
+        import subprocess
+        out = subprocess.run(
+            ["git", "log", "-1", "--format=%h · %ad", "--date=format:%b %d, %Y"],
+            capture_output=True, text=True, timeout=3,
+            cwd=os.path.dirname(os.path.abspath(__file__)))
+        return out.stdout.strip()
+    except Exception:  # noqa: BLE001 - stamp is best-effort
+        return ""
+
+
+_stamp = _build_stamp()
 st.markdown(
     f'<div class="nih-header">{_emory_brand()}'
     '<h1>NIH RePORTER</h1>'
-    '<p>NIH/HHS award intelligence · live from the NIH RePORTER API</p></div>',
+    '<p>NIH/HHS award intelligence · live from the NIH RePORTER API</p>'
+    + (f'<p class="build">build {_stamp}</p>' if _stamp else "")
+    + '</div>',
     unsafe_allow_html=True)
 
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
