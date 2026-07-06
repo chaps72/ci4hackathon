@@ -40,7 +40,8 @@ def main() -> int:
     if not (teams or slack or smtp_host):
         print("WARNING: no TEAMS_WEBHOOK_URL, SLACK_WEBHOOK_URL, or SMTP_HOST set; "
               "nothing to send.")
-        return 1
+        print("SKIPPED: configure delivery secrets to enable sending.")
+        return 0
 
     peers = [p.strip() for p in os.environ.get(
         "PEER_ORGS", ", ".join(DEFAULT_PEERS)).split(",") if p.strip()]

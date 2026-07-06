@@ -481,6 +481,10 @@ def fetch_omb_memoranda(errors: list | None = None) -> list:
             if not re.search(r"\bM-\d{2}-\d+\b", title, re.IGNORECASE) and len(title) < 15:
                 continue
             seen.add(memo_id)
+            # Date from the upload path (wp-content/uploads/YYYY/MM/...) so
+            # months-old memos don't surface as new.
+            dm = re.search(r"/uploads/(\d{4})/(\d{2})/", href)
+            memo_date = f"{dm.group(1)}-{dm.group(2)}-01" if dm else ""
             link = href if href.startswith("http") else f"https://www.whitehouse.gov{href}"
             items.append({
                 "id": f"omb-{memo_id}",
@@ -489,7 +493,7 @@ def fetch_omb_memoranda(errors: list | None = None) -> list:
                 "title": title or memo_id,
                 "summary": f"OMB memorandum {memo_id}.",
                 "url": link,
-                "date": "",
+                "date": memo_date,
                 "type": "Memorandum",
             })
         return items[:10]  # most recent memos listed first
@@ -600,7 +604,18 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
                 item["watchlist_targeted"] = True
             deduped.append(item)
 
-    def _mode_filter(seq: list) -> list:
+    # Freshness: drop dated items older than the lookback window (+3-day
+    # buffer). Undated items are kept only when a date could never be
+    # derived; OMB memos now carry URL-derived dates.
+    cutoff = (datetime.now() - timedelta(days=days_back + 3)).strftime("%Y-%m-%d")
+
+    def _fresh(i: dict) -> bool:
+        d = i.get("date") or ""
+        return (not d) or d >= cutoff
+
+    def _mode_filter(seq: list, apply_freshness: bool = True) -> list:
+        if apply_freshness:
+            seq = [i for i in seq if i.get("watchlist_targeted") or i.get("type") == "Tracked Notice" or _fresh(i)]
         # Watchlist-targeted items are exempt from mode filtering.
         if not include_funding:
             seq = [i for i in seq if i.get("watchlist_targeted") or not _is_funding_item(i)]
@@ -609,7 +624,8 @@ def fetch_all(days_back: int = 14, grants_keyword: str = "research",
         return seq
 
     if not deduped:
-        return _mode_filter(list(SAMPLE_ITEMS)), errors, True
+        # Sample data carries static dates - freshness doesn't apply.
+        return _mode_filter(list(SAMPLE_ITEMS), apply_freshness=False), errors, True
     return _mode_filter(deduped), errors, False
 
 

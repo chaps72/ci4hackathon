@@ -660,7 +660,8 @@ those lanes are relevant; items outside them are not.
 First decide relevance. relevant=false for items the SVPR would not need: \
 science press releases and discovery stories, podcasts/videos/episodes, \
 individual grant awards ('agency invests $X in...'), prizes, event and \
-seminar announcements, individual funding opportunities, notices about \
+seminar announcements, funding opportunities from agencies outside the \
+portfolio, notices about \
 non-research programs (benefits, customs, etc.), wildlife/environmental \
 permit notices (endangered species recovery permits, incidental take - \
 these authorize 'scientific research' but are not research policy), \
@@ -671,7 +672,10 @@ review panels), Paperwork Reduction Act information-collection boilerplate, \
 and topic-specific health/program RFCs that do not touch research \
 administration. relevant=true for rules, proposed rules, executive orders, \
 OMB/agency guidance, policy notices, compliance/disclosure requirements, \
-budget actions, and RFIs on research policy or research administration.
+budget actions, RFIs on research policy or research administration, and \
+NEW NIH funding opportunities (NOFOs, RFAs, PAs, NOSIs) - the team wants \
+to see new NIH grant mechanisms and RFIs (usually MODERATE; major new \
+programs HIGH).
 
 OMB/EOP memos NOT touching research, grants, or funding (DHS operations, \
 cybersecurity logging, procurement, discount rates, agency reopenings) are \
@@ -776,6 +780,105 @@ def ai_classify(items: list, batch_size: int = 20) -> list:
         out.append(item)
     return out
 
+
+
+
+EMORY_PROFILE = """\
+Emory University research profile (for impact analysis - reason only from \
+this, do not invent specific grant numbers, PI names, dollar amounts, or \
+counts you were not given):
+- Among the top NIH-funded universities; the large majority of federal \
+research funding is NIH/HHS. NSF, DOD, DOE, and CDC are secondary.
+- Signature strengths: medicine (Emory School of Medicine), public health \
+(Rollins School of Public Health, deep CDC partnership), infectious \
+disease and vaccines (Emory Vaccine Center; Hope Clinic), cancer (Winship \
+Cancer Institute, an NCI-designated comprehensive cancer center), \
+neuroscience, cardiology, transplant, pediatrics (with Children's \
+Healthcare of Atlanta), and nonhuman-primate research (Emory National \
+Primate Research Center, formerly Yerkes).
+- Large clinical-trials enterprise; significant human-subjects and \
+animal-research (IACUC/OLAW) footprint; substantial F&A/indirect-cost \
+recovery on NIH awards.
+- Key offices: Office of Sponsored Programs (OSP), Office of Research \
+Administration (ORA), Research Compliance & Regulatory Affairs (RCRA), \
+Office of General Counsel (OGC), IACUC, IRB, Office of Government & \
+Community Affairs."""
+
+_IMPACT_GUIDANCE = """\
+For each federal item, assess the concrete impact on EMORY specifically. \
+Reason from Emory's research profile (given below). Be specific about WHICH \
+Emory units, portfolios, or activities are affected and HOW - but never \
+fabricate grant numbers, PI names, dollar figures, or counts. If the impact \
+is genuinely uncertain or minimal, say so plainly.
+
+Return, per item: an `impact` (2-3 sentences: which Emory research areas/\
+offices are affected and the concrete effect), an `exposure` level \
+(high/medium/low - how much of Emory's enterprise this touches), an \
+`owner` (the Emory office that should act, from the profile), and a short \
+`action` (the single most useful next step, or 'Monitor' if none)."""
+
+
+def analyze_emory_impact(items: list, batch_size: int = 12) -> list:
+    """Add Emory-specific impact analysis to each item (agent behavior).
+
+    Grounded in EMORY_PROFILE; resilient (per-batch, never raises). Sets
+    impact/exposure/owner/action on each item. No-op without an API key.
+    """
+    import json
+
+    import anthropic
+
+    if not items or not claude_available():
+        return items
+    client = anthropic.Anthropic()
+    schema = {
+        "type": "object",
+        "properties": {"impacts": {"type": "array", "items": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "string"},
+                "impact": {"type": "string"},
+                "exposure": {"type": "string", "enum": ["high", "medium", "low"]},
+                "owner": {"type": "string"},
+                "action": {"type": "string"},
+            },
+            "required": ["id", "impact", "exposure", "owner", "action"],
+            "additionalProperties": False,
+        }}},
+        "required": ["impacts"],
+        "additionalProperties": False,
+    }
+    by_id = {}
+    for start in range(0, len(items), batch_size):
+        batch = items[start:start + batch_size]
+        payload = [{"id": it["id"], "agency": it.get("agency", ""),
+                    "title": it.get("title", ""),
+                    "summary": (it.get("summary") or "")[:400]} for it in batch]
+        try:
+            resp = client.messages.create(
+                model=MODEL, max_tokens=8000,
+                output_config={"format": {"type": "json_schema", "schema": schema}},
+                messages=[{"role": "user", "content":
+                           f"{_IMPACT_GUIDANCE}\n\n{EMORY_PROFILE}\n\n"
+                           f"Items:\n{json.dumps(payload)}"}])
+            if resp.stop_reason == "refusal":
+                raise RuntimeError("declined")
+            text = next(b.text for b in resp.content if b.type == "text")
+            for r in json.loads(text)["impacts"]:
+                by_id[r["id"]] = r
+        except Exception:  # noqa: BLE001
+            continue
+    out = []
+    for it in items:
+        item = dict(it)
+        r = by_id.get(item["id"])
+        if r:
+            item["impact"] = r.get("impact", "")
+            item["exposure"] = r.get("exposure", "")
+            item["owner"] = r.get("owner", "")
+            item["action"] = r.get("action", "")
+        out.append(item)
+    return out
 
 
 def _template_summary(items: list, style: str) -> str:

@@ -63,21 +63,33 @@ def send_teams_summary(webhook_url: str, summary_md: str,
 
 
 def send_slack(webhook_url: str, summary_md: str,
-               title: str = "NIH RePORTER Weekly Report") -> None:
-    """Post a generated summary to a Slack channel via an incoming webhook."""
+               title: str = "NIH RePORTER Weekly Report",
+               link_url: str = "") -> None:
+    """Post a generated summary to a Slack channel via an incoming webhook.
+
+    When link_url is set, a clickable "View full digest" button/link is
+    appended so recipients can open the styled HTML page.
+    """
     if not webhook_url:
         raise ValueError("No Slack webhook URL configured")
     if not summary_md.strip():
         raise ValueError("Summary is empty")
-    payload = {
-        "blocks": [
-            {"type": "header",
-             "text": {"type": "plain_text", "text": title[:150], "emoji": True}},
-            {"type": "section",
-             "text": {"type": "mrkdwn", "text": summary_md[:2900]}},
-        ]
-    }
-    resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
+    blocks = [
+        {"type": "header",
+         "text": {"type": "plain_text", "text": title[:150], "emoji": True}},
+        {"type": "section",
+         "text": {"type": "mrkdwn", "text": summary_md[:2900]}},
+    ]
+    if link_url:
+        blocks.append({
+            "type": "actions",
+            "elements": [{
+                "type": "button",
+                "text": {"type": "plain_text", "text": "📄 View full digest", "emoji": True},
+                "url": link_url,
+            }],
+        })
+    resp = requests.post(webhook_url, json={"blocks": blocks}, timeout=TIMEOUT)
     resp.raise_for_status()
 
 

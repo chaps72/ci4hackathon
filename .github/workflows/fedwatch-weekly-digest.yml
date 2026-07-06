@@ -1,8 +1,11 @@
 name: FedWatch weekly digest
 
 on:
-  schedule:
-    - cron: "0 20 * * 5"   # 4pm ET Fridays (EDT)
+  # Schedule paused 2026-07-03: delivery secrets (TEAMS_WEBHOOK_URL / SMTP_*)
+  # were never configured, so every scheduled run failed with nothing to send.
+  # To resume: add the secrets in Settings > Secrets > Actions, then restore:
+  #   schedule:
+  #     - cron: "0 20 * * 5"
   workflow_dispatch: {}
 
 jobs:
@@ -21,6 +24,7 @@ jobs:
       - name: Send weekly digest
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           FEDWATCH_APP_URL: ${{ secrets.FEDWATCH_APP_URL }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}

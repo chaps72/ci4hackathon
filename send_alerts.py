@@ -24,10 +24,38 @@ from fedwatch.deadlines import with_deadlines
 from fedwatch.relevance import filter_relevant
 
 
+
+
+def _nih_focused(items: list) -> list:
+    """Default digest scope: NIH first.
+
+    Keeps NIH/HHS research actions, NIH Guide/Nexus notices, watchlist and
+    tracked items, and OMB/EOP actions (already gated to research-touching).
+    Set FEDWATCH_FOCUS=all to widen to the full portfolio (NSF/DOE/DOD/...).
+    """
+    if os.environ.get("FEDWATCH_FOCUS", "nih").lower() != "nih":
+        return items
+    out = []
+    for i in items:
+        agency = (i.get("agency") or "").lower()
+        source = i.get("source") or ""
+        text = f"{i.get('title', '')} {i.get('summary', '')}".lower()
+        if (source in ("NIH Guide", "NIH Nexus", "OMB Memoranda")
+                or "institutes of health" in agency
+                or "health and human services" in agency
+                or "management and budget" in agency
+                or "executive office" in agency
+                or "nih" in text
+                or i.get("watchlist_targeted") or i.get("watchlist_hits")
+                or i.get("type") == "Tracked Notice"):
+            out.append(i)
+    return out
+
 def main() -> int:
     min_level = os.environ.get("ALERT_MIN_LEVEL", "CRITICAL").upper()
     seen_file = os.environ.get("SEEN_FILE", ".fedwatch_seen.json")
     webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
+    slack = os.environ.get("SLACK_WEBHOOK_URL", "")
     smtp_host = os.environ.get("SMTP_HOST", "")
 
     watchlist = [w.strip() for w in os.environ.get(
@@ -42,6 +70,7 @@ def main() -> int:
 
     items, _ = filter_relevant(items)
     items = Classifier(watchlist=watchlist).classify_all(items)
+    items = _nih_focused(items)
     urgent = [i for i in items if LEVELS.index(i["level"]) <= LEVELS.index(min_level)]
 
     try:
@@ -79,6 +108,12 @@ def main() -> int:
         notify.send_teams(webhook, new, title, app_url=app_url)
         print(f"Teams: sent {len(new)} item(s).")
         sent_somewhere = True
+    if slack:
+        lines = [f"*[{i['level']}]* <{i.get('url','')}|{i['title'][:120]}> — {i.get('agency','')} · {i.get('date','')}"
+                 for i in new]
+        notify.send_slack(slack, "\n".join(lines), title)
+        print(f"Slack: sent {len(new)} item(s).")
+        sent_somewhere = True
     if smtp_host:
         notify.send_email(
             smtp_host,
@@ -93,8 +128,11 @@ def main() -> int:
         sent_somewhere = True
 
     if not sent_somewhere:
-        print("WARNING: no TEAMS_WEBHOOK_URL or SMTP_HOST configured; nothing sent.")
-        return 1
+        print("SKIPPED DELIVERY: no TEAMS_WEBHOOK_URL, SLACK_WEBHOOK_URL, or SMTP_HOST secret configured.")
+        print("Scan itself succeeded - items found this run:")
+        for i in new:
+            print(f"  [{i['level']}] {i.get('date', '')} {i['title'][:90]}")
+        return 0
 
     seen.update(i["id"] for i in new)
     with open(seen_file, "w") as f:
