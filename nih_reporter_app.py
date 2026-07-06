@@ -1339,6 +1339,82 @@ def _exec_charts(eb: dict) -> list:
     return charts
 
 
+def build_exec_pdf(eb: dict) -> bytes:
+    """The whole briefing as one PDF: a title page with the KPIs and the
+    executive summary, then every chart (two per page)."""
+    import textwrap
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
+    from matplotlib.ticker import FuncFormatter
+
+    navy, ink, muted = "#012169", "#1d1d1f", "#6e6e73"
+    aw, af = reporter.aggregate(eb["week"]), reporter.aggregate(eb["fy"])
+    buf = io.BytesIO()
+    with PdfPages(buf) as pdf:
+        # --- Title + narrative page ---
+        fig = plt.figure(figsize=(8.5, 11))
+        fig.text(0.08, 0.955, "EMORY RESEARCH", color=navy, fontsize=11,
+                 fontweight="bold")
+        fig.text(0.08, 0.928, "Weekly executive briefing", color=ink,
+                 fontsize=22, fontweight="bold")
+        fig.text(0.08, 0.903, f"Week ending {eb['date']} · "
+                 f"{reporter.DEFAULT_ORG.title()} · NIH RePORTER",
+                 color=muted, fontsize=9)
+        fig.text(0.08, 0.868,
+                 f"This week: {aw['count']} new awards · "
+                 f"{reporter.fmt_money(aw['total_amount'])}        "
+                 f"FY{CURRENT_FY} to date: {af['count']} awards · "
+                 f"{reporter.fmt_money(af['total_amount'])}",
+                 color=navy, fontsize=11, fontweight="bold")
+        body = re.sub(r"[*#`>]", "", eb.get("summary") or "")
+        lines = []
+        for para in body.split("\n"):
+            lines += (textwrap.wrap(para, width=98) or [""])
+        fig.text(0.08, 0.835, "\n".join(lines[:72]), color=ink, fontsize=9.5,
+                 va="top")
+        plt.axis("off")
+        pdf.savefig(fig)
+        plt.close(fig)
+
+        # --- Chart pages: two per page ---
+        charts = _exec_charts(eb)
+        for i in range(0, len(charts), 2):
+            fig, axes = plt.subplots(2, 1, figsize=(8.5, 11))
+            fig.subplots_adjust(hspace=0.55, left=0.22, right=0.94,
+                                top=0.93, bottom=0.08)
+            for ax, (title, series, kind) in zip(axes, charts[i:i + 2]):
+                money = str(series.name).startswith("Funding")
+                labels = [str(x)[:34] for x in series.index]
+                vals = list(series.values)
+                if kind == "time" and len(series) > 8:
+                    ax.plot(labels, vals, color=navy, linewidth=2, marker="o",
+                            markersize=4)
+                    ax.tick_params(axis="x", rotation=45)
+                    if money:
+                        ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+                elif kind == "time":
+                    ax.bar(labels, vals, color=navy)
+                    ax.tick_params(axis="x", rotation=45)
+                    if money:
+                        ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+                else:
+                    ax.barh(labels[::-1], vals[::-1], color=navy)
+                    if money:
+                        ax.xaxis.set_major_formatter(FuncFormatter(_money_fmt))
+                ax.set_title(title, color=navy, fontsize=12, fontweight="bold",
+                             loc="left", pad=12)
+                for s in ("top", "right"):
+                    ax.spines[s].set_visible(False)
+                ax.tick_params(colors=ink, labelsize=8)
+            if len(charts[i:i + 2]) == 1:  # odd count: blank the second slot
+                axes[1].axis("off")
+            pdf.savefig(fig)
+            plt.close(fig)
+    return buf.getvalue()
+
+
 def render_exec_brief():
     eb = st.session_state.exec_brief
     st.subheader("Weekly executive briefing")
@@ -1364,9 +1440,22 @@ def render_exec_brief():
         with cols[i % 2]:
             st.markdown(f"**{title}**")
             plot_series(series, kind)
-    st.download_button("Download briefing (Markdown)", eb["summary"],
+    # Build the full PDF once per briefing (summary + every chart); the button
+    # is then an instant download. Degrades to Markdown-only if the build fails.
+    if "pdf" not in eb:
+        try:
+            with st.spinner("📊 Compositing the briefing into a PDF…"):
+                eb["pdf"] = build_exec_pdf(eb)
+        except Exception:  # noqa: BLE001 - PDF is best-effort
+            eb["pdf"] = None
+    d1, d2 = st.columns(2)
+    if eb.get("pdf"):
+        d1.download_button("Download briefing (PDF — summary + all graphs)",
+                           eb["pdf"], file_name="nih_weekly_executive_briefing.pdf",
+                           mime="application/pdf", use_container_width=True)
+    d2.download_button("Download briefing (Markdown)", eb["summary"],
                        file_name="nih_weekly_executive_briefing.md",
-                       mime="text/markdown")
+                       mime="text/markdown", use_container_width=True)
     st.write("")
     if st.button("＋ New query", type="primary", key="newq_exec",
                  help="Clear the briefing and start a new question."):
