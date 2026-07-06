@@ -1044,17 +1044,20 @@ def run_query():
 
 
 def ai_fetch(parsed: dict):
-    """Fetch awards using ONLY criteria parsed from the question. The single
-    default is the home institution (Emory); every other dimension — time
-    window, IC, activity code, state, award size — comes from the question.
-    Returns (awards, error, label).
+    """Fetch awards using ONLY criteria parsed from the question. When the
+    question names no institution, the 'Emory only' checkbox decides the
+    default — home institution (checked) or all NIH institutions (unchecked).
+    Every other dimension — time window, IC, activity code, state, award
+    size — comes from the question. Returns (awards, error, label).
     """
     if parsed.get("all_institutions"):
         o_names = None
     elif parsed.get("organization"):
         o_names = [parsed["organization"]]
-    else:
+    elif st.session_state.get("emory_only", True):
         o_names = [reporter.DEFAULT_ORG]
+    else:
+        o_names = None  # checkbox unchecked -> search all NIH institutions
     fys = parsed.get("fiscal_years") or None
     days = parsed.get("days_back")
     eff_active = bool(parsed.get("active_only"))
@@ -1685,6 +1688,11 @@ elif not st.session_state.get("ask_answer"):
         st.text_area("Your question", key="ask_question", height=110,
                      label_visibility="collapsed",
                      placeholder="Ask anything about NIH funding…")
+        st.checkbox("Emory only — uncheck to search all NIH institutions",
+                    value=True, key="emory_only",
+                    help="Checked: questions default to Emory University. "
+                         "Unchecked: no institution filter (all of NIH). Either "
+                         "way, naming an institution in the question wins.")
         ask_clicked = st.button("Generate report", type="primary",
                                 use_container_width=True)
         if st.button("📊 Weekly executive briefing — this week + FY to date, "
