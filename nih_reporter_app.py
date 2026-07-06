@@ -76,12 +76,14 @@ h1, h2, h3, h4 {{ color: {INK} !important; font-family: {_APPLE_FONT} !important
 .stButton button[kind="secondary"] {{
     font-size: 0.78rem; padding: 0.3rem 0.85rem; min-height: 0; line-height: 1.3;
 }}
-/* New query buttons: soft pastel-Emory fill (targeted by their widget keys) */
-.st-key-newq_top button, .st-key-newq_bottom button {{
+/* New query / briefing buttons: soft pastel-Emory fill (targeted by widget keys) */
+.st-key-newq_top button, .st-key-newq_bottom button, .st-key-newq_exec button,
+.st-key-exec_btn button {{
     background: #e7ecf7 !important; color: {EMORY_NAVY} !important;
     border: 1px solid #d4ddf0 !important;
 }}
-.st-key-newq_top button:hover, .st-key-newq_bottom button:hover {{
+.st-key-newq_top button:hover, .st-key-newq_bottom button:hover,
+.st-key-newq_exec button:hover, .st-key-exec_btn button:hover {{
     background: #d8e2f4 !important; color: {EMORY_NAVY} !important;
     border-color: #bcc9ea !important;
 }}
@@ -148,7 +150,7 @@ st.markdown(
 _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
                "asked_question", "clarify_q", "clarify_for", "clarify_reading",
                "clarify_conf", "report_reading", "skip_clarify",
-               "suggestions", "report_pdf", "benchmark")
+               "suggestions", "report_pdf", "benchmark", "exec_brief")
 
 
 def reset_query():
@@ -1214,6 +1216,143 @@ def run_report(q: str, reading: str = ""):
         st.session_state.pop(_k, None)
 
 
+def _within_days(date_str: str, days: int) -> bool:
+    try:
+        d = datetime.strptime((date_str or "")[:10], "%Y-%m-%d").date()
+    except (ValueError, TypeError):
+        return False
+    return (datetime.now().date() - d).days <= days
+
+
+def run_exec_briefing():
+    """One-click weekly executive briefing: this week's new awards in the
+    context of recent weeks, plus fiscal-year-to-date — an AI summary of both
+    up top and 10+ graphs below."""
+    with st.status("🔬 Compiling the weekly executive briefing…", expanded=True) as _prog:
+        st.write(f"_{_stage('fetch')}_")
+        wk_all, wk_err = reporter.fetch_awards(
+            org_names=[reporter.DEFAULT_ORG], use_award_window=True,
+            days_back=70, limit=2000)
+        fy_items, fy_err = reporter.fetch_awards(
+            org_names=[reporter.DEFAULT_ORG], use_award_window=False,
+            fiscal_years=[CURRENT_FY], limit=8000)
+        if wk_err and fy_err:
+            st.error(f"NIH RePORTER is unreachable right now ({fy_err}).")
+            _prog.update(label="Briefing unavailable", state="error")
+            return
+        week_items = [it for it in (wk_all or [])
+                      if _within_days(it.get("award_date"), 7)]
+        st.write(f"_{_stage('crunch')}_")
+        facts = ("SECTION A — THIS WEEK (awards issued in the last 7 days):\n"
+                 + build_facts(week_items)
+                 + "\n\nSECTION B — RECENT WEEKS (last ~10 weeks, for context):\n"
+                 + build_facts(wk_all or [])
+                 + f"\n\nSECTION C — FISCAL YEAR TO DATE (FY{CURRENT_FY}):\n"
+                 + build_facts(fy_items or []))
+        st.write(f"_{_stage('write')}_")
+        q = (f"Write a weekly executive summary for Emory research leadership, "
+             f"dated {datetime.now():%B %d, %Y}. Two parts: (1) THIS WEEK — how "
+             "many new NIH awards, total dollars, the most notable awards (PI, "
+             "institute, amount), and whether the week is above or below the "
+             "recent weekly pace; (2) FISCAL YEAR TO DATE — total awards and "
+             "dollars, the leading institutes and mechanisms, and any momentum "
+             "or concentration worth flagging. Crisp and executive in tone; "
+             "many charts follow below, so keep the narrative tight.")
+        ans, eng = summarize.custom_report(q, facts)
+        _prog.update(label="🔬 Briefing ready", state="complete", expanded=False)
+    st.session_state.exec_brief = {
+        "summary": ans, "engine": eng, "wk": wk_all or [],
+        "week": week_items, "fy": fy_items or [],
+        "note": (f"Recent-weeks pull failed ({wk_err})." if wk_err else
+                 f"FY pull failed ({fy_err})." if fy_err else ""),
+        "date": datetime.now().strftime("%B %d, %Y"),
+    }
+
+
+def _top_pi_funding(items: list, n: int = 12) -> dict:
+    pf: dict = {}
+    for it in items:
+        p = (it.get("contact_pi") or it.get("pi") or "").strip()
+        if p:
+            pf[p] = pf.get(p, 0) + int(it.get("amount") or 0)
+    return dict(sorted(pf.items(), key=lambda kv: kv[1], reverse=True)[:n])
+
+
+def _exec_charts(eb: dict) -> list:
+    """Build the briefing's chart list: (title, series, kind) — weekly context
+    first, then the fiscal year. Only charts with real data are included."""
+    wk_all, week, fy = eb["wk"], eb["week"], eb["fy"]
+    charts = []
+
+    def add(title, data, kind, money=False):
+        if data and len(data) >= (2 if kind != "cat" else 1):
+            name = "Funding ($)" if money else "Awards"
+            charts.append((title, pd.Series(
+                {str(k): v for k, v in list(data.items())[:15]}, name=name), kind))
+
+    add("New awards by week — last ~10 weeks",
+        reporter.by_period(wk_all, "week", "count"), "time")
+    add("Funding by week — last ~10 weeks",
+        reporter.by_period(wk_all, "week", "funding"), "time", money=True)
+    aw = reporter.aggregate(week)
+    add("This week — funding by institute", aw.get("funding_by_ic"), "cat", money=True)
+    add("This week — awards by mechanism", aw.get("by_activity"), "cat")
+    af = reporter.aggregate(fy)
+    add(f"FY{CURRENT_FY} — funding by month",
+        reporter.by_period(fy, "month", "funding"), "time", money=True)
+    add(f"FY{CURRENT_FY} — new awards by month",
+        reporter.by_period(fy, "month", "count"), "time")
+    add(f"FY{CURRENT_FY} — funding by institute", af.get("funding_by_ic"),
+        "cat", money=True)
+    add(f"FY{CURRENT_FY} — awards by institute", af.get("by_ic"), "cat")
+    add(f"FY{CURRENT_FY} — funding by mechanism", af.get("funding_by_activity"),
+        "cat", money=True)
+    add(f"FY{CURRENT_FY} — funding by application type",
+        af.get("funding_by_app_type"), "cat", money=True)
+    add(f"FY{CURRENT_FY} — top investigators by funding", _top_pi_funding(fy),
+        "cat", money=True)
+    largest = {f"{(it.get('contact_pi') or it.get('pi') or '?').split(';')[0][:28]} · "
+               f"{it.get('ic', '')}": int(it.get("amount") or 0)
+               for it in sorted(fy, key=lambda i: int(i.get("amount") or 0),
+                                reverse=True)[:10]}
+    add(f"FY{CURRENT_FY} — largest awards", largest, "cat", money=True)
+    return charts
+
+
+def render_exec_brief():
+    eb = st.session_state.exec_brief
+    st.subheader("Weekly executive briefing")
+    st.caption(f"Week ending {eb['date']} · {reporter.DEFAULT_ORG.title()} · "
+               "NIH RePORTER")
+    if eb.get("note"):
+        st.warning(eb["note"])
+    aw, af = reporter.aggregate(eb["week"]), reporter.aggregate(eb["fy"])
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("New awards this week", aw["count"])
+    m2.metric("Funding this week", reporter.fmt_money(aw["total_amount"]))
+    m3.metric(f"FY{CURRENT_FY} awards to date", af["count"])
+    m4.metric(f"FY{CURRENT_FY} funding to date",
+              reporter.fmt_money(af["total_amount"]))
+    with st.container(border=True):
+        ai_md(eb["summary"])
+        if eb.get("engine") == "claude":
+            st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
+    charts = _exec_charts(eb)
+    st.markdown(f"### The week and the year in {len(charts)} graphs")
+    cols = st.columns(2)
+    for i, (title, series, kind) in enumerate(charts):
+        with cols[i % 2]:
+            st.markdown(f"**{title}**")
+            plot_series(series, kind)
+    st.download_button("Download briefing (Markdown)", eb["summary"],
+                       file_name="nih_weekly_executive_briefing.md",
+                       mime="text/markdown")
+    st.write("")
+    if st.button("＋ New query", type="primary", key="newq_exec",
+                 help="Clear the briefing and start a new question."):
+        reset_query()
+
+
 # Suggested one-click next steps shown under a report (label, follow-up prompt).
 # Fallback when the AI can't tailor suggestions — one trend, one mix, one
 # comparison, one strategic angle.
@@ -1316,15 +1455,25 @@ def run_followup(fq: str):
     items = st.session_state.get("rep_items") or []
     scope = st.session_state.get("last_parsed") or {}
     label = st.session_state.get("rep_query", "")
+    # The conversation so far — built up front so BOTH the scope planner and
+    # the answer see it: the planner resolves references ('that year', 'those
+    # grants'), the answer relates the follow-up to what was already said.
+    prior = ["Original question: " + st.session_state.get(
+                 "asked_question", st.session_state.get("ask_question", "")),
+             "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
+    for t in st.session_state.get("follow_thread", [])[-4:]:
+        prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
+    history = "\n".join(p[:500] for p in prior)  # condensed for the planner
     with st.status("🔬 Working on the follow-up…", expanded=True) as _prog:
         st.write(f"_{_stage('parse')}_")
         # Same reasoning path as the original query: the model sees the CURRENT
-        # scope and decides whether the pulled data answers the follow-up
-        # (reuse) or the scope must change (refetch) — adding, changing, or
-        # REMOVING constraints as the follow-up implies.
+        # scope, the conversation, and decides whether the pulled data answers
+        # the follow-up (reuse) or the scope must change (refetch) — adding,
+        # changing, or REMOVING constraints as the follow-up implies.
         plan = summarize.plan_followup(
             fq, scope, CURRENT_FY, list(reporter.IC_CHOICES),
-            list(reporter.ACTIVITY_CHOICES), n_items=len(items))
+            list(reporter.ACTIVITY_CHOICES), n_items=len(items),
+            history=history)
         if plan:
             if plan["action"] == "refetch":
                 st.write(f"_{_stage('fetch')}_")
@@ -1349,11 +1498,6 @@ def run_followup(fq: str):
                     items, scope, label = awards, merged, label2
                     note = (f"_New search: {label}._\n\n" if fresh
                             else f"_Pulled data for: {label}._\n\n")
-        prior = ["Original question: " + st.session_state.get(
-                     "asked_question", st.session_state.get("ask_question", "")),
-                 "Original answer: " + st.session_state.get("ask_answer", "")[:1800]]
-        for t in st.session_state.get("follow_thread", [])[-4:]:
-            prior += ["Follow-up question: " + t["q"], "Answer: " + t["a"][:1200]]
         st.write(f"_{_stage('write')}_")
         ans, eng = summarize.custom_report(fq, build_facts(items, fq),
                                            prior="\n\n".join(prior))
@@ -1413,7 +1557,11 @@ if "pending_q" in st.session_state:
     st.session_state.ask_question = st.session_state.pop("pending_q")
 st.session_state.setdefault("ask_question", "")
 
-if not st.session_state.get("ask_answer"):
+if st.session_state.get("exec_brief"):
+    # ----- One-click weekly executive briefing view -----
+    render_exec_brief()
+
+elif not st.session_state.get("ask_answer"):
     # Shareable link: a ?q=… in the URL auto-runs that report once on load.
     _qp = st.query_params.get("q")
     if _qp and not st.session_state.get("_q_consumed"):
@@ -1430,6 +1578,10 @@ if not st.session_state.get("ask_answer"):
                      placeholder="Ask anything about NIH funding…")
         ask_clicked = st.button("Generate report", type="primary",
                                 use_container_width=True)
+        if st.button("📊 Weekly executive briefing — this week + FY to date, "
+                     "10+ graphs", use_container_width=True, key="exec_btn"):
+            run_exec_briefing()
+            st.rerun()
 
     st.write("")
     # Smaller example buttons so the input box stands out. Examples are well-formed,

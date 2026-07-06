@@ -292,10 +292,12 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
 
 
 def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
-                  activity_list, n_items: int = 0):
+                  activity_list, n_items: int = 0, history: str = ""):
     """Reason about how a follow-up changes the data scope — the follow-up
     analog of ``parse_query``, anchored on the CURRENT scope so constraints can
-    be added, changed, or REMOVED (not just merged on top).
+    be added, changed, or REMOVED (not just merged on top). ``history`` is the
+    conversation so far, used to resolve references ('that year', 'those
+    grants') and to read the follow-up in context.
 
     Returns ``{"action": "reuse"|"refetch", "scope": <full criteria dict>}``,
     or ``None`` when Claude is unavailable or errors — the caller then falls
@@ -307,11 +309,16 @@ def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
 
     client = anthropic.Anthropic()
     cur = {k: scope.get(k, v) for k, v in _EMPTY_QUERY.items()}
+    hist_block = (f"Conversation so far (use it to work out how the follow-up "
+                  f"relates — a refinement, a pivot, or a reference like 'those "
+                  f"grants' or 'that year' that resolves to something earlier):\n"
+                  f"{history}\n\n" if history else "")
     prompt = (
         "You manage the data scope of an ongoing NIH RePORTER analysis "
         "conversation. The data currently on screen was pulled with the scope "
-        "below; the user has asked a follow-up. FIRST reason about what the "
-        "follow-up actually needs, then decide:\n"
+        "below; the user has asked a follow-up. FIRST read the follow-up in the "
+        "context of the conversation and reason about what it actually needs, "
+        "then decide:\n"
         "- action 'reuse': it can be answered from the records already pulled "
         "(a different cut, ranking, or summary of the SAME data). Keep the "
         "scope's constraints exactly as they are (you may still update "
@@ -339,6 +346,7 @@ def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
         f"{_CHART_HINT_RULES}\n"
         "Respond with ONLY a JSON object (no prose): {\"action\": \"reuse\" or "
         "\"refetch\", \"scope\": {" + _CRITERIA_FIELDS + "}}.\n\n"
+        f"{hist_block}"
         f"Current scope (JSON): {json.dumps(cur)}\n"
         f"Records currently pulled: {n_items}\n\n"
         f"Follow-up: {followup}"
@@ -513,10 +521,17 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
 
     client = anthropic.Anthropic()
     context = (f"\n\nEarlier in this conversation:\n{prior}\n"
-               "Answer the new question below. The dataset facts already reflect "
-               "any data that needed to be pulled for this follow-up, so answer "
-               "from them directly — do NOT say the data wasn't in the original "
-               "pull." if prior else "")
+               "Before answering, work out how the new question RELATES to the "
+               "conversation above: a refinement of the same result set, a pivot "
+               "to something new, a comparison against an earlier answer, or a "
+               "reference ('those grants', 'that year', 'the largest one') that "
+               "resolves to something said earlier. Answer in that light — "
+               "resolve references explicitly, and when the question invites "
+               "comparison, carry the relevant earlier numbers forward and state "
+               "the change. The dataset facts already reflect any data that "
+               "needed to be pulled for this follow-up, so answer from them "
+               "directly — do NOT say the data wasn't in the original pull."
+               if prior else "")
     prompt = (
         "You are a research analytics assistant for a university Office of the "
         "Senior Vice President for Research. Before writing, reason about what the "
