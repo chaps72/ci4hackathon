@@ -15,6 +15,11 @@ on:
         description: "Force a resend even if today's items already went out (for testing delivery)"
         type: boolean
         default: false
+      only:
+        description: "Limit delivery to one channel (blank = all)"
+        type: choice
+        options: ["", "slack", "teams", "email"]
+        default: ""
 
 jobs:
   digest:
@@ -45,6 +50,7 @@ jobs:
           DIGEST_DAYS_BACK: "2"
           FEDWATCH_FOCUS: nih
           DIGEST_FORCE: ${{ inputs.force }}
+          DIGEST_ONLY: ${{ inputs.only }}
         run: python send_digest.py
 
       - name: Publish digest page

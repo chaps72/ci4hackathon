@@ -162,14 +162,17 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
         print(f"Page write failed ({exc}); sending without link.")
 
+    # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
+    # handy for testing a single destination without spamming the others.
+    only = os.environ.get("DIGEST_ONLY", "").strip().lower()
     app_url = page_url
-    if webhook:
+    if webhook and only in ("", "teams"):
         notify.send_teams_summary(webhook, summary, title=title, app_url=app_url)
         print(f"Teams: {cadence.lower()} digest posted.")
-    if slack:
+    if slack and only in ("", "slack"):
         notify.send_slack(slack, summary, title=title, link_url=page_url)
         print(f"Slack: {cadence.lower()} digest posted.")
-    if smtp_host:
+    if smtp_host and only in ("", "email"):
         notify.send_email(
             smtp_host,
             int(os.environ.get("SMTP_PORT", "587")),
