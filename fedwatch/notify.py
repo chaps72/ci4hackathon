@@ -39,12 +39,6 @@ def _post_card(webhook_url: str, title: str, text: str, app_url: str = "") -> No
         "version": "1.4",
         "body": body,
     }
-    if app_url:
-        card["actions"] = [{
-            "type": "Action.OpenUrl",
-            "title": "📄 Open full FedWatch digest",
-            "url": app_url,
-        }]
     payload = {
         "type": "message",
         "attachments": [{
