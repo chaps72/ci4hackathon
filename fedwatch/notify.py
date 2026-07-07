@@ -69,22 +69,30 @@ def send_teams(webhook_url: str, items: list,
 
 def send_teams_summary(webhook_url: str, summary_md: str,
                        title: str = "Federal Research Update - Executive Summary",
-                       app_url: str = "") -> None:
-    """Post a generated summary (markdown) to a Teams channel."""
+                       app_url: str = "", extra_md: str = "") -> None:
+    """Post a generated summary (markdown) to a Teams channel.
+
+    extra_md, when set, is appended below the summary (e.g. an "In the news"
+    media-chatter section) so the card is self-contained.
+    """
     if not webhook_url:
         raise ValueError("No Teams webhook URL configured")
     if not summary_md.strip():
         raise ValueError("Summary is empty")
-    _post_card(webhook_url, title, summary_md[:25000], app_url)
+    text = summary_md[:25000]
+    if extra_md.strip():
+        text += "\n\n" + extra_md.strip()
+    _post_card(webhook_url, title, text, app_url)
 
 
 def send_slack(webhook_url: str, summary_md: str,
                title: str = "NIH RePORTER Weekly Report",
-               link_url: str = "") -> None:
+               link_url: str = "", extra_md: str = "") -> None:
     """Post a generated summary to a Slack channel via an incoming webhook.
 
-    When link_url is set, a clickable "View full digest" button/link is
-    appended so recipients can open the styled HTML page.
+    extra_md, when set, is added as its own section below the summary (e.g. an
+    "In the news" media-chatter section) so the message is self-contained.
+    link_url is accepted for backward compatibility but no longer rendered.
     """
     if not webhook_url:
         raise ValueError("No Slack webhook URL configured")
@@ -96,15 +104,10 @@ def send_slack(webhook_url: str, summary_md: str,
         {"type": "section",
          "text": {"type": "mrkdwn", "text": summary_md[:2900]}},
     ]
-    if link_url:
-        blocks.append({
-            "type": "actions",
-            "elements": [{
-                "type": "button",
-                "text": {"type": "plain_text", "text": "📄 View full digest", "emoji": True},
-                "url": link_url,
-            }],
-        })
+    if extra_md.strip():
+        blocks.append({"type": "divider"})
+        blocks.append({"type": "section",
+                       "text": {"type": "mrkdwn", "text": extra_md[:2900]}})
     resp = requests.post(webhook_url, json={"blocks": blocks}, timeout=TIMEOUT)
     resp.raise_for_status()
 

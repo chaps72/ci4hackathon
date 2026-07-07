@@ -24,6 +24,28 @@ from fedwatch.relevance import filter_relevant
 
 
 
+def _news_section(items: list, max_items: int = 6) -> str:
+    """Compact 'In the news' block from items that picked up media chatter.
+
+    Plain text with dash bullets so it renders acceptably in both Slack mrkdwn
+    and Teams Adaptive Card markdown. Returns '' when nothing was found (the
+    common, expected case) so no empty section is added.
+    """
+    with_news = [i for i in items if i.get("news")]
+    if not with_news:
+        return ""
+    lines = ["📰 In the news"]
+    for it in with_news[:max_items]:
+        title = (it.get("title") or "").strip()[:110]
+        note = (it.get("news") or "").strip()[:240]
+        srcs = " ".join((it.get("news_sources") or [])[:2])
+        entry = f"- {title} — {note}" if title else f"- {note}"
+        if srcs:
+            entry += f"\n  {srcs}"
+        lines.append(entry)
+    return "\n".join(lines)
+
+
 def _nih_focused(items: list) -> list:
     """Default digest scope: NIH first.
 
@@ -162,15 +184,18 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
         print(f"Page write failed ({exc}); sending without link.")
 
+    # Build an "In the news" section from any media chatter the scan surfaced,
+    # so Slack/Teams messages carry it inline (not just the HTML page).
+    news_md = _news_section(items)
+
     # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
     # handy for testing a single destination without spamming the others.
     only = os.environ.get("DIGEST_ONLY", "").strip().lower()
-    app_url = page_url
     if webhook and only in ("", "teams"):
-        notify.send_teams_summary(webhook, summary, title=title, app_url=app_url)
+        notify.send_teams_summary(webhook, summary, title=title, extra_md=news_md)
         print(f"Teams: {cadence.lower()} digest posted.")
     if slack and only in ("", "slack"):
-        notify.send_slack(slack, summary, title=title, link_url=page_url)
+        notify.send_slack(slack, summary, title=title, extra_md=news_md)
         print(f"Slack: {cadence.lower()} digest posted.")
     if smtp_host and only in ("", "email"):
         notify.send_email(
