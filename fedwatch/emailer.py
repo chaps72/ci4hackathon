@@ -81,11 +81,18 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
                 + (f'<div style="padding-top:6px;background:#eef1f7;border-radius:4px;'
                    f'padding:8px 10px;margin-top:6px;font-size:12px;">'
                    f'<b style="color:{EMORY_BLUE};">Emory impact</b>'
-                   + (f' &middot; <b>{e(it.get("exposure","").upper())} exposure</b>' if it.get("exposure") else "")
+                   + (f' &middot; <b>{e(it.get("exposure","").upper())} severity</b>' if it.get("exposure") else "")
                    + f'<br>{e(it.get("impact",""))}'
+                   + (f'<br><b>SVPR office:</b> {e(it.get("svpr_impact",""))}' if it.get("svpr_impact") else "")
                    + (f'<br><b>Owner:</b> {e(it.get("owner",""))}' if it.get("owner") else "")
                    + (f' &middot; <b>Action:</b> {e(it.get("action",""))}' if it.get("action") else "")
                    + '</div>' if it.get("impact") else "")
+                + (f'<div style="padding:8px 10px;margin-top:6px;font-size:12px;'
+                   f'background:#fff7e6;border-left:3px solid {EMORY_GOLD};border-radius:4px;">'
+                   f'<b style="color:{EMORY_GRAY};">📰 In the news</b><br>{e(it.get("news",""))}'
+                   + ("".join(f'<br><a href="{e(u)}" style="color:{EMORY_LIGHT_BLUE};">{e(u[:70])}</a>'
+                              for u in (it.get("news_sources") or []) if _safe_url(u)))
+                   + '</div>' if it.get("news") else "")
                 + "</td></tr>"
             )
 

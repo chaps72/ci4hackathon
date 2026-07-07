@@ -812,8 +812,12 @@ fabricate grant numbers, PI names, dollar figures, or counts. If the impact \
 is genuinely uncertain or minimal, say so plainly.
 
 Return, per item: an `impact` (2-3 sentences: which Emory research areas/\
-offices are affected and the concrete effect), an `exposure` level \
-(high/medium/low - how much of Emory's enterprise this touches), an \
+offices are affected and the concrete effect), a `svpr_impact` (one \
+sentence on what this specifically means for the Office of the Senior Vice \
+President for Research - the central research leadership/administration: \
+e.g. an institutional response to coordinate, a portfolio-level financial \
+or compliance risk to own, or a policy position to take), an `exposure` \
+level (high/medium/low - how much of Emory's enterprise this touches), an \
 `owner` (the Emory office that should act, from the profile), and a short \
 `action` (the single most useful next step, or 'Monitor' if none)."""
 
@@ -838,11 +842,12 @@ def analyze_emory_impact(items: list, batch_size: int = 12) -> list:
             "properties": {
                 "id": {"type": "string"},
                 "impact": {"type": "string"},
+                "svpr_impact": {"type": "string"},
                 "exposure": {"type": "string", "enum": ["high", "medium", "low"]},
                 "owner": {"type": "string"},
                 "action": {"type": "string"},
             },
-            "required": ["id", "impact", "exposure", "owner", "action"],
+            "required": ["id", "impact", "svpr_impact", "exposure", "owner", "action"],
             "additionalProperties": False,
         }}},
         "required": ["impacts"],
@@ -874,11 +879,76 @@ def analyze_emory_impact(items: list, batch_size: int = 12) -> list:
         r = by_id.get(item["id"])
         if r:
             item["impact"] = r.get("impact", "")
+            item["svpr_impact"] = r.get("svpr_impact", "")
             item["exposure"] = r.get("exposure", "")
             item["owner"] = r.get("owner", "")
             item["action"] = r.get("action", "")
         out.append(item)
     return out
+
+
+# High-severity change types that warrant pulling corroborating news.
+_NEWS_TRIGGERS = (
+    "terminat", "cancel", "rescind", "rescission", "clawback", "claw back",
+    "freeze", "frozen", "stop work", "stop-work", "withdraw", "suspend",
+    "disallow", "defund", "budget cut", "funding cut", "eliminat",
+)
+
+
+def enrich_with_news(items: list, max_items: int = 4) -> list:
+    """For high-severity disruptive items (cancellations, terminations,
+    freezes), have Claude web-search for corroborating coverage/reactions and
+    attach a short `news` note plus `news_sources`. Resilient; never raises;
+    no-op without an API key. Only the most consequential items are searched
+    (cost/latency control)."""
+    import re
+
+    import anthropic
+
+    if not claude_available():
+        return items
+
+    def qualifies(i):
+        if i.get("level") not in ("CRITICAL", "HIGH"):
+            return False
+        text = f"{i.get('title', '')} {i.get('summary', '')}".lower()
+        return any(t in text for t in _NEWS_TRIGGERS)
+
+    targets = [i for i in items if qualifies(i)][:max_items]
+    if not targets:
+        return items
+
+    client = anthropic.Anthropic()
+    tools = [{"type": "web_search_20260209", "name": "web_search"}]
+    for it in targets:
+        prompt = (
+            "Search the web for recent news coverage or reactions about this "
+            "specific federal research-policy action. Summarize any corroborating "
+            "reporting in 1-2 sentences (who reported it, the key point). Then, on a "
+            "new line, write 'Sources:' followed by up to 2 source URLs. If you find "
+            "no relevant coverage, reply exactly: No additional coverage found.\n\n"
+            f"Agency: {it.get('agency', '')}\nTitle: {it.get('title', '')}\n"
+            f"Summary: {(it.get('summary') or '')[:400]}")
+        messages = [{"role": "user", "content": prompt}]
+        try:
+            text = ""
+            for _ in range(3):  # allow the server-side search loop to resume
+                resp = client.messages.create(
+                    model=MODEL, max_tokens=1500, tools=tools, messages=messages)
+                text = "".join(b.text for b in resp.content if b.type == "text").strip()
+                if resp.stop_reason == "pause_turn":
+                    messages.append({"role": "assistant", "content": resp.content})
+                    continue
+                break
+            if not text or "no additional coverage" in text.lower():
+                continue
+            urls = re.findall(r"https?://[^\s)\]}>\"']+", text)[:2]
+            note = re.split(r"\n?\s*sources?:", text, flags=re.IGNORECASE)[0].strip()
+            it["news"] = note[:600]
+            it["news_sources"] = urls
+        except Exception:  # noqa: BLE001 - news is a bonus, never block delivery
+            continue
+    return items
 
 
 def _template_summary(items: list, style: str) -> str:

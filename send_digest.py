@@ -127,6 +127,9 @@ def main() -> int:
     if not items:
         print("Quiet window - no new relevant items; nothing to send.")
         return 0
+    # Agent step: for disruptive items (cancellations, terminations, freezes)
+    # web-search for corroborating coverage. Only runs on items being sent.
+    items = summarize.enrich_with_news(items)
     summary, engine = summarize.generate_summary(items, "Executive summary")
     cadence = "Daily" if days_back <= 3 else "Weekly"
     title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
@@ -178,5 +181,26 @@ def main() -> int:
     return 0
 
 
+def _run_with_alert() -> int:
+    """Run main(); on an unexpected error, post a short failure notice so a
+    broken run is never silent, then surface the failure to CI (exit 1)."""
+    try:
+        return main()
+    except Exception as exc:  # noqa: BLE001
+        import traceback
+        traceback.print_exc()
+        msg = f"⚠️ FedWatch digest failed to run: {type(exc).__name__}: {exc}"
+        slack = os.environ.get("SLACK_WEBHOOK_URL", "")
+        teams = os.environ.get("TEAMS_WEBHOOK_URL", "")
+        try:
+            if slack:
+                notify.send_slack(slack, msg, title="FedWatch digest error")
+            elif teams:
+                notify.send_teams_summary(teams, msg, title="FedWatch digest error")
+        except Exception:  # noqa: BLE001 - don't mask the original error
+            pass
+        return 1
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(_run_with_alert())
