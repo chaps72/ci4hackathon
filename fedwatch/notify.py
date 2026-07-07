@@ -16,20 +16,42 @@ TIMEOUT = 15
 
 
 def _post_card(webhook_url: str, title: str, text: str, app_url: str = "") -> None:
-    payload = {
-        "@type": "MessageCard",
-        "@context": "http://schema.org/extensions",
-        "themeColor": EMORY_BLUE.lstrip("#"),
-        "summary": title,
-        "title": title,
-        "sections": [{"text": text}],
+    """Post an Adaptive Card to a Teams channel/chat via a Workflows webhook.
+
+    Teams retired the classic Office 365 "Incoming Webhook" connector (which
+    rendered legacy MessageCards) in favor of Workflows (Power Automate). The
+    Workflows webhook expects a message envelope wrapping an Adaptive Card, so
+    that is what we send here.
+    """
+    # Adaptive Card TextBlocks render a limited markdown subset (bold, italics,
+    # links, bullet lists) but not '#' headers - strip leading hashes so they
+    # don't show as literal "##".
+    import re
+    text = re.sub(r"(?m)^\s*#{1,6}\s*", "", text)
+    body = [
+        {"type": "TextBlock", "text": title, "weight": "Bolder",
+         "size": "Large", "color": "Accent", "wrap": True},
+        {"type": "TextBlock", "text": text, "wrap": True},
+    ]
+    card = {
+        "type": "AdaptiveCard",
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.4",
+        "body": body,
     }
     if app_url:
-        payload["potentialAction"] = [{
-            "@type": "OpenUri",
-            "name": "Open FedWatch dashboard",
-            "targets": [{"os": "default", "uri": app_url}],
+        card["actions"] = [{
+            "type": "Action.OpenUrl",
+            "title": "📄 Open full FedWatch digest",
+            "url": app_url,
         }]
+    payload = {
+        "type": "message",
+        "attachments": [{
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": card,
+        }],
+    }
     resp = requests.post(webhook_url, json=payload, timeout=TIMEOUT)
     resp.raise_for_status()
 

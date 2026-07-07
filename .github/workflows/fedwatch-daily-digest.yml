@@ -9,7 +9,12 @@ on:
     # the script skips the off-hour firing, weekends, and US federal holidays.
     - cron: "0 21 * * 1-5"
     - cron: "0 22 * * 1-5"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force a resend even if today's items already went out (for testing delivery)"
+        type: boolean
+        default: false
 
 jobs:
   digest:
@@ -39,6 +44,7 @@ jobs:
           FEDWATCH_APP_URL: ${{ secrets.FEDWATCH_APP_URL }}
           DIGEST_DAYS_BACK: "2"
           FEDWATCH_FOCUS: nih
+          DIGEST_FORCE: ${{ inputs.force }}
         run: python send_digest.py
 
       - name: Publish digest page

@@ -98,7 +98,12 @@ def main() -> int:
         seen = set()
     et_date = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
     sent_marker = f"sent:{et_date}"
-    if os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
+    # DIGEST_FORCE (manual "force" dispatch input) resends today's items even if
+    # they already went out - used to test delivery/rendering on demand.
+    force = os.environ.get("DIGEST_FORCE", "").lower() in ("1", "true", "yes")
+    if force:
+        print("DIGEST_FORCE set: bypassing dedupe and once-per-day guard.")
+    if not force and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
         print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
         return 0
 
@@ -122,8 +127,10 @@ def main() -> int:
     # Emory's research profile). No-op without an API key.
     items = summarize.analyze_emory_impact(items)
 
-    # Never repeat an item across daily digests (seen-state loaded up top).
-    items = [i for i in items if i["id"] not in seen]
+    # Never repeat an item across daily digests (seen-state loaded up top);
+    # a forced test run resends regardless.
+    if not force:
+        items = [i for i in items if i["id"] not in seen]
     if not items:
         print("Quiet window - no new relevant items; nothing to send.")
         return 0
