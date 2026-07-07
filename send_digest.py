@@ -52,9 +52,11 @@ def _nih_focused(items: list) -> list:
 def _scheduled_run_guards() -> str:
     """Reason to skip a scheduled firing, or '' to proceed.
 
-    Two crons fire (21:00 & 22:00 UTC) so one of them is always 5pm in
-    New York regardless of DST; the off-hour firing is skipped here.
-    Manual runs (workflow_dispatch) bypass all guards.
+    Two crons fire (21:00 & 22:00 UTC); across DST at least one lands at or
+    after 5pm New York. GitHub can delay scheduled runs by an hour or more,
+    so the window is "5pm ET or later" (never earlier) rather than an exact
+    hour - a once-per-day marker (see main) stops the twin crons from
+    double-posting. Manual runs (workflow_dispatch) bypass all guards.
     """
     if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
         return ""
@@ -64,12 +66,12 @@ def _scheduled_run_guards() -> str:
     from fedwatch.holidays import is_us_federal_holiday
 
     now_et = datetime.now(ZoneInfo("America/New_York"))
-    if now_et.hour != 17:
-        return f"off-hour firing ({now_et:%H:%M} ET) - DST twin cron"
     if now_et.weekday() >= 5:
         return "weekend"
     if is_us_federal_holiday(now_et.date()):
         return f"US federal holiday ({now_et:%Y-%m-%d})"
+    if now_et.hour < 17:
+        return f"before 5pm ET target window ({now_et:%H:%M} ET)"
     return ""
 
 
@@ -83,6 +85,21 @@ def main() -> int:
     smtp_host = os.environ.get("SMTP_HOST", "")
     if not webhook and not slack and not smtp_host:
         print("SKIPPED: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
+        return 0
+
+    # Cross-day dedupe + once-per-day guard. Loaded up front so a delayed
+    # twin cron (or a re-fire) exits fast without spending API calls.
+    from zoneinfo import ZoneInfo
+    seen_file = os.environ.get("DIGEST_SEEN_FILE", ".fedwatch_digest_seen.json")
+    try:
+        with open(seen_file) as f:
+            seen = set(json.load(f))
+    except (FileNotFoundError, ValueError):
+        seen = set()
+    et_date = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
+    sent_marker = f"sent:{et_date}"
+    if os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
+        print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
         return 0
 
     days_back = int(os.environ.get("DIGEST_DAYS_BACK", "7"))
@@ -105,13 +122,7 @@ def main() -> int:
     # Emory's research profile). No-op without an API key.
     items = summarize.analyze_emory_impact(items)
 
-    # Never repeat an item across daily digests (seen-state cached by CI).
-    seen_file = os.environ.get("DIGEST_SEEN_FILE", ".fedwatch_digest_seen.json")
-    try:
-        with open(seen_file) as f:
-            seen = set(json.load(f))
-    except (FileNotFoundError, ValueError):
-        seen = set()
+    # Never repeat an item across daily digests (seen-state loaded up top).
     items = [i for i in items if i["id"] not in seen]
     if not items:
         print("Quiet window - no new relevant items; nothing to send.")
@@ -161,6 +172,7 @@ def main() -> int:
         print("Email: weekly digest sent.")
 
     seen.update(i["id"] for i in items)
+    seen.add(sent_marker)  # once-per-day guard for the twin crons
     with open(seen_file, "w") as f:
         json.dump(sorted(seen), f)
     return 0
