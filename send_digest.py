@@ -134,9 +134,6 @@ def main() -> int:
     if not items:
         print("Quiet window - no new relevant items; nothing to send.")
         return 0
-    # Agent step: for disruptive items (cancellations, terminations, freezes)
-    # web-search for corroborating coverage. Only runs on items being sent.
-    items = summarize.enrich_with_news(items)
     summary, engine = summarize.generate_summary(items, "Executive summary")
     cadence = "Daily" if days_back <= 3 else "Weekly"
     title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
