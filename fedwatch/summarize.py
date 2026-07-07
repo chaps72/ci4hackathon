@@ -895,12 +895,25 @@ _NEWS_TRIGGERS = (
 )
 
 
-def enrich_with_news(items: list, max_items: int = 4) -> list:
-    """For high-severity disruptive items (cancellations, terminations,
-    freezes), have Claude web-search for corroborating coverage/reactions and
-    attach a short `news` note plus `news_sources`. Resilient; never raises;
-    no-op without an API key. Only the most consequential items are searched
-    (cost/latency control)."""
+def _is_nih_related(i: dict) -> bool:
+    agency = (i.get("agency") or "").lower()
+    text = f"{i.get('title', '')} {i.get('summary', '')}".lower()
+    return ("institutes of health" in agency or "health and human services" in agency
+            or "nih" in text or "national institutes of health" in text)
+
+
+def enrich_with_news(items: list, max_items: int = 6) -> list:
+    """Web-search for media chatter and attach a short `news` note plus
+    `news_sources`. Two tiers, searched in priority order up to max_items:
+
+      1. High-severity disruptive actions (cancellations, terminations,
+         freezes) - always worth corroborating.
+      2. NIH-related items generally - scan for any media coverage or reaction,
+         since NIH is the office's primary focus. If nothing turns up that is
+         fine; the item just carries no news note.
+
+    Resilient; never raises; no-op without an API key. Bounded item count keeps
+    cost/latency in check."""
     import re
 
     import anthropic
@@ -908,13 +921,22 @@ def enrich_with_news(items: list, max_items: int = 4) -> list:
     if not claude_available():
         return items
 
-    def qualifies(i):
+    def is_disruptive(i):
         if i.get("level") not in ("CRITICAL", "HIGH"):
             return False
         text = f"{i.get('title', '')} {i.get('summary', '')}".lower()
         return any(t in text for t in _NEWS_TRIGGERS)
 
-    targets = [i for i in items if qualifies(i)][:max_items]
+    # Disruptive items first, then any other NIH-related items, de-duplicated
+    # while preserving order.
+    disruptive = [i for i in items if is_disruptive(i)]
+    nih = [i for i in items if _is_nih_related(i) and i not in disruptive]
+    seen_ids, targets = set(), []
+    for i in disruptive + nih:
+        if id(i) not in seen_ids:
+            seen_ids.add(id(i))
+            targets.append(i)
+    targets = targets[:max_items]
     if not targets:
         return items
 
@@ -922,10 +944,12 @@ def enrich_with_news(items: list, max_items: int = 4) -> list:
     tools = [{"type": "web_search_20260209", "name": "web_search"}]
     for it in targets:
         prompt = (
-            "Search the web for recent news coverage or reactions about this "
-            "specific federal research-policy action. Summarize any corroborating "
-            "reporting in 1-2 sentences (who reported it, the key point). Then, on a "
-            "new line, write 'Sources:' followed by up to 2 source URLs. If you find "
+            "Search the web for recent news coverage, reactions, or related "
+            "reporting about this federal research-policy item - including any "
+            "broader NIH chatter it connects to (funding shifts, congressional "
+            "or advocacy reaction, institutional impact). Summarize what you find "
+            "in 1-2 sentences (who reported it, the key point). Then, on a new "
+            "line, write 'Sources:' followed by up to 2 source URLs. If you find "
             "no relevant coverage, reply exactly: No additional coverage found.\n\n"
             f"Agency: {it.get('agency', '')}\nTitle: {it.get('title', '')}\n"
             f"Summary: {(it.get('summary') or '')[:400]}")
