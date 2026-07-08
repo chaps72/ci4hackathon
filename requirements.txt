@@ -4,3 +4,4 @@ requests
 anthropic
 openpyxl
 matplotlib
+altair>=5
