@@ -176,6 +176,7 @@ _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
 def reset_query():
     for _k in _RESET_KEYS:
         st.session_state.pop(_k, None)
+    st.session_state.pop("ex_choices", None)  # fresh example ideas each time
     # Deliberately KEEP _q_consumed: it records which ?q= link already ran. If
     # clearing the URL param doesn't take effect immediately, popping it would
     # make the start screen re-run the same report — the screen would never
@@ -256,12 +257,15 @@ def _stage(kind: str) -> str:
     return random.choice(_STAGE_MSGS[kind])
 
 
-# One-click example reports shown front and center (label, question).
-EXAMPLE_REPORTS = [
-    ("What's new this week",
-     "What new NIH awards did Emory receive in the last 7 days? Summarize the count "
-     "and total funding, list them with PI, institute and amount, and show a chart "
-     "of funding by institute."),
+# One-click example reports. A staple stays first; the rest of the chips are
+# sampled fresh from the pool each time the start screen comes up, so the
+# suggestions are always a little different.
+EXAMPLE_STAPLE = (
+    "What's new this week",
+    "What new NIH awards did Emory receive in the last 7 days? Summarize the count "
+    "and total funding, list them with PI, institute and amount, and show a chart "
+    "of funding by institute.")
+EXAMPLE_POOL = [
     ("Investigators with 3+ grants",
      "Over the last 4 fiscal years, how many investigators have 3 or more grants "
      "where they are PI, and how many have 4 or more? List them with their grant "
@@ -283,8 +287,45 @@ EXAMPLE_REPORTS = [
     ("Active grants snapshot",
      "Summarize all currently active grants: how many there are, total active "
      "funding, the leading institutes, and the largest active awards."),
+    ("5-year trend",
+     "How has NIH funding trended over the last 5 fiscal years? Show the trend "
+     "as a chart and say whether it is growing or shrinking."),
+    ("Institute mix",
+     "Which NIH institutes fund the most this fiscal year — counts and dollars? "
+     "Show a chart and note which areas dominate."),
+    ("Mechanism mix",
+     "Break down this fiscal year's awards by mechanism (R01, U01, K, etc.) with "
+     "a chart — what does the mix say about the portfolio?"),
+    ("New vs. renewal",
+     "Of this fiscal year's award notices, how many are entirely new grants vs "
+     "renewals and continuations? Show the mix as a chart."),
+    ("Concentration risk",
+     "How concentrated is this fiscal year's funding among the top investigators "
+     "and the largest institute? Quote the shares and what they imply."),
+    ("Research themes",
+     "What research areas do this fiscal year's largest awards cover, based on "
+     "their abstracts? Group them into themes."),
+    ("Monthly momentum",
+     "Show new award notices by month for this fiscal year as a chart — is the "
+     "pace accelerating or slowing?"),
+    ("Career (K) awards",
+     "How many career-development (K) awards were made this fiscal year, who "
+     "received them, and from which institutes?"),
+    ("Center grants",
+     "Which large center and program grants (P and U mechanisms) are currently "
+     "active, and how big are they?"),
+    ("Multi-PI share",
+     "How many of this fiscal year's awards are multi-PI vs single-PI, and what "
+     "share of the dollars do multi-PI grants carry?"),
+    ("Publication output",
+     "Which of the currently active grants have the most linked publications?"),
 ]
-DEFAULT_QUESTION = EXAMPLE_REPORTS[0][1]
+DEFAULT_QUESTION = EXAMPLE_STAPLE[1]
+
+
+def pick_examples(n: int = 6) -> list:
+    """The staple plus a fresh random sample from the pool."""
+    return [EXAMPLE_STAPLE] + random.sample(EXAMPLE_POOL, min(n, len(EXAMPLE_POOL)))
 
 
 _PUB_WORDS = ("publication", "publications", "papers", "paper", "pubmed", "output",
@@ -784,11 +825,11 @@ def plot_series(series: pd.Series, kind: str):
                       format="$,.0f" if money else ",.0f")]
     vfmt = alt.Axis(format="$~s") if money else alt.Axis(format="~s")
     try:
-        if kind == "time":
+        if kind in ("time", "cum"):
             x = alt.X("label:N", sort=None, title=None,
                       axis=alt.Axis(labelAngle=-45))
             y = alt.Y("value:Q", title=name, axis=vfmt)
-            if len(series) > 8:
+            if kind == "cum" or len(series) > 8:
                 ch = alt.Chart(df).mark_line(
                     color=EMORY_BLUE, strokeWidth=2,
                     point=alt.OverlayMarkDef(color=EMORY_BLUE, size=45)
@@ -805,7 +846,7 @@ def plot_series(series: pd.Series, kind: str):
             h = max(160, 30 * len(series))
         st.altair_chart(ch.properties(height=h), use_container_width=True)
     except Exception:  # noqa: BLE001 - fall back to the built-in charts
-        if kind == "time" and len(series) > 8:
+        if kind == "cum" or (kind == "time" and len(series) > 8):
             st.line_chart(series, color=EMORY_BLUE, height=300)
         elif kind == "time":
             st.bar_chart(series, color=EMORY_BLUE, height=300)
@@ -1359,6 +1400,21 @@ def run_exec_briefing():
                  + build_facts(wk_all or [])
                  + f"\n\nSECTION C — FISCAL YEAR TO DATE (FY{CURRENT_FY}):\n"
                  + build_facts(fy_items or []))
+        # Cumulative running totals through the year, pre-computed so the
+        # narrative can speak to the FY trajectory without doing arithmetic.
+        _mf = reporter.by_period(fy_items or [], "month", "funding")
+        _mc = reporter.by_period(fy_items or [], "month", "count")
+        _cf, _cc, _tf, _tc = [], [], 0, 0
+        for k, v in _mf.items():
+            _tf += v
+            _cf.append(f"{k}: {reporter.fmt_money(_tf)}")
+        for k, v in _mc.items():
+            _tc += v
+            _cc.append(f"{k}: {_tc}")
+        if _cf:
+            facts += (f"\n\nSECTION D — CUMULATIVE FY{CURRENT_FY} RUNNING TOTALS "
+                      "(through the end of each month): funding — "
+                      + "; ".join(_cf) + ". Awards — " + "; ".join(_cc) + ".")
         st.write(f"_{_stage('write')}_")
         q = (f"Write a weekly executive summary for Emory research leadership, "
              f"dated {datetime.now():%B %d, %Y}. Two parts: (1) THIS WEEK — how "
@@ -1367,9 +1423,12 @@ def run_exec_briefing():
              "the recent weekly pace — always splitting entirely new grants "
              "from renewals/continuations of existing grants; (2) FISCAL YEAR "
              "TO DATE — total awards and dollars (again noting the new-vs-"
-             "continuation mix), the leading institutes and mechanisms, and any "
-             "momentum or concentration worth flagging. Crisp and executive in "
-             "tone; many charts follow below, so keep the narrative tight.")
+             "continuation mix), the CUMULATIVE trajectory through the year "
+             "(how the running total has built month by month, citing the "
+             "cumulative running-total facts), the leading institutes and "
+             "mechanisms, and any momentum or concentration worth flagging. "
+             "Crisp and executive in tone; many charts follow below, so keep "
+             "the narrative tight.")
         ans, eng = _safe_report(q, facts)
         _prog.update(label="🔬 Briefing ready", state="complete", expanded=False)
     st.session_state.exec_brief = {
@@ -1410,10 +1469,21 @@ def _exec_charts(eb: dict) -> list:
     add("This week — funding by institute", aw.get("funding_by_ic"), "cat", money=True)
     add("This week — awards by mechanism", aw.get("by_activity"), "cat")
     af = reporter.aggregate(fy)
-    add(f"FY{CURRENT_FY} — funding by month",
-        reporter.by_period(fy, "month", "funding"), "time", money=True)
-    add(f"FY{CURRENT_FY} — new awards by month",
-        reporter.by_period(fy, "month", "count"), "time")
+    mo_f = reporter.by_period(fy, "month", "funding")
+    mo_c = reporter.by_period(fy, "month", "count")
+    add(f"FY{CURRENT_FY} — funding by month", mo_f, "time", money=True)
+    add(f"FY{CURRENT_FY} — new awards by month", mo_c, "time")
+
+    def _cum(d):
+        out, t = {}, 0
+        for k, v in d.items():
+            t += v
+            out[k] = t
+        return out
+
+    add(f"FY{CURRENT_FY} — cumulative funding through the year", _cum(mo_f),
+        "cum", money=True)
+    add(f"FY{CURRENT_FY} — cumulative awards through the year", _cum(mo_c), "cum")
     add(f"FY{CURRENT_FY} — funding by institute", af.get("funding_by_ic"),
         "cat", money=True)
     add(f"FY{CURRENT_FY} — awards by institute", af.get("by_ic"), "cat")
@@ -1480,7 +1550,7 @@ def build_exec_pdf(eb: dict) -> bytes:
                 money = str(series.name).startswith("Funding")
                 labels = [str(x)[:34] for x in series.index]
                 vals = list(series.values)
-                if kind == "time" and len(series) > 8:
+                if kind == "cum" or (kind == "time" and len(series) > 8):
                     ax.plot(labels, vals, color=navy, linewidth=2, marker="o",
                             markersize=4)
                     ax.tick_params(axis="x", rotation=45)
@@ -1793,14 +1863,21 @@ elif not st.session_state.get("ask_answer"):
 
     st.write("")
     # Smaller example buttons so the input box stands out. Examples are well-formed,
-    # so they skip the clarification check.
-    ex_cols = st.columns([1] + [2] * len(EXAMPLE_REPORTS) + [1])
-    for col, (label, q) in zip(ex_cols[1:-1], EXAMPLE_REPORTS):
+    # so they skip the clarification check. The set is sampled fresh each time the
+    # start screen comes up (and on ↻), so the ideas are always a little different.
+    if "ex_choices" not in st.session_state:
+        st.session_state.ex_choices = pick_examples()
+    _examples = st.session_state.ex_choices
+    ex_cols = st.columns([0.6] + [2] * len(_examples) + [0.5, 0.6])
+    for col, (label, q) in zip(ex_cols[1:-2], _examples):
         if col.button(label, use_container_width=True, key=f"ex_{label}"):
             st.session_state.pending_q = q
             st.session_state.run_ask = True
             st.session_state.skip_clarify = True
             st.rerun()
+    if ex_cols[-2].button("↻", key="ex_shuffle", help="Show different report ideas"):
+        st.session_state.pop("ex_choices", None)
+        st.rerun()
 
     # ---- Saved reports (this session) ----
     _saved = st.session_state.get("saved") or []
