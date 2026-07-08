@@ -75,6 +75,19 @@ def _scheduled_run_guards() -> str:
     return ""
 
 
+def _deliver_note(text: str, title: str, webhook: str, slack: str, only: str) -> None:
+    """Post a short operational note (quiet-day heartbeat / degraded-mode
+    warning) to the same chat channels the digest uses. Email is intentionally
+    skipped to avoid inbox noise. Never raises - a note must not break a run."""
+    try:
+        if slack and only in ("", "slack"):
+            notify.send_slack(slack, text, title=title)
+        if webhook and only in ("", "teams"):
+            notify.send_teams_summary(webhook, text, title=title)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Note delivery failed ({exc}).")
+
+
 def main() -> int:
     skip = _scheduled_run_guards()
     if skip:
@@ -103,6 +116,9 @@ def main() -> int:
     force = os.environ.get("DIGEST_FORCE", "").lower() in ("1", "true", "yes")
     if force:
         print("DIGEST_FORCE set: bypassing dedupe and once-per-day guard.")
+    # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
+    # handy for testing a single destination without spamming the others.
+    only = os.environ.get("DIGEST_ONLY", "").strip().lower()
     if not force and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
         print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
         return 0
@@ -133,6 +149,16 @@ def main() -> int:
         items = [i for i in items if i["id"] not in seen]
     if not items:
         print("Quiet window - no new relevant items; nothing to send.")
+        # Heartbeat: a quiet day should look different from a broken run, so
+        # post a one-line "ran, nothing new" note (real runs only, once per day).
+        if not force:
+            _deliver_note(
+                f"✅ FedWatch ran — no new federal research-policy items today ({et_date} ET).",
+                title=f"FedWatch — all quiet ({et_date})",
+                webhook=webhook, slack=slack, only=only)
+            seen.add(sent_marker)
+            with open(seen_file, "w") as f:
+                json.dump(sorted(seen), f)
         return 0
     summary, engine = summarize.generate_summary(items, "Executive summary")
     cadence = "Daily" if days_back <= 3 else "Weekly"
@@ -163,9 +189,6 @@ def main() -> int:
     brief = summarize.govt_affairs_brief(items)
     gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
 
-    # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
-    # handy for testing a single destination without spamming the others.
-    only = os.environ.get("DIGEST_ONLY", "").strip().lower()
     if webhook and only in ("", "teams"):
         notify.send_teams_summary(webhook, summary, title=title, extra_md=gov_md)
         print(f"Teams: {cadence.lower()} digest posted.")
@@ -183,6 +206,19 @@ def main() -> int:
             items, summary_md=summary, title=title,
         )
         print("Email: weekly digest sent.")
+
+    # Degraded-mode warning: the digest still went out, but if Claude was
+    # configured yet unreachable (credits/outage) the analysis fell back to a
+    # plain template - flag that so it never silently degrades.
+    if engine == "template" and summarize.claude_available():
+        _deliver_note(
+            "⚠️ FedWatch: AI analysis was unavailable this run (likely an Anthropic "
+            "API error - check credits). The digest above is a basic template; the "
+            "executive summary, Emory-impact, and government-affairs sections are "
+            "degraded until it is restored.",
+            title="FedWatch - AI analysis unavailable",
+            webhook=webhook, slack=slack, only=only)
+        print("Degraded-mode warning posted.")
 
     # A forced test run must NOT touch the dedupe state: writing the sent
     # marker (or item ids) would make the real scheduled digest think it
