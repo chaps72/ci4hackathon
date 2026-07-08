@@ -562,6 +562,13 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "ALWAYS begin your answer by stating the fiscal year(s) or date window the "
         "data covers (e.g. 'FY2026:' or 'April–May 2026:'), so the reader knows the "
         "period. NIH RePORTER project data only goes back to FY1985. "
+        "TERMINOLOGY: NIH 'new awards' in a window are award NOTICES — a mix of "
+        "entirely new grants (Type 1) and renewals/continuations of existing "
+        "grants entering a new cycle or budget year. Whenever you report 'new "
+        "awards' (counts or dollars), ALWAYS clarify the composition using the "
+        "award-composition facts — e.g. '42 award notices: 15 entirely new "
+        "grants, 27 renewals/continuations of existing grants' — never imply "
+        "they are all brand-new. "
         "FORMATTING: do NOT use markdown headings (#, ##, ###); use short **bold** "
         "lead-ins and bullets, keep it clean. The request has already been "
         "clarified if needed, so just answer it. "
@@ -572,7 +579,9 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "comparison). One sentence, no list."
         f"{context}\n\n"
         f"User request:\n{question}\n\n"
-        f"Dataset facts:\n{facts_md}"
+        # Defensive cap: multi-section facts (e.g. the exec briefing) must
+        # never push the request over the model's context limit.
+        f"Dataset facts:\n{(facts_md or '')[:100000]}"
     )
     response = client.messages.create(
         model=MODEL, max_tokens=2048, thinking={"type": "adaptive"},
