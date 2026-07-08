@@ -41,11 +41,11 @@ enum LabSceneBuilder {
         root.children.removeAll()
         root.transform = .identity
 
-        // The room is built around the origin (floor at y = 0).
+        // A clean, bright room built around the origin (floor at y = 0).
         root.addChild(makeRoom())
-        root.addChild(makeBackCounter())
 
-        // Everything you work with sits on a bench in front of you.
+        // Everything you work with sits on a bench in front of you, laid out
+        // left → right: the two source vials, the tube, then the pipette.
         let bench = Entity()
         bench.position = benchGroupOffset
         bench.addChild(makeWorkbench())
@@ -55,7 +55,7 @@ enum LabSceneBuilder {
         bench.addChild(makeEppendorf(liquids: eppendorfLiquids))
 
         let panel = makeGuidancePanel(text: guidance)
-        panel.position = [0, benchTopY + 0.34, -0.13]
+        panel.position = [0, benchTopY + 0.36, -0.16]
         bench.addChild(panel)
         root.addChild(bench)
     }
@@ -67,78 +67,26 @@ enum LabSceneBuilder {
         let size: Float = 6.0
         let height: Float = 3.0
 
-        // Floor and ceiling.
-        let floor = box(size, 0.04, size, unlit(0.46, 0.49, 0.53))
+        let floor = box(size, 0.04, size, unlit(0.55, 0.56, 0.60))
         floor.position = [0, -0.02, 0]
         room.addChild(floor)
 
-        let ceiling = box(size, 0.04, size, unlit(0.90, 0.91, 0.93))
+        let ceiling = box(size, 0.04, size, unlit(0.97, 0.97, 0.98))
         ceiling.position = [0, height, 0]
         room.addChild(ceiling)
 
-        // Four walls (pale clinical blue-grey).
-        let wallColor = unlit(0.80, 0.84, 0.88)
+        // Soft, light walls.
+        let wallColor = unlit(0.90, 0.92, 0.95)
         let back = box(size, height, 0.06, wallColor)
         back.position = [0, height / 2, -size / 2]
         room.addChild(back)
-
-        let front = box(size, height, 0.06, wallColor)
-        front.position = [0, height / 2, size / 2]
-        room.addChild(front)
-
         let left = box(0.06, height, size, wallColor)
         left.position = [-size / 2, height / 2, 0]
         room.addChild(left)
-
         let right = box(0.06, height, size, wallColor)
         right.position = [size / 2, height / 2, 0]
         room.addChild(right)
-
-        // Ceiling light panels (bright, to read as a lab).
-        let panel = unlit(1.0, 1.0, 0.97)
-        for x: Float in [-1.3, 1.3] {
-            for z: Float in [-1.2, 1.2] {
-                let p = box(1.1, 0.04, 0.45, panel)
-                p.position = [x, height - 0.03, z]
-                room.addChild(p)
-            }
-        }
         return room
-    }
-
-    /// A back counter with a little decorative glassware for atmosphere.
-    private static func makeBackCounter() -> Entity {
-        let group = Entity()
-        let z: Float = -2.55
-
-        let cabinet = box(4.0, 0.9, 0.6, unlit(0.74, 0.76, 0.78))
-        cabinet.position = [0, 0.45, z]
-        group.addChild(cabinet)
-
-        let top = box(4.1, 0.06, 0.65, unlit(0.22, 0.24, 0.27))
-        top.position = [0, 0.93, z]
-        group.addChild(top)
-
-        // Decorative beakers/flasks with colored contents.
-        let contents: [ReagentColor] = [
-            ReagentColor(r: 0.30, g: 0.78, b: 0.45),
-            ReagentColor(r: 0.90, g: 0.32, b: 0.32),
-            ReagentColor(r: 0.25, g: 0.55, b: 0.95),
-            ReagentColor(r: 0.98, g: 0.82, b: 0.20),
-        ]
-        for (i, c) in contents.enumerated() {
-            let x = -1.2 + Float(i) * 0.8
-            let beaker = box(0.16, 0.22, 0.16, glassy())
-            beaker.position = [x, 1.07, z]
-            let liquid = ModelEntity(
-                mesh: .generateBox(width: 0.14, height: 0.12, depth: 0.14, cornerRadius: 0.01),
-                materials: [unlit(c)]
-            )
-            liquid.position = [0, -0.04, 0]
-            beaker.addChild(liquid)
-            group.addChild(beaker)
-        }
-        return group
     }
 
     // MARK: - Workbench
@@ -146,30 +94,30 @@ enum LabSceneBuilder {
     private static func makeWorkbench() -> Entity {
         let bench = Entity()
 
-        let cabinet = box(1.7, benchTopY - 0.06, 0.7, unlit(0.78, 0.80, 0.82))
+        let cabinet = box(1.5, benchTopY - 0.06, 0.7, unlit(0.86, 0.87, 0.89))
         cabinet.position = [0, (benchTopY - 0.06) / 2, 0]
         bench.addChild(cabinet)
 
-        // Dark stainless worktop.
-        let top = box(1.8, 0.06, 0.78, unlit(0.20, 0.22, 0.25))
-        top.position = [0, benchTopY - 0.03, 0]
+        // Light worktop.
+        let top = box(1.6, 0.05, 0.78, unlit(0.93, 0.94, 0.95))
+        top.position = [0, benchTopY - 0.025, 0]
         bench.addChild(top)
         return bench
     }
 
-    // MARK: - Reagent rack + bottles
+    // MARK: - Source vials
 
     private static func makeReagentRack(model: LabModel) -> Entity {
         let rack = Entity()
         let count = model.steps.count
-        let spacing: Float = 0.17
-        let startX = -spacing * Float(count - 1) / 2.0
-        let rowZ: Float = -0.14
+        let spacing: Float = 0.16
+        let centerX: Float = -0.24        // sit the vials on the left
+        let startX = centerX - spacing * Float(count - 1) / 2.0
+        let rowZ: Float = -0.02
 
-        // A holder block the bottles sit in.
-        let holder = box(spacing * Float(count) + 0.05, 0.03, 0.12,
-                         unlit(0.32, 0.34, 0.38))
-        holder.position = [0, benchTopY + 0.015, rowZ]
+        let holder = box(spacing * Float(count) + 0.06, 0.03, 0.11,
+                         unlit(0.40, 0.42, 0.46))
+        holder.position = [centerX, benchTopY + 0.015, rowZ]
         rack.addChild(holder)
 
         for (index, step) in model.steps.enumerated() {
@@ -427,7 +375,7 @@ enum LabSceneBuilder {
             let totalHeight = layerHeight * Float(dispensed.count)
             let blob = ModelEntity(
                 mesh: .generateCylinder(height: totalHeight, radius: 0.014),
-                materials: [unlit(dispensed.blendedColor)]
+                materials: [unlit(LabProtocol.productColor)]
             )
             blob.position = [0, 0.004 + totalHeight / 2, 0]
             container.addChild(blob)
@@ -476,39 +424,6 @@ enum LabSceneBuilder {
             current = e.parent
         }
         return .none
-    }
-
-    /// True if the entity (or an ancestor) is the pipette.
-    static func isPipette(_ entity: Entity) -> Bool {
-        var current: Entity? = entity
-        while let e = current {
-            if e.name == pipetteName { return true }
-            current = e.parent
-        }
-        return false
-    }
-
-    /// The reagent bottle or tube nearest a world-space point (the pipette tip),
-    /// within `threshold` meters — used to detect dipping.
-    static func target(near worldPos: SIMD3<Float>,
-                       in root: Entity,
-                       threshold: Float = 0.2) -> Hit {
-        var best: (hit: Hit, dist: Float)?
-
-        func consider(_ entity: Entity, _ hit: Hit) {
-            let d = simd_distance(entity.position(relativeTo: nil), worldPos)
-            if d <= threshold, best == nil || d < best!.dist { best = (hit, d) }
-        }
-        func walk(_ entity: Entity) {
-            if entity.name == tubeName {
-                consider(entity, .tube)
-            } else if entity.name.hasPrefix(reagentPrefix) {
-                consider(entity, .reagent(String(entity.name.dropFirst(reagentPrefix.count))))
-            }
-            for child in entity.children { walk(child) }
-        }
-        walk(root)
-        return best?.hit ?? .none
     }
 
     // MARK: - Helpers
