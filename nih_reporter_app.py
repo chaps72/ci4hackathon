@@ -855,6 +855,59 @@ def plot_series(series: pd.Series, kind: str):
                          height=max(160, 30 * len(series)))
 
 
+# NIH fiscal year starts Oct 1, so months run Oct -> Sep.
+FISCAL_MONTHS = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May",
+                 "Jun", "Jul", "Aug", "Sep"]
+# Distinct series colors for the FY-comparison lines (entity-stable, newest first).
+_FY_COLORS = [EMORY_BLUE, EMORY_BRAND_GOLD, "#8a94ad", "#5b7bb5", "#9aa7c7"]
+
+
+def _fiscal_cumulative(items: list, metric: str, upto_pos: int = 11) -> list:
+    """Cumulative running total by fiscal month (Oct..Sep) for a single FY's
+    awards. Returns 12 values; positions after ``upto_pos`` are dropped so the
+    in-progress current year doesn't draw a flat tail to September."""
+    buckets = [0] * 12
+    for it in items:
+        d = it.get("award_date") or ""
+        try:
+            mo = int(d[5:7])
+        except (ValueError, IndexError):
+            continue
+        pos = (mo - 10) % 12  # Oct->0 ... Sep->11
+        buckets[pos] += (int(it.get("amount") or 0) if metric == "funding" else 1)
+    cum, t = [], 0
+    for b in buckets:
+        t += b
+        cum.append(t)
+    return cum[:upto_pos + 1]
+
+
+def plot_multiline(df_long: pd.DataFrame, money: bool, height: int = 320):
+    """Non-interactive multi-series line chart (one line per fiscal year),
+    x-axis ordered Oct..Sep. Used for the cumulative FY-vs-FY pace charts."""
+    import altair as alt
+    yfmt = alt.Axis(format="$~s") if money else alt.Axis(format="~s")
+    name = "Funding ($)" if money else "Awards"
+    try:
+        ch = alt.Chart(df_long).mark_line(
+            strokeWidth=2, point=alt.OverlayMarkDef(size=40)
+        ).encode(
+            x=alt.X("month:N", sort=FISCAL_MONTHS, title=None,
+                    axis=alt.Axis(labelAngle=0)),
+            y=alt.Y("value:Q", title=name, axis=yfmt),
+            color=alt.Color("FY:N", title=None, sort="descending",
+                            scale=alt.Scale(range=_FY_COLORS),
+                            legend=alt.Legend(orient="top")),
+            tooltip=["FY:N", "month:N",
+                     alt.Tooltip("value:Q", title=name,
+                                 format="$,.0f" if money else ",.0f")])
+        st.altair_chart(ch.properties(height=height), use_container_width=True)
+    except Exception:  # noqa: BLE001 - fall back to a pivoted built-in line chart
+        piv = df_long.pivot(index="month", columns="FY",
+                            values="value").reindex(FISCAL_MONTHS)
+        st.line_chart(piv, height=height)
+
+
 def _view_series(dim: str, items: list, agg: dict, is_funding: bool):
     """Build one chart's data for a dimension. Returns (series, kind, title) —
     kind is 'time' or 'cat' — or None when there's nothing to plot."""
@@ -1391,6 +1444,15 @@ def run_exec_briefing():
             st.error(f"NIH RePORTER is unreachable right now ({fy_err}).")
             _prog.update(label="Briefing unavailable", state="error")
             return
+        # Prior fiscal years, pulled one at a time so each carries that year's
+        # own funding/dates — for the cumulative FY-vs-FY pace comparison.
+        fy_by_year = {CURRENT_FY: fy_items or []}
+        for _py in (CURRENT_FY - 1, CURRENT_FY - 2):
+            _pit, _perr = reporter.fetch_awards(
+                org_names=[reporter.DEFAULT_ORG], use_award_window=False,
+                fiscal_years=[_py], limit=8000)
+            if not _perr and _pit:
+                fy_by_year[_py] = _pit
         week_items = [it for it in (wk_all or [])
                       if _within_days(it.get("award_date"), 7)]
         st.write(f"_{_stage('crunch')}_")
@@ -1415,6 +1477,24 @@ def run_exec_briefing():
             facts += (f"\n\nSECTION D — CUMULATIVE FY{CURRENT_FY} RUNNING TOTALS "
                       "(through the end of each month): funding — "
                       + "; ".join(_cf) + ". Awards — " + "; ".join(_cc) + ".")
+        # Cumulative FY-vs-FY pace: where this year stands versus prior years at
+        # the SAME point in the fiscal year, plus prior full-year totals.
+        _pos_today = (datetime.now().month - 10) % 12
+        if len(fy_by_year) > 1:
+            _at_pt, _full = [], []
+            for _y in sorted(fy_by_year):
+                _cy = _fiscal_cumulative(fy_by_year[_y], "funding", 11)
+                _same = _cy[_pos_today] if _pos_today < len(_cy) else _cy[-1]
+                _at_pt.append(f"FY{_y}: {reporter.fmt_money(_same)}")
+                if _y != CURRENT_FY:
+                    _full.append(f"FY{_y}: {reporter.fmt_money(_cy[-1])}")
+            facts += (
+                f"\n\nSECTION E — CUMULATIVE FY-VS-FY PACE. Through fiscal month "
+                f"'{FISCAL_MONTHS[_pos_today]}' (the current point in the year), "
+                "cumulative funding by fiscal year is: " + "; ".join(_at_pt)
+                + ". Prior-year FULL-year totals for reference: "
+                + "; ".join(_full) + ". Use this to state whether FY"
+                f"{CURRENT_FY} is running AHEAD of or BEHIND prior years' pace.")
         st.write(f"_{_stage('write')}_")
         q = (f"Write a weekly executive summary for Emory research leadership, "
              f"dated {datetime.now():%B %d, %Y}. Two parts: (1) THIS WEEK — how "
@@ -1425,15 +1505,17 @@ def run_exec_briefing():
              "TO DATE — total awards and dollars (again noting the new-vs-"
              "continuation mix), the CUMULATIVE trajectory through the year "
              "(how the running total has built month by month, citing the "
-             "cumulative running-total facts), the leading institutes and "
-             "mechanisms, and any momentum or concentration worth flagging. "
-             "Crisp and executive in tone; many charts follow below, so keep "
-             "the narrative tight.")
+             "cumulative running-total facts), and — importantly — whether "
+             f"FY{CURRENT_FY} is running AHEAD of or BEHIND prior years' pace "
+             "at this same point in the year (cite the FY-vs-FY pace facts and "
+             "give the dollar gap); then the leading institutes and mechanisms, "
+             "and any momentum or concentration worth flagging. Crisp and "
+             "executive in tone; many charts follow below, so keep it tight.")
         ans, eng = _safe_report(q, facts)
         _prog.update(label="🔬 Briefing ready", state="complete", expanded=False)
     st.session_state.exec_brief = {
         "summary": ans, "engine": eng, "wk": wk_all or [],
-        "week": week_items, "fy": fy_items or [],
+        "week": week_items, "fy": fy_items or [], "fy_by_year": fy_by_year,
         "note": (f"Recent-weeks pull failed ({wk_err})." if wk_err else
                  f"FY pull failed ({fy_err})." if fy_err else ""),
         "date": datetime.now().strftime("%B %d, %Y"),
@@ -1484,6 +1566,25 @@ def _exec_charts(eb: dict) -> list:
     add(f"FY{CURRENT_FY} — cumulative funding through the year", _cum(mo_f),
         "cum", money=True)
     add(f"FY{CURRENT_FY} — cumulative awards through the year", _cum(mo_c), "cum")
+
+    # Cumulative FY-vs-FY pace: one line per fiscal year (current year to date,
+    # prior years full), so you can see if this year is ahead of or behind pace.
+    fy_by_year = eb.get("fy_by_year") or {}
+    if len(fy_by_year) > 1:
+        pos_today = (datetime.now().month - 10) % 12
+        for metric, money, title in (
+                ("funding", True, f"Cumulative funding — FY{CURRENT_FY} vs prior years"),
+                ("count", False, f"Cumulative awards — FY{CURRENT_FY} vs prior years")):
+            rows = []
+            for y in sorted(fy_by_year, reverse=True):
+                upto = pos_today if y == CURRENT_FY else 11
+                cum = _fiscal_cumulative(fy_by_year[y], metric, upto)
+                for pos, val in enumerate(cum):
+                    rows.append({"month": FISCAL_MONTHS[pos], "FY": f"FY{y}",
+                                 "value": val})
+            if rows:
+                charts.append((title, pd.DataFrame(rows), "cumcmp"))
+
     add(f"FY{CURRENT_FY} — funding by institute", af.get("funding_by_ic"),
         "cat", money=True)
     add(f"FY{CURRENT_FY} — awards by institute", af.get("by_ic"), "cat")
@@ -1546,11 +1647,32 @@ def build_exec_pdf(eb: dict) -> bytes:
             fig, axes = plt.subplots(2, 1, figsize=(8.5, 11))
             fig.subplots_adjust(hspace=0.55, left=0.22, right=0.94,
                                 top=0.93, bottom=0.08)
-            for ax, (title, series, kind) in zip(axes, charts[i:i + 2]):
-                money = str(series.name).startswith("Funding")
-                labels = [str(x)[:34] for x in series.index]
-                vals = list(series.values)
-                if kind == "cum" or (kind == "time" and len(series) > 8):
+            _fy_pal = ["#012169", "#f2a900", "#8a94ad", "#5b7bb5", "#9aa7c7"]
+            for ax, (title, payload, kind) in zip(axes, charts[i:i + 2]):
+                money = "funding" in title.lower()
+                if kind == "cumcmp":
+                    # One line per fiscal year, ordered Oct..Sep.
+                    for ci, fy_lbl in enumerate(
+                            sorted(payload["FY"].unique(), reverse=True)):
+                        sub = payload[payload["FY"] == fy_lbl]
+                        sub = sub.set_index("month").reindex(
+                            FISCAL_MONTHS).dropna()
+                        ax.plot(list(sub.index), list(sub["value"]),
+                                color=_fy_pal[ci % len(_fy_pal)], linewidth=2,
+                                marker="o", markersize=3, label=fy_lbl)
+                    ax.tick_params(axis="x", rotation=45)
+                    if money:
+                        ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+                    ax.legend(fontsize=7, frameon=False)
+                    ax.set_title(title, color=navy, fontsize=12,
+                                 fontweight="bold", loc="left", pad=12)
+                    for s in ("top", "right"):
+                        ax.spines[s].set_visible(False)
+                    ax.tick_params(colors=ink, labelsize=8)
+                    continue
+                labels = [str(x)[:34] for x in payload.index]
+                vals = list(payload.values)
+                if kind == "cum" or (kind == "time" and len(payload) > 8):
                     ax.plot(labels, vals, color=navy, linewidth=2, marker="o",
                             markersize=4)
                     ax.tick_params(axis="x", rotation=45)
@@ -1598,10 +1720,13 @@ def render_exec_brief():
     charts = _exec_charts(eb)
     st.markdown(f"### The week and the year in {len(charts)} graphs")
     cols = st.columns(2)
-    for i, (title, series, kind) in enumerate(charts):
+    for i, (title, payload, kind) in enumerate(charts):
         with cols[i % 2]:
             st.markdown(f"**{title}**")
-            plot_series(series, kind)
+            if kind == "cumcmp":
+                plot_multiline(payload, money="funding" in title.lower())
+            else:
+                plot_series(payload, kind)
     # Build the full PDF once per briefing (summary + every chart); the button
     # is then an instant download. Degrades to Markdown-only if the build fails.
     if "pdf" not in eb:
