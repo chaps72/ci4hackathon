@@ -600,8 +600,10 @@ def generate_summary(items: list, style: str = "Executive summary",
     if claude_available():
         try:
             return _claude_summary(items, style, extra_instructions), "claude"
-        except Exception:  # noqa: BLE001 - fall back rather than break the dashboard
-            pass
+        except Exception as exc:  # noqa: BLE001 - fall back rather than break the dashboard
+            import sys
+            print(f"[summarize] Claude summary failed, using template: "
+                  f"{type(exc).__name__}: {exc}", file=sys.stderr)
     return _template_summary(items, style), "template"
 
 
