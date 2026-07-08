@@ -32,6 +32,28 @@ def _safe_url(url: str) -> str:
     return url if url.startswith(("http://", "https://")) else ""
 
 
+def _deadline_badges(it: dict, e) -> str:
+    """Small colored pills for an action deadline and/or comment opportunity,
+    drawn from the Federal Register structured fields. '' when neither applies."""
+    pills = []
+    if it.get("comment_due"):
+        pills.append(('#c0392b', f'⏰ Comment due {e(it["comment_due"])}'))
+    elif it.get("effective_on"):
+        pills.append((EMORY_LIGHT_BLUE, f'⏰ Effective {e(it["effective_on"])}'))
+    if it.get("comment_opportunity"):
+        link = _safe_url(it.get("comment_url", "")) or _safe_url(it.get("url", ""))
+        label = "💬 Comment opportunity"
+        text = f'<a href="{e(link)}" style="color:#ffffff;text-decoration:none;">{label}</a>' if link else label
+        pills.append((EMORY_GOLD, text))
+    if not pills:
+        return ""
+    spans = "".join(
+        f'<span style="display:inline-block;background:{c};color:#ffffff;'
+        f'font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;'
+        f'margin:4px 6px 0 0;">{t}</span>' for c, t in pills)
+    return f'<div style="padding-top:4px;">{spans}</div>'
+
+
 def build_plain_text(items: list, summary_md: str = "", title: str = "Federal Research Update") -> str:
     lines = [title, "=" * len(title),
              f"Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}", ""]
@@ -77,7 +99,8 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
                 f'<div style="font-weight:bold;">{title_html}</div>'
                 f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
                 f'{e(it.get("date", ""))} &middot; {e(it.get("source", ""))}</div>'
-                f'<div style="padding-top:3px;">{e((it.get("summary") or "")[:400])}</div>'
+                + _deadline_badges(it, e)
+                + f'<div style="padding-top:3px;">{e((it.get("summary") or "")[:400])}</div>'
                 + (f'<div style="padding-top:6px;background:#eef1f7;border-radius:4px;'
                    f'padding:8px 10px;margin-top:6px;font-size:12px;">'
                    f'<b style="color:{EMORY_BLUE};">Emory impact</b>'

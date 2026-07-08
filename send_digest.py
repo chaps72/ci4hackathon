@@ -75,6 +75,39 @@ def _scheduled_run_guards() -> str:
     return ""
 
 
+def _deadlines_section(items: list, max_items: int = 8) -> str:
+    """A compact 'Deadlines & comment opportunities' block from the structured
+    Federal Register fields. Lists items with a comment-close/effective date or
+    that are open for public comment (proposed rules / RFIs). '' when none."""
+    rows = []
+    for it in items:
+        comment_due = it.get("comment_due")
+        effective = it.get("effective_on")
+        is_comment = it.get("comment_opportunity")
+        if not (comment_due or effective or is_comment):
+            continue
+        bits = []
+        if comment_due:
+            bits.append(f"⏰ comment due {comment_due}")
+        elif effective:
+            bits.append(f"⏰ effective {effective}")
+        if is_comment:
+            link = it.get("comment_url") or it.get("url") or ""
+            bits.append(f"💬 comment{f': {link}' if link else ''}")
+        rows.append(f"- {(it.get('title') or '')[:100]} — " + " · ".join(bits))
+        if len(rows) >= max_items:
+            break
+    return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
+
+
+def _prune_history(history: list, days: int = 21) -> list:
+    """Keep only history entries within the last `days` (ISO dates sort
+    lexically, so a string compare is enough); drop undated entries."""
+    from datetime import timedelta
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    return [h for h in history if (h.get("date") or "") >= cutoff]
+
+
 def _deliver_note(text: str, title: str, webhook: str, slack: str, only: str) -> None:
     """Post a short operational note (quiet-day heartbeat / degraded-mode
     warning) to the same chat channels the digest uses. Email is intentionally
@@ -109,6 +142,15 @@ def main() -> int:
             seen = set(json.load(f))
     except (FileNotFoundError, ValueError):
         seen = set()
+    # Rolling item history (~3 weeks) for trend threading across digests.
+    hist_file = os.environ.get("DIGEST_HISTORY_FILE", ".fedwatch_history.json")
+    try:
+        with open(hist_file) as f:
+            history = json.load(f)
+        if not isinstance(history, list):
+            history = []
+    except (FileNotFoundError, ValueError):
+        history = []
     et_date = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
     sent_marker = f"sent:{et_date}"
     # DIGEST_FORCE (manual "force" dispatch input) resends today's items even if
@@ -185,15 +227,21 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
         print(f"Page write failed ({exc}); sending without link.")
 
-    # A short government-affairs roundup pinned to the bottom of the message.
+    # Bottom-of-message sections, in order: deadlines/comment opportunities
+    # (from FR structured fields), a trend note (today vs the rolling history),
+    # then the government-affairs roundup.
+    deadlines_md = _deadlines_section(items)
+    trend = summarize.trend_note(items, history)  # `history` is the log BEFORE today
+    trend_md = f"📈 Trend watch\n{trend}" if trend else ""
     brief = summarize.govt_affairs_brief(items)
     gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
+    extra_md = "\n\n".join(s for s in (deadlines_md, trend_md, gov_md) if s)
 
     if webhook and only in ("", "teams"):
-        notify.send_teams_summary(webhook, summary, title=title, extra_md=gov_md)
+        notify.send_teams_summary(webhook, summary, title=title, extra_md=extra_md)
         print(f"Teams: {cadence.lower()} digest posted.")
     if slack and only in ("", "slack"):
-        notify.send_slack(slack, summary, title=title, extra_md=gov_md)
+        notify.send_slack(slack, summary, title=title, extra_md=extra_md)
         print(f"Slack: {cadence.lower()} digest posted.")
     if smtp_host and only in ("", "email"):
         notify.send_email(
@@ -228,6 +276,14 @@ def main() -> int:
         seen.add(sent_marker)  # once-per-day guard for the twin crons
         with open(seen_file, "w") as f:
             json.dump(sorted(seen), f)
+        # Append today's items to the rolling history (for trend threading) and
+        # prune to the retention window.
+        history.extend({
+            "id": i.get("id"), "date": i.get("date"), "agency": i.get("agency"),
+            "title": i.get("title"), "level": i.get("level"),
+        } for i in items)
+        with open(hist_file, "w") as f:
+            json.dump(_prune_history(history), f)
     else:
         print("Forced test run: not updating dedupe/seen-state.")
     return 0

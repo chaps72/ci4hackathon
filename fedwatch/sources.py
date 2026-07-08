@@ -76,6 +76,34 @@ def _norm_date(value: str) -> str:
     return value[:10]
 
 
+def _fr_item(doc: dict, agency: str) -> dict:
+    """Build a normalized item from a Federal Register API document, including
+    the structured action-date / comment-docket fields (used for deadline flags
+    and comment-opportunity tagging)."""
+    doc_type = doc.get("type", "Document")
+    comment_due = _norm_date(doc.get("comments_close_on") or "")
+    effective_on = _norm_date(doc.get("effective_on") or "")
+    docket_ids = doc.get("docket_ids") or []
+    # A comment opportunity: comments are open (a close date exists) or it is a
+    # proposed rule (which by law carries a comment period).
+    comment_open = bool(comment_due) or doc_type == "Proposed Rule"
+    return {
+        "id": f"fr-{doc.get('document_number')}",
+        "source": "Federal Register",
+        "agency": agency,
+        "title": doc.get("title", ""),
+        "summary": doc.get("abstract") or "",
+        "url": doc.get("html_url", ""),
+        "date": _norm_date(doc.get("publication_date", "")),
+        "type": doc_type,
+        "comment_due": comment_due,
+        "effective_on": effective_on,
+        "comment_opportunity": comment_open,
+        "comment_url": doc.get("regulations_dot_gov_url") or "",
+        "docket": docket_ids[0] if docket_ids else "",
+    }
+
+
 def fetch_federal_register(days_back: int = 14, errors: list | None = None,
                            terms: str | None = None) -> list:
     """Federal Register public API (no key required)."""
@@ -89,7 +117,9 @@ def fetch_federal_register(days_back: int = 14, errors: list | None = None,
                 "per_page": 40,
                 "order": "newest",
                 "fields[]": ["title", "abstract", "html_url", "publication_date",
-                             "agencies", "type", "document_number"],
+                             "agencies", "type", "document_number",
+                             "comments_close_on", "effective_on", "docket_ids",
+                             "regulations_dot_gov_url"],
             },
             headers=FETCH_HEADERS,
             timeout=TIMEOUT,
@@ -99,16 +129,7 @@ def fetch_federal_register(days_back: int = 14, errors: list | None = None,
         for doc in resp.json().get("results", []):
             agencies = doc.get("agencies") or []
             agency = agencies[0].get("name", "Unknown") if agencies else "Unknown"
-            items.append({
-                "id": f"fr-{doc.get('document_number')}",
-                "source": "Federal Register",
-                "agency": agency,
-                "title": doc.get("title", ""),
-                "summary": doc.get("abstract") or "",
-                "url": doc.get("html_url", ""),
-                "date": _norm_date(doc.get("publication_date", "")),
-                "type": doc.get("type", "Document"),
-            })
+            items.append(_fr_item(doc, agency))
         return items
     except Exception as e:  # noqa: BLE001 - fail soft by design
         if errors is not None:
@@ -332,7 +353,9 @@ def fetch_fr_key_agencies(days_back: int = 14, errors: list | None = None) -> li
                 "per_page": 40,
                 "order": "newest",
                 "fields[]": ["title", "abstract", "html_url", "publication_date",
-                             "agencies", "type", "document_number"],
+                             "agencies", "type", "document_number",
+                             "comments_close_on", "effective_on", "docket_ids",
+                             "regulations_dot_gov_url"],
             },
             headers=FETCH_HEADERS,
             timeout=TIMEOUT,
@@ -342,16 +365,7 @@ def fetch_fr_key_agencies(days_back: int = 14, errors: list | None = None) -> li
         for doc in resp.json().get("results", []):
             agencies = doc.get("agencies") or []
             agency = agencies[0].get("name", "Unknown") if agencies else "Unknown"
-            items.append({
-                "id": f"fr-{doc.get('document_number')}",
-                "source": "Federal Register",
-                "agency": agency,
-                "title": doc.get("title", ""),
-                "summary": doc.get("abstract") or "",
-                "url": doc.get("html_url", ""),
-                "date": _norm_date(doc.get("publication_date", "")),
-                "type": doc.get("type", "Document"),
-            })
+            items.append(_fr_item(doc, agency))
         return items
     except Exception as e:  # noqa: BLE001
         if errors is not None:

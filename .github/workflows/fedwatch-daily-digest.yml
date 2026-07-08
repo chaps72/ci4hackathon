@@ -37,7 +37,9 @@ jobs:
       - name: Restore digest seen-state
         uses: actions/cache@v4
         with:
-          path: .fedwatch_digest_seen.json
+          path: |
+            .fedwatch_digest_seen.json
+            .fedwatch_history.json
           key: fedwatch-digest-seen-${{ github.run_id }}
           restore-keys: fedwatch-digest-seen-
 

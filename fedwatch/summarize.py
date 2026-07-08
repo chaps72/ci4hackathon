@@ -674,6 +674,51 @@ def govt_affairs_brief(items: list) -> str:
         return ""
 
 
+def trend_note(items: list, history: list) -> str:
+    """1-2 sentence trend note connecting today's items to recent history.
+
+    history is a log of prior-digest items (~3 weeks) as dicts with date/agency/
+    title. Grounded strictly in the supplied history so it cannot invent a
+    trend; returns '' without an API key, without enough history, or when
+    today's items show no meaningful pattern.
+    """
+    if not items or not claude_available() or len(history) < 3:
+        return ""
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+
+        def _rows(seq):
+            return "\n".join(
+                f"- {h.get('date', '')} | {h.get('agency', '')} | {(h.get('title') or '')[:120]}"
+                for h in seq)
+
+        prompt = (
+            "You track federal research-policy trends for Emory University's research "
+            "office. Below are TODAY's items and a LOG of items from the past few weeks. "
+            "In 1-2 sentences, surface only a genuine PATTERN that connects today's items "
+            "to the log - a recurring theme (e.g. grant terminations, indirect-cost "
+            "actions, RFIs on grant caps), an escalation, or a repeated agency action - "
+            "and cite the count and timeframe from the log (e.g. '3rd termination notice "
+            "in two weeks'). If today's items show no meaningful pattern versus the log, "
+            "reply exactly: NONE. Never invent items that are not listed.\n\n"
+            f"TODAY:\n{_rows(items)}\n\nPAST WEEKS (log):\n{_rows(history[-80:])}"
+        )
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=400,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        if response.stop_reason == "refusal":
+            return ""
+        text = next((b.text for b in response.content if b.type == "text"), "").strip()
+        if not text or text.strip().upper().startswith("NONE"):
+            return ""
+        return text
+    except Exception:  # noqa: BLE001 - trend note is a bonus, never block delivery
+        return ""
+
+
 AI_CLASSIFY_GUIDANCE = """\
 You are triaging federal updates for the Senior Vice President for Research \
 (SVPR) and government affairs team at Emory University - a biomedical-heavy \
