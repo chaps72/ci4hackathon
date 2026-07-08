@@ -2,31 +2,25 @@ import RealityKit
 import UIKit
 import simd
 
-/// Builds and updates the 3D virtual lab: an enclosed room, a workbench, and the
-/// reagents / pipette / tube. Everything is generated procedurally from
-/// primitives and uses unlit materials, so it renders brightly and consistently
-/// in a fully immersive space (no external assets or scene lighting required).
+/// Builds and updates the 3D virtual lab. Solid surfaces use lit `SimpleMaterial`
+/// (shaded by the scene's directional lights) for a realistic look, while the
+/// liquids, labels, and guidance sign stay unlit so the informative bits are
+/// always clearly visible.
 enum LabSceneBuilder {
 
-    // Names used to identify what the user tapped / dragged.
+    // Names used to identify what the user tapped.
     static let reagentPrefix = "reagent:"
     static let tubeName = "eppendorf"
     static let pipetteName = "pipette"
     static let capName = "cap"
 
-    // Bench geometry (in the bench group's local space; the group sits in front
-    // of the user, so these Y values are roughly world height in meters).
     private static let benchTopY: Float = 0.99
-    // Pushed back so the app's control window (which floats near eye level)
-    // doesn't sit on top of the bench.
     private static let benchGroupOffset: SIMD3<Float> = [0, 0, -1.05]
 
-    // Cap rest / lifted positions, local to a bottle.
     private static let capClosedLocal: SIMD3<Float> = [0, 0.205, 0]
     private static let capOpenLocal: SIMD3<Float> = [0.05, 0.275, 0]
 
-    /// Resting position of the pipette on the bench (local to the bench group).
-    /// Raised so the tip clears the worktop when standing in its holder.
+    /// Resting position of the pipette (local to the bench group).
     static let pipetteHome: SIMD3<Float> = [0.46, benchTopY + 0.09, 0.06]
 
     // MARK: - Build
@@ -41,11 +35,9 @@ enum LabSceneBuilder {
         root.children.removeAll()
         root.transform = .identity
 
-        // A clean, bright room built around the origin (floor at y = 0).
+        root.addChild(makeLighting())
         root.addChild(makeRoom())
 
-        // Everything you work with sits on a bench in front of you, laid out
-        // left → right: the two source vials, the tube, then the pipette.
         let bench = Entity()
         bench.position = benchGroupOffset
         bench.addChild(makeWorkbench())
@@ -60,6 +52,26 @@ enum LabSceneBuilder {
         root.addChild(bench)
     }
 
+    // MARK: - Lighting
+
+    /// Three directional lights (key + two fills) give even, bright, shaded
+    /// lighting so nothing goes dark in the fully immersive space.
+    private static func makeLighting() -> Entity {
+        let lights = Entity()
+        let aim: SIMD3<Float> = [0, benchTopY, -1.05]
+
+        func directional(_ intensity: Float, from: SIMD3<Float>) {
+            let e = Entity()
+            e.components.set(DirectionalLightComponent(color: .white, intensity: intensity))
+            e.look(at: aim, from: from, upVector: [0, 1, 0], relativeTo: nil)
+            lights.addChild(e)
+        }
+        directional(4200, from: [1.6, 3.0, 0.6])    // key (upper right)
+        directional(2600, from: [-1.8, 2.4, 0.8])   // fill (upper left)
+        directional(2200, from: [0.0, 2.2, -2.6])   // back / rim
+        return lights
+    }
+
     // MARK: - Room
 
     private static func makeRoom() -> Entity {
@@ -67,23 +79,22 @@ enum LabSceneBuilder {
         let size: Float = 6.0
         let height: Float = 3.0
 
-        let floor = box(size, 0.04, size, unlit(0.55, 0.56, 0.60))
+        let floor = box(size, 0.04, size, surface(0.55, 0.56, 0.60, roughness: 0.9))
         floor.position = [0, -0.02, 0]
         room.addChild(floor)
 
-        let ceiling = box(size, 0.04, size, unlit(0.97, 0.97, 0.98))
+        let ceiling = box(size, 0.04, size, surface(0.97, 0.97, 0.98, roughness: 0.95))
         ceiling.position = [0, height, 0]
         room.addChild(ceiling)
 
-        // Soft, light walls.
-        let wallColor = unlit(0.90, 0.92, 0.95)
-        let back = box(size, height, 0.06, wallColor)
+        let wall = { surface(0.90, 0.92, 0.95, roughness: 0.9) }
+        let back = box(size, height, 0.06, wall())
         back.position = [0, height / 2, -size / 2]
         room.addChild(back)
-        let left = box(0.06, height, size, wallColor)
+        let left = box(0.06, height, size, wall())
         left.position = [-size / 2, height / 2, 0]
         room.addChild(left)
-        let right = box(0.06, height, size, wallColor)
+        let right = box(0.06, height, size, wall())
         right.position = [size / 2, height / 2, 0]
         room.addChild(right)
         return room
@@ -94,13 +105,14 @@ enum LabSceneBuilder {
     private static func makeWorkbench() -> Entity {
         let bench = Entity()
 
-        let cabinet = box(1.5, benchTopY - 0.06, 0.7, unlit(0.86, 0.87, 0.89))
+        let cabinet = box(1.5, benchTopY - 0.06, 0.7, surface(0.86, 0.87, 0.89, roughness: 0.8))
         cabinet.position = [0, (benchTopY - 0.06) / 2, 0]
         bench.addChild(cabinet)
 
-        // Light worktop.
-        let top = box(1.6, 0.05, 0.78, unlit(0.93, 0.94, 0.95))
+        // Glossy worktop.
+        let top = box(1.6, 0.05, 0.78, surface(0.90, 0.91, 0.93, roughness: 0.28))
         top.position = [0, benchTopY - 0.025, 0]
+        top.components.set(GroundingShadowComponent(castsShadow: false))
         bench.addChild(top)
         return bench
     }
@@ -111,12 +123,12 @@ enum LabSceneBuilder {
         let rack = Entity()
         let count = model.steps.count
         let spacing: Float = 0.16
-        let centerX: Float = -0.24        // sit the vials on the left
+        let centerX: Float = -0.24
         let startX = centerX - spacing * Float(count - 1) / 2.0
         let rowZ: Float = -0.02
 
         let holder = box(spacing * Float(count) + 0.06, 0.03, 0.11,
-                         unlit(0.40, 0.42, 0.46))
+                         surface(0.36, 0.38, 0.42, roughness: 0.6))
         holder.position = [centerX, benchTopY + 0.015, rowZ]
         rack.addChild(holder)
 
@@ -137,8 +149,6 @@ enum LabSceneBuilder {
         return rack
     }
 
-    /// A labeled reagent bottle: glass body, colored contents, neck, a colored
-    /// cap (which lifts off when in use), and a printed label.
     private static func makeReagentBottle(reagent: Reagent) -> Entity {
         let bottle = Entity()
 
@@ -166,19 +176,17 @@ enum LabSceneBuilder {
         neck.position = [0, bodyHeight + 0.015, 0]
         bottle.addChild(neck)
 
-        // Cap — coloured to match, lifts off when the bottle is opened.
         let cap = ModelEntity(
             mesh: .generateCylinder(height: 0.03, radius: 0.018),
-            materials: [unlit(reagent.color.darker())]
+            materials: [litColor(reagent.color.darker(), roughness: 0.4)]
         )
         cap.position = capClosedLocal
         cap.name = capName
         bottle.addChild(cap)
 
-        // White label panel with the reagent name on it.
         let panel = ModelEntity(
             mesh: .generateBox(width: 0.05, height: 0.06, depth: 0.004, cornerRadius: 0.004),
-            materials: [unlit(0.97, 0.97, 0.97)]
+            materials: [surface(0.97, 0.97, 0.97, roughness: 0.7)]
         )
         panel.position = [0, 0.07, bodyRadius + 0.001]
         bottle.addChild(panel)
@@ -189,30 +197,27 @@ enum LabSceneBuilder {
         bottle.addChild(labelText)
 
         makeTappable(bottle, size: [0.1, 0.36, 0.1], center: [0, 0.11, 0])
+        bottle.components.set(GroundingShadowComponent(castsShadow: true))
         return bottle
     }
 
     // MARK: - Pipette
 
-    /// A micropipette built from primitives: plunger button, tip-ejector, an
-    /// ergonomic body with a volume window, a metal shaft, and a translucent
-    /// disposable tip. The origin sits where the tip meets the shaft (y = 0),
-    /// with the tip pointing down.
     private static func makePipette(into pipette: Entity, liquid: ModelEntity) -> Entity {
         pipette.children.removeAll()
 
-        let bodyWhite = unlit(0.93, 0.94, 0.96)
-        let accent = unlit(0.12, 0.45, 0.85)
-        let metal = unlit(0.55, 0.57, 0.60)
-        let darkGrey = unlit(0.20, 0.21, 0.24)
+        let bodyWhite = surface(0.94, 0.95, 0.97, roughness: 0.35)
+        let accent = litColor(ReagentColor(r: 0.12, g: 0.45, b: 0.85), roughness: 0.35)
+        let metal = surface(0.62, 0.64, 0.68, roughness: 0.25)
+        let darkGrey = surface(0.22, 0.23, 0.26, roughness: 0.4)
 
-        func part(_ mesh: MeshResource, _ material: UnlitMaterial, _ pos: SIMD3<Float>) {
+        func part(_ mesh: MeshResource, _ material: any Material, _ pos: SIMD3<Float>) {
             let e = ModelEntity(mesh: mesh, materials: [material])
             e.position = pos
             pipette.addChild(e)
         }
 
-        // Translucent disposable tip (cone pointing down from the origin).
+        // Translucent disposable tip.
         let tip = ModelEntity(
             mesh: .generateCone(height: 0.07, radius: 0.012),
             materials: [translucent(0.9, 0.93, 0.97, 0.35)]
@@ -221,7 +226,7 @@ enum LabSceneBuilder {
         tip.scale = [1, -1, 1]
         pipette.addChild(tip)
 
-        // Colored liquid drawn up into the tip; hidden until loaded.
+        // Colored liquid in the tip; hidden until loaded.
         liquid.model = ModelComponent(
             mesh: .generateCone(height: 0.045, radius: 0.009),
             materials: [unlit(0.7, 0.7, 0.72)]
@@ -231,58 +236,45 @@ enum LabSceneBuilder {
         liquid.isEnabled = false
         pipette.addChild(liquid)
 
-        // Thin metal shaft.
         part(.generateCylinder(height: 0.05, radius: 0.0055), metal, [0, 0.025, 0])
-
-        // Lower body (holds the volume window).
         part(.generateCylinder(height: 0.055, radius: 0.013), bodyWhite, [0, 0.075, 0])
         part(.generateBox(width: 0.017, height: 0.026, depth: 0.006, cornerRadius: 0.002),
              darkGrey, [0, 0.08, 0.013])
-
-        // Colored channel band.
         part(.generateCylinder(height: 0.013, radius: 0.0182), accent, [0, 0.108, 0])
-
-        // Upper ergonomic body / handle.
         part(.generateCylinder(height: 0.062, radius: 0.017), bodyWhite, [0, 0.14, 0])
-
-        // Finger hook at the back of the handle.
         part(.generateBox(width: 0.022, height: 0.04, depth: 0.012, cornerRadius: 0.003),
              bodyWhite, [0, 0.155, -0.022])
-
-        // Plunger shaft + button on top.
         part(.generateCylinder(height: 0.022, radius: 0.007), metal, [0, 0.182, 0])
         part(.generateCylinder(height: 0.02, radius: 0.015), accent, [0, 0.203, 0])
-
-        // Tip-ejector arm + button down the side.
         part(.generateBox(width: 0.006, height: 0.075, depth: 0.01, cornerRadius: 0.002),
              metal, [0.019, 0.13, 0])
         part(.generateCylinder(height: 0.016, radius: 0.008), darkGrey, [0.019, 0.185, 0])
 
         pipette.name = pipetteName
         makeTappable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
+        pipette.components.set(GroundingShadowComponent(castsShadow: true))
         pipette.position = pipetteHome
         return pipette
     }
 
-    /// A simple holder the pipette rests in.
     private static func makePipetteStand() -> Entity {
         let stand = Entity()
-        let standColor = unlit(0.30, 0.32, 0.36)
+        let standMat = { surface(0.32, 0.34, 0.38, roughness: 0.5) }
 
-        let base = box(0.1, 0.03, 0.1, standColor)
+        let base = box(0.1, 0.03, 0.1, standMat())
         base.position = [0.46, benchTopY + 0.015, 0.06]
         stand.addChild(base)
 
         let post = ModelEntity(
             mesh: .generateCylinder(height: 0.24, radius: 0.008),
-            materials: [standColor]
+            materials: [standMat()]
         )
         post.position = [0.46, benchTopY + 0.14, 0.015]
         stand.addChild(post)
 
         let cradle = ModelEntity(
             mesh: .generateBox(width: 0.05, height: 0.008, depth: 0.04, cornerRadius: 0.002),
-            materials: [standColor]
+            materials: [standMat()]
         )
         cradle.position = [0.46, benchTopY + 0.22, 0.04]
         stand.addChild(cradle)
@@ -292,16 +284,13 @@ enum LabSceneBuilder {
     // MARK: - Eppendorf tube
 
     private static func makeEppendorf(liquids: Entity) -> Entity {
-        // The tube entity's origin is placed at the tube base so distance-based
-        // drop detection lines up with where it actually appears.
         let tube = Entity()
         tube.name = tubeName
         tube.position = [0, benchTopY + 0.05, 0.2]
 
-        // A small stand just below the tube.
         let stand = ModelEntity(
             mesh: .generateBox(width: 0.07, height: 0.03, depth: 0.07, cornerRadius: 0.006),
-            materials: [unlit(0.30, 0.32, 0.36)]
+            materials: [surface(0.32, 0.34, 0.38, roughness: 0.5)]
         )
         stand.position = [0, -0.035, 0]
         tube.addChild(stand)
@@ -324,7 +313,7 @@ enum LabSceneBuilder {
 
         let cap = ModelEntity(
             mesh: .generateCylinder(height: 0.014, radius: 0.019),
-            materials: [unlit(0.95, 0.95, 0.55)]
+            materials: [surface(0.95, 0.9, 0.4, roughness: 0.4)]
         )
         cap.position = [0, bodyHeight + 0.007, 0]
         tube.addChild(cap)
@@ -334,8 +323,9 @@ enum LabSceneBuilder {
         tube.addChild(liquids)
 
         makeTappable(tube, size: [0.1, 0.16, 0.1], center: [0, 0.03, 0])
+        tube.components.set(GroundingShadowComponent(castsShadow: true))
 
-        let label = makeTextEntity("Eppendorf tube", fontSize: 0.015,
+        let label = makeTextEntity("Reaction tube", fontSize: 0.015,
                                    color: .white, maxWidth: 0.2)
         label.position = [0, 0.12, 0]
         tube.addChild(label)
@@ -353,7 +343,6 @@ enum LabSceneBuilder {
         }
     }
 
-    /// Open or close a specific bottle's cap (the "uncap it" animation).
     static func setBottleOpen(id: String, in root: Entity, open: Bool) {
         guard let bottle = findEntity(named: reagentPrefix + id, in: root),
               let cap = bottle.children.first(where: { $0.name == capName })
@@ -363,8 +352,8 @@ enum LabSceneBuilder {
         cap.move(to: t, relativeTo: cap.parent, duration: 0.2)
     }
 
-    /// Rebuild the liquid inside the Eppendorf tube. While dispensing it shows
-    /// stacked colored layers; once mixed it becomes one blended column.
+    /// Rebuild the liquid inside the tube: stacked colored layers while
+    /// dispensing, one green column once mixed.
     static func refreshEppendorf(_ container: Entity, dispensed: [Reagent], mixed: Bool) {
         container.children.removeAll()
         guard !dispensed.isEmpty else { return }
@@ -394,7 +383,6 @@ enum LabSceneBuilder {
         }
     }
 
-    /// Briefly shake the tube's contents to suggest vortex-mixing.
     static func playMixAnimation(_ container: Entity) {
         let original = container.transform
         var shaken = original
@@ -413,7 +401,6 @@ enum LabSceneBuilder {
         case none
     }
 
-    /// Identify what the user tapped by walking up to a named ancestor.
     static func classifyTap(on entity: Entity) -> Hit {
         var current: Entity? = entity
         while let e = current {
@@ -436,7 +423,6 @@ enum LabSceneBuilder {
         return nil
     }
 
-    /// Make an entity reliably tappable (gaze + pinch) with a hover highlight.
     private static func makeTappable(_ entity: Entity,
                                      size: SIMD3<Float>,
                                      center: SIMD3<Float> = .zero) {
@@ -447,30 +433,27 @@ enum LabSceneBuilder {
         entity.components.set(HoverEffectComponent())
     }
 
-    /// Public lookup used by the view to animate the pipette toward a target.
     static func entity(named name: String, in root: Entity) -> Entity? {
         findEntity(named: name, in: root)
     }
 
     private static func box(_ w: Float, _ h: Float, _ d: Float,
-                            _ material: UnlitMaterial) -> ModelEntity {
+                            _ material: any Material) -> ModelEntity {
         ModelEntity(mesh: .generateBox(width: w, height: h, depth: d, cornerRadius: 0.005),
                     materials: [material])
     }
 
     // MARK: - Guidance sign
 
-    /// A signboard above the bench that tells the user the next step.
     private static func makeGuidancePanel(text guidance: ModelEntity) -> Entity {
         let panel = Entity()
 
         let board = ModelEntity(
             mesh: .generateBox(width: 0.7, height: 0.22, depth: 0.01, cornerRadius: 0.02),
-            materials: [unlit(0.97, 0.97, 0.98)]
+            materials: [surface(0.97, 0.97, 0.98, roughness: 0.6)]
         )
         panel.addChild(board)
 
-        // Header strip.
         let strip = ModelEntity(
             mesh: .generateBox(width: 0.7, height: 0.045, depth: 0.011, cornerRadius: 0.01),
             materials: [unlit(0.12, 0.45, 0.85)]
@@ -487,7 +470,6 @@ enum LabSceneBuilder {
         return panel
     }
 
-    /// Update the guidance sign's text.
     static func setGuidance(_ guidance: ModelEntity, text: String) {
         let mesh = MeshResource.generateText(
             text,
@@ -501,8 +483,6 @@ enum LabSceneBuilder {
         guidance.position = [-0.31, -0.07, 0.008]
     }
 
-    /// Returns a container entity holding centered text, so callers can freely
-    /// set the container's position without losing the centering offset.
     private static func makeTextEntity(_ text: String,
                                        fontSize: CGFloat,
                                        color: UIColor,
@@ -522,7 +502,6 @@ enum LabSceneBuilder {
         return container
     }
 
-    /// A short label for a bottle (first couple of words).
     private static func shortName(_ reagent: Reagent) -> String {
         let words = reagent.name.split(separator: " ")
         return words.prefix(2).joined(separator: "\n")
@@ -530,6 +509,21 @@ enum LabSceneBuilder {
 
     // MARK: - Materials
 
+    /// A lit, shaded opaque surface.
+    private static func surface(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat,
+                                roughness: Float = 0.8) -> SimpleMaterial {
+        SimpleMaterial(color: UIColor(red: r, green: g, blue: b, alpha: 1.0),
+                       roughness: MaterialScalarParameter(floatLiteral: roughness),
+                       isMetallic: false)
+    }
+
+    private static func litColor(_ c: ReagentColor, roughness: Float = 0.5) -> SimpleMaterial {
+        SimpleMaterial(color: c.uiColor,
+                       roughness: MaterialScalarParameter(floatLiteral: roughness),
+                       isMetallic: false)
+    }
+
+    /// Unlit (always-bright) material — used for liquids, labels, and the sign.
     private static func unlit(_ c: ReagentColor) -> UnlitMaterial {
         UnlitMaterial(color: c.uiColor)
     }
@@ -538,15 +532,14 @@ enum LabSceneBuilder {
         UnlitMaterial(color: UIColor(red: r, green: g, blue: b, alpha: 1.0))
     }
 
-    /// A frosted glass look for bottle / tube bodies — fairly opaque so the
-    /// glassware reads clearly.
+    /// A frosted-glass look for glassware — translucent and unlit so it always
+    /// reads clearly.
     private static func glassy() -> UnlitMaterial {
-        var material = UnlitMaterial(color: UIColor(white: 0.85, alpha: 0.45))
-        material.blending = .transparent(opacity: 0.45)
+        var material = UnlitMaterial(color: UIColor(white: 0.85, alpha: 0.4))
+        material.blending = .transparent(opacity: 0.4)
         return material
     }
 
-    /// A tinted translucent material (e.g. a clear plastic pipette tip).
     private static func translucent(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat,
                                     _ a: CGFloat) -> UnlitMaterial {
         var material = UnlitMaterial(color: UIColor(red: r, green: g, blue: b, alpha: a))
