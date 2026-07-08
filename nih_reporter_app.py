@@ -176,7 +176,10 @@ _RESET_KEYS = ("ask_answer", "ask_engine", "follow_thread", "ask_question",
 def reset_query():
     for _k in _RESET_KEYS:
         st.session_state.pop(_k, None)
-    st.session_state.pop("_q_consumed", None)
+    # Deliberately KEEP _q_consumed: it records which ?q= link already ran. If
+    # clearing the URL param doesn't take effect immediately, popping it would
+    # make the start screen re-run the same report — the screen would never
+    # clear. (A genuinely new ?q= link still runs, since it won't match.)
     try:
         st.query_params.clear()
     except Exception:  # noqa: BLE001
@@ -324,6 +327,22 @@ def build_facts(items: list, question: str = "") -> str:
     sub = sum(1 for it in items if it.get("is_subproject"))
     multi = sum(1 for it in items if it.get("multi_pi"))
     lines.append(f"Grants that are subprojects: {sub}. Multi-PI grants: {multi}.")
+    # "New awards" in a window are award NOTICES — not all brand-new grants.
+    # Spell out the composition so every answer can clarify it.
+    at: dict = {}
+    for it in items:
+        at[it.get("app_type") or "Unknown"] = at.get(it.get("app_type") or "Unknown", 0) + 1
+    brand_new, renewals = at.get("New", 0), at.get("Renewal", 0)
+    contins = at.get("Continuation", 0)
+    other = a["count"] - brand_new - renewals - contins
+    lines.append(
+        f"IMPORTANT — award composition: of the {a['count']} award notices in this "
+        f"set, {brand_new} are ENTIRELY NEW grants (Type 1 'New'), {renewals} are "
+        f"competing renewals (Type 2 — an existing grant winning a new cycle), "
+        f"{contins} are non-competing continuations (Type 5 — the next budget year "
+        f"of an existing grant), and {other} are supplements/extensions/transfers. "
+        "Whenever the answer says 'new awards', it MUST clarify this mix rather "
+        "than implying they are all brand-new grants.")
     # Renewal pipeline: projects whose current project period ends within a year
     # (supports "what's expiring / renewal risk" questions).
     today = datetime.now().date()
@@ -752,14 +771,47 @@ _CAT_VIEW = {
 def plot_series(series: pd.Series, kind: str):
     """Draw a series with the chart form that fits its job: a long time series
     is a trend (line), a short one is vertical bars, and categories are
-    horizontal bars ranked top-down."""
-    if kind == "time" and len(series) > 8:
-        st.line_chart(series, color=EMORY_BLUE, height=300)
-    elif kind == "time":
-        st.bar_chart(series, color=EMORY_BLUE, height=300)
-    else:
-        st.bar_chart(series, color=EMORY_BLUE, horizontal=True,
-                     height=max(160, 30 * len(series)))
+    horizontal bars ranked top-down. Rendered as a NON-interactive Altair
+    chart — tooltips work, but no scroll-wheel zoom/pan (which hijacked page
+    scrolling with Streamlit's built-in charts)."""
+    import altair as alt
+    name = str(series.name or "Value")
+    money = name.startswith("Funding")
+    df = pd.DataFrame({"label": [str(i) for i in series.index],
+                       "value": list(series.values)})
+    tt = [alt.Tooltip("label:N", title=" "),
+          alt.Tooltip("value:Q", title=name,
+                      format="$,.0f" if money else ",.0f")]
+    vfmt = alt.Axis(format="$~s") if money else alt.Axis(format="~s")
+    try:
+        if kind == "time":
+            x = alt.X("label:N", sort=None, title=None,
+                      axis=alt.Axis(labelAngle=-45))
+            y = alt.Y("value:Q", title=name, axis=vfmt)
+            if len(series) > 8:
+                ch = alt.Chart(df).mark_line(
+                    color=EMORY_BLUE, strokeWidth=2,
+                    point=alt.OverlayMarkDef(color=EMORY_BLUE, size=45)
+                ).encode(x=x, y=y, tooltip=tt)
+            else:
+                ch = alt.Chart(df).mark_bar(color=EMORY_BLUE).encode(
+                    x=x, y=y, tooltip=tt)
+            h = 300
+        else:
+            ch = alt.Chart(df).mark_bar(color=EMORY_BLUE).encode(
+                y=alt.Y("label:N", sort=None, title=None),
+                x=alt.X("value:Q", title=name, axis=vfmt),
+                tooltip=tt)
+            h = max(160, 30 * len(series))
+        st.altair_chart(ch.properties(height=h), use_container_width=True)
+    except Exception:  # noqa: BLE001 - fall back to the built-in charts
+        if kind == "time" and len(series) > 8:
+            st.line_chart(series, color=EMORY_BLUE, height=300)
+        elif kind == "time":
+            st.bar_chart(series, color=EMORY_BLUE, height=300)
+        else:
+            st.bar_chart(series, color=EMORY_BLUE, horizontal=True,
+                         height=max(160, 30 * len(series)))
 
 
 def _view_series(dim: str, items: list, agg: dict, is_funding: bool):
@@ -912,10 +964,31 @@ def maybe_chart(question: str, items: list, scope: dict = None):
             xt = reporter.funding_crosstab(items, _DIM_FIELD[cat_dim])
             top = sorted(xt, key=lambda c: sum(xt[c].values()), reverse=True)[:10]
             yrs = sorted({y for c in xt for y in xt[c]})
-            df = pd.DataFrame({f"FY{y}": [xt[c].get(y, 0) for c in top] for y in yrs},
-                              index=[str(c) for c in top])
             st.markdown(f"**Funding ($) by {_DIM_KEYS[cat_dim][3]} and fiscal year**")
-            st.bar_chart(df, stack=False, height=max(200, 34 * len(top)), horizontal=True)
+            try:
+                import altair as alt
+                melt = pd.DataFrame(
+                    [{"cat": str(c), "FY": f"FY{y}", "value": xt[c].get(y, 0)}
+                     for c in top for y in yrs])
+                ch = alt.Chart(melt).mark_bar().encode(
+                    y=alt.Y("cat:N", sort=None, title=None),
+                    yOffset="FY:N",
+                    x=alt.X("value:Q", title="Funding ($)",
+                            axis=alt.Axis(format="$~s")),
+                    color=alt.Color("FY:N", title=None, scale=alt.Scale(
+                        range=[EMORY_BLUE, "#5b7bb5", "#8a94ad", "#f2a900",
+                               "#9aa7c7", "#c4b27a"])),
+                    tooltip=["cat:N", "FY:N",
+                             alt.Tooltip("value:Q", title="Funding",
+                                         format="$,.0f")])
+                st.altair_chart(ch.properties(height=max(220, 24 * len(top)
+                                                         * len(yrs))),
+                                use_container_width=True)
+            except Exception:  # noqa: BLE001 - fall back to built-in chart
+                df = pd.DataFrame({f"FY{y}": [xt[c].get(y, 0) for c in top]
+                                   for y in yrs}, index=[str(c) for c in top])
+                st.bar_chart(df, stack=False, horizontal=True,
+                             height=max(200, 34 * len(top)))
             return cat_dim, True
         d = agg.get("funding_by_fy") if metric == "funding" else agg.get("by_fy")
         if d:
@@ -1220,12 +1293,13 @@ def run_report(q: str, reading: str = ""):
                       + "; ".join(f"{r['org']}: {reporter.fmt_money(r['total_amount'])} "
                                   f"({r['awards']} awards)" for r in bench["rows"]))
         st.write(f"_{_stage('write')}_")
-        answer, engine = summarize.custom_report(qa, facts)
+        answer, engine = _safe_report(qa, facts)
         _prog.update(label="🔬 Analysis complete", state="complete", expanded=False)
     st.session_state.ask_answer = answer
     st.session_state.ask_engine = engine
     st.session_state.asked_question = q
     st.session_state.report_reading = reading
+    st.session_state._q_consumed = q  # this q already ran; never auto-rerun it
     try:
         st.query_params["q"] = q  # reflect in the URL for a shareable link
     except Exception:  # noqa: BLE001
@@ -1237,6 +1311,19 @@ def run_report(q: str, reading: str = ""):
     for _k in ("clarify_q", "clarify_for", "clarify_reading", "clarify_conf",
                "suggestions", "report_pdf"):
         st.session_state.pop(_k, None)
+
+
+def _safe_report(q: str, facts: str, prior: str = ""):
+    """Never let an AI/API error take down the page. On failure, return a
+    note with the actual error (Streamlit Cloud redacts raw tracebacks) and
+    let the deterministic numbers and graphs render as usual."""
+    try:
+        return summarize.custom_report(q, facts, prior)
+    except Exception as exc:  # noqa: BLE001
+        return ("_The AI narrative couldn't be generated right now — "
+                f"`{type(exc).__name__}: {str(exc)[:300]}`.\n\n"
+                "The graphs and key numbers below are computed directly from "
+                "NIH RePORTER and are unaffected._", "error")
 
 
 def _within_days(date_str: str, days: int) -> bool:
@@ -1275,13 +1362,15 @@ def run_exec_briefing():
         st.write(f"_{_stage('write')}_")
         q = (f"Write a weekly executive summary for Emory research leadership, "
              f"dated {datetime.now():%B %d, %Y}. Two parts: (1) THIS WEEK — how "
-             "many new NIH awards, total dollars, the most notable awards (PI, "
-             "institute, amount), and whether the week is above or below the "
-             "recent weekly pace; (2) FISCAL YEAR TO DATE — total awards and "
-             "dollars, the leading institutes and mechanisms, and any momentum "
-             "or concentration worth flagging. Crisp and executive in tone; "
-             "many charts follow below, so keep the narrative tight.")
-        ans, eng = summarize.custom_report(q, facts)
+             "many new NIH award notices, total dollars, the most notable awards "
+             "(PI, institute, amount), and whether the week is above or below "
+             "the recent weekly pace — always splitting entirely new grants "
+             "from renewals/continuations of existing grants; (2) FISCAL YEAR "
+             "TO DATE — total awards and dollars (again noting the new-vs-"
+             "continuation mix), the leading institutes and mechanisms, and any "
+             "momentum or concentration worth flagging. Crisp and executive in "
+             "tone; many charts follow below, so keep the narrative tight.")
+        ans, eng = _safe_report(q, facts)
         _prog.update(label="🔬 Briefing ready", state="complete", expanded=False)
     st.session_state.exec_brief = {
         "summary": ans, "engine": eng, "wk": wk_all or [],
@@ -1611,7 +1700,7 @@ def run_followup(fq: str):
                     note = (f"_New search: {label}._\n\n" if fresh
                             else f"_Pulled data for: {label}._\n\n")
         st.write(f"_{_stage('write')}_")
-        ans, eng = summarize.custom_report(fq, build_facts(items, fq),
+        ans, eng = _safe_report(fq, build_facts(items, fq),
                                            prior="\n\n".join(prior))
         _prog.update(label="🔬 Follow-up ready", state="complete", expanded=False)
     st.session_state.setdefault("follow_thread", []).append(
@@ -1674,10 +1763,12 @@ if st.session_state.get("exec_brief"):
     render_exec_brief()
 
 elif not st.session_state.get("ask_answer"):
-    # Shareable link: a ?q=… in the URL auto-runs that report once on load.
+    # Shareable link: a ?q=… in the URL auto-runs that report once. We record
+    # WHICH query ran so a stale URL param can never re-trigger it after a
+    # 'New query' reset (that re-trigger looked like a lock-up).
     _qp = st.query_params.get("q")
-    if _qp and not st.session_state.get("_q_consumed"):
-        st.session_state._q_consumed = True
+    if _qp and st.session_state.get("_q_consumed") != _qp:
+        st.session_state._q_consumed = _qp
         run_report(_qp)
         st.rerun()
     # ----- Start screen: just the search box and (small) example reports -----
@@ -1812,8 +1903,7 @@ else:
         st.markdown("**Peer benchmark — total NIH funding** (FY "
                     + ", ".join(str(y) for y in _bench["fys"]) + ")")
         _bd = {r["org"].title(): r["total_amount"] for r in _bench["rows"]}
-        st.bar_chart(pd.Series(_bd, name="Funding ($)"), color=EMORY_BLUE,
-                     horizontal=True, height=max(160, 34 * len(_bd)))
+        plot_series(pd.Series(_bd, name="Funding ($)"), "cat")
         if _bench.get("errors"):
             st.caption("Some peers couldn't be fetched: "
                        + "; ".join(_bench["errors"][:2]))
