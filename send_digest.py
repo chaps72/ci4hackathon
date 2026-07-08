@@ -100,6 +100,42 @@ def _deadlines_section(items: list, max_items: int = 8) -> str:
     return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
 
 
+def _mark_updates(items: list, history: list) -> list:
+    """Flag items that update something already covered, rather than brand-new
+    matter. Signals: a Federal Register 'Correction', or a shared docket with an
+    item seen in a prior digest (e.g. a proposed rule later finalized, a comment
+    period extended). Sets item['update_note'] on those; leaves genuinely new
+    items untouched."""
+    # Earliest prior appearance of each docket (history is appended in order).
+    by_docket = {}
+    for h in history:
+        d = h.get("docket")
+        if d and d not in by_docket:
+            by_docket[d] = h
+    for it in items:
+        title = (it.get("title") or "").lower()
+        if it.get("type") == "Correction" or "correction" in title:
+            it["update_note"] = "Correction to a previously published notice."
+            continue
+        d = it.get("docket")
+        prior = by_docket.get(d) if d else None
+        if prior and prior.get("id") != it.get("id"):
+            first = prior.get("date", "")
+            if it.get("type") == "Rule" and prior.get("type") == "Proposed Rule":
+                it["update_note"] = f"Finalizes an earlier proposed rule (docket {d}, first seen {first})."
+            else:
+                it["update_note"] = f"Update to earlier coverage (docket {d}, first seen {first})."
+    return items
+
+
+def _updates_section(items: list, max_items: int = 8) -> str:
+    """A compact 'Updates to earlier items' block for anything flagged by
+    _mark_updates. '' when there are none."""
+    rows = [f"- {(it.get('title') or '')[:100]} — {it['update_note']}"
+            for it in items if it.get("update_note")][:max_items]
+    return "🔄 Updates to earlier items\n" + "\n".join(rows) if rows else ""
+
+
 def _prune_history(history: list, days: int = 21) -> list:
     """Keep only history entries within the last `days` (ISO dates sort
     lexically, so a string compare is enough); drop undated entries."""
@@ -202,6 +238,9 @@ def main() -> int:
             with open(seen_file, "w") as f:
                 json.dump(sorted(seen), f)
         return 0
+    # Flag items that update earlier coverage (corrections, shared FR docket)
+    # before rendering, so both the page and the message can mark them.
+    items = _mark_updates(items, history)
     summary, engine = summarize.generate_summary(items, "Executive summary")
     cadence = "Daily" if days_back <= 3 else "Weekly"
     title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
@@ -230,12 +269,13 @@ def main() -> int:
     # Bottom-of-message sections, in order: deadlines/comment opportunities
     # (from FR structured fields), a trend note (today vs the rolling history),
     # then the government-affairs roundup.
+    updates_md = _updates_section(items)
     deadlines_md = _deadlines_section(items)
     trend = summarize.trend_note(items, history)  # `history` is the log BEFORE today
     trend_md = f"📈 Trend watch\n{trend}" if trend else ""
     brief = summarize.govt_affairs_brief(items)
     gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
-    extra_md = "\n\n".join(s for s in (deadlines_md, trend_md, gov_md) if s)
+    extra_md = "\n\n".join(s for s in (updates_md, deadlines_md, trend_md, gov_md) if s)
 
     if webhook and only in ("", "teams"):
         notify.send_teams_summary(webhook, summary, title=title, extra_md=extra_md)
@@ -281,6 +321,7 @@ def main() -> int:
         history.extend({
             "id": i.get("id"), "date": i.get("date"), "agency": i.get("agency"),
             "title": i.get("title"), "level": i.get("level"),
+            "docket": i.get("docket"), "type": i.get("type"),
         } for i in items)
         with open(hist_file, "w") as f:
             json.dump(_prune_history(history), f)

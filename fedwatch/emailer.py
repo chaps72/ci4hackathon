@@ -97,7 +97,10 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
                 '<tr><td style="padding:6px 0 10px 12px;border-left:3px solid '
                 f'{color};font:13px Arial,sans-serif;color:#2c3e50;">'
                 f'<div style="font-weight:bold;">{title_html}</div>'
-                f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
+                + (f'<div style="display:inline-block;background:{EMORY_GRAY};color:#fff;'
+                   f'font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;'
+                   f'margin:3px 0;">🔄 {e(it.get("update_note",""))}</div>' if it.get("update_note") else "")
+                + f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
                 f'{e(it.get("date", ""))} &middot; {e(it.get("source", ""))}</div>'
                 + _deadline_badges(it, e)
                 + f'<div style="padding-top:3px;">{e((it.get("summary") or "")[:400])}</div>'
