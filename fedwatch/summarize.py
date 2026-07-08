@@ -624,6 +624,45 @@ def _claude_summary(items: list, style: str, extra_instructions: str) -> str:
     return next((b.text for b in response.content if b.type == "text"), "")
 
 
+def govt_affairs_brief(items: list) -> str:
+    """A 2-3 sentence government-affairs roundup grounded in the day's items.
+
+    Focuses on the legislative/budget and executive-branch angle the SVPR
+    government-affairs team tracks (appropriations, continuing resolutions,
+    rescissions, executive orders, OMB/agency leadership actions affecting
+    research funding). Returns '' without an API key or on any error, so it
+    never blocks delivery.
+    """
+    if not items or not claude_available():
+        return ""
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+        prompt = (
+            "You are the government-affairs analyst for the Office of the Senior "
+            "Vice President for Research at Emory University. From ONLY the items "
+            "below, write a brief 'Government affairs' roundup of 2-3 sentences "
+            "focused strictly on the legislative, budget, and executive-branch "
+            "angle relevant to federal research funding: appropriations, continuing "
+            "resolutions, rescissions, executive orders and their agency "
+            "implementation, OMB actions, and agency leadership/policy direction. "
+            "If the items contain little government-affairs signal, say so in one "
+            "sentence. Do not invent details, dates, or actions not in the items. "
+            "Plain prose, no headers, no bullet points.\n\n"
+            f"Items ({len(items)}):\n{_items_block(items)}"
+        )
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        if response.stop_reason == "refusal":
+            return ""
+        return next((b.text for b in response.content if b.type == "text"), "").strip()
+    except Exception:  # noqa: BLE001 - brief is a bonus, never block delivery
+        return ""
+
+
 AI_CLASSIFY_GUIDANCE = """\
 You are triaging federal updates for the Senior Vice President for Research \
 (SVPR) and government affairs team at Emory University - a biomedical-heavy \

@@ -159,14 +159,18 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
         print(f"Page write failed ({exc}); sending without link.")
 
+    # A short government-affairs roundup pinned to the bottom of the message.
+    brief = summarize.govt_affairs_brief(items)
+    gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
+
     # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
     # handy for testing a single destination without spamming the others.
     only = os.environ.get("DIGEST_ONLY", "").strip().lower()
     if webhook and only in ("", "teams"):
-        notify.send_teams_summary(webhook, summary, title=title)
+        notify.send_teams_summary(webhook, summary, title=title, extra_md=gov_md)
         print(f"Teams: {cadence.lower()} digest posted.")
     if slack and only in ("", "slack"):
-        notify.send_slack(slack, summary, title=title)
+        notify.send_slack(slack, summary, title=title, extra_md=gov_md)
         print(f"Slack: {cadence.lower()} digest posted.")
     if smtp_host and only in ("", "email"):
         notify.send_email(
