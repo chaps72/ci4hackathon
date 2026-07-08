@@ -180,10 +180,16 @@ def main() -> int:
         )
         print("Email: weekly digest sent.")
 
-    seen.update(i["id"] for i in items)
-    seen.add(sent_marker)  # once-per-day guard for the twin crons
-    with open(seen_file, "w") as f:
-        json.dump(sorted(seen), f)
+    # A forced test run must NOT touch the dedupe state: writing the sent
+    # marker (or item ids) would make the real scheduled digest think it
+    # already went out and skip. Only real runs persist seen-state.
+    if not force:
+        seen.update(i["id"] for i in items)
+        seen.add(sent_marker)  # once-per-day guard for the twin crons
+        with open(seen_file, "w") as f:
+            json.dump(sorted(seen), f)
+    else:
+        print("Forced test run: not updating dedupe/seen-state.")
     return 0
 
 
