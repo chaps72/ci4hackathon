@@ -129,9 +129,11 @@ a:hover {{ text-decoration: underline; }}
     letter-spacing: 0.04em; }}
 </style>""", unsafe_allow_html=True)
 
+@st.cache_data(show_spinner=False)
 def _emory_brand() -> str:
     """Show the Emory Research logo if one is committed at assets/emory_research_logo.*,
-    otherwise a navy text wordmark."""
+    otherwise a navy text wordmark. Cached so the logo isn't re-read and
+    re-base64-encoded on every rerun."""
     for ext in ("svg", "png", "jpg", "jpeg"):
         path = os.path.join("assets", f"emory_research_logo.{ext}")
         if os.path.exists(path):
@@ -213,7 +215,8 @@ def _password_gate():
         entered = st.text_input("Password", type="password",
                                 label_visibility="collapsed")
         if st.button("Enter", type="primary", use_container_width=True):
-            if entered == pw:
+            import hmac
+            if hmac.compare_digest(entered, pw):  # timing-safe comparison
                 st.session_state.authed = True
                 st.rerun()
             else:
@@ -1428,29 +1431,41 @@ def _within_days(date_str: str, days: int) -> bool:
     return (datetime.now().date() - d).days <= days
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
+def _brief_fetch(kind: str, fy: int = 0):
+    """Cached RePORTER pulls for the exec briefing (30-min TTL) — a re-run of
+    the briefing within that window is instant instead of re-paginating."""
+    if kind == "weeks":
+        return reporter.fetch_awards(org_names=[reporter.DEFAULT_ORG],
+                                     use_award_window=True, days_back=70,
+                                     limit=2000)
+    return reporter.fetch_awards(org_names=[reporter.DEFAULT_ORG],
+                                 use_award_window=False, fiscal_years=[fy],
+                                 limit=8000)
+
+
 def run_exec_briefing():
     """One-click weekly executive briefing: this week's new awards in the
     context of recent weeks, plus fiscal-year-to-date — an AI summary of both
-    up top and 10+ graphs below."""
+    up top and 10+ graphs below. The four RePORTER pulls run in parallel."""
+    from concurrent.futures import ThreadPoolExecutor
     with st.status("🔬 Compiling the weekly executive briefing…", expanded=True) as _prog:
         st.write(f"_{_stage('fetch')}_")
-        wk_all, wk_err = reporter.fetch_awards(
-            org_names=[reporter.DEFAULT_ORG], use_award_window=True,
-            days_back=70, limit=2000)
-        fy_items, fy_err = reporter.fetch_awards(
-            org_names=[reporter.DEFAULT_ORG], use_award_window=False,
-            fiscal_years=[CURRENT_FY], limit=8000)
+        with ThreadPoolExecutor(max_workers=4) as _pool:
+            _fwk = _pool.submit(_brief_fetch, "weeks")
+            _ffy = {y: _pool.submit(_brief_fetch, "fy", y)
+                    for y in (CURRENT_FY, CURRENT_FY - 1, CURRENT_FY - 2)}
+        wk_all, wk_err = _fwk.result()
+        fy_items, fy_err = _ffy[CURRENT_FY].result()
         if wk_err and fy_err:
             st.error(f"NIH RePORTER is unreachable right now ({fy_err}).")
             _prog.update(label="Briefing unavailable", state="error")
             return
-        # Prior fiscal years, pulled one at a time so each carries that year's
-        # own funding/dates — for the cumulative FY-vs-FY pace comparison.
+        # Prior fiscal years each carry their own funding/dates — for the
+        # cumulative FY-vs-FY pace comparison.
         fy_by_year = {CURRENT_FY: fy_items or []}
         for _py in (CURRENT_FY - 1, CURRENT_FY - 2):
-            _pit, _perr = reporter.fetch_awards(
-                org_names=[reporter.DEFAULT_ORG], use_award_window=False,
-                fiscal_years=[_py], limit=8000)
+            _pit, _perr = _ffy[_py].result()
             if not _perr and _pit:
                 fy_by_year[_py] = _pit
         week_items = [it for it in (wk_all or [])
@@ -1921,13 +1936,26 @@ def run_followup(fq: str):
                     items, scope, label = awards, merged, label2
                     note = (f"_New search: {label}._\n\n" if fresh
                             else f"_Pulled data for: {label}._\n\n")
+                elif err:
+                    note = (f"_Tried to pull fresh data ({label2}) but NIH "
+                            f"RePORTER was unreachable ({err}); answering from "
+                            "the data already loaded._\n\n")
+                else:
+                    items, scope, label = awards, merged, label2
+                    note = (f"_Pulled fresh data for: {label} — but no awards "
+                            "matched. Try widening the window or removing a "
+                            "filter._\n\n")
         st.write(f"_{_stage('write')}_")
         ans, eng = _safe_report(fq, build_facts(items, fq),
                                            prior="\n\n".join(prior))
         _prog.update(label="🔬 Follow-up ready", state="complete", expanded=False)
-    st.session_state.setdefault("follow_thread", []).append(
-        {"q": fq, "a": note + ans, "engine": eng, "items": items,
-         "scope": scope, "query": label})
+    thread = st.session_state.setdefault("follow_thread", [])
+    thread.append({"q": fq, "a": note + ans, "engine": eng, "items": items,
+                   "scope": scope, "query": label})
+    # Each turn snapshots its own item list; cap the thread so a long session
+    # doesn't hold dozens of full result sets in memory.
+    if len(thread) > 12:
+        del thread[:-12]
 
 
 # Fetch whenever the filters change (or on first load), so the AI answers and
