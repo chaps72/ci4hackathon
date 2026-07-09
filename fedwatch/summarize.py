@@ -336,6 +336,15 @@ def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
         "a new direction ('instead', 'new search', a different institution/"
         "topic/PI as the subject), rebuild the scope from just the new request "
         "(home institution Emory when none is named).\n"
+        "BIAS TOWARD 'refetch'. Pulling fresh data from NIH RePORTER is cheap "
+        "and always allowed, and it is far better to re-pull than to answer "
+        "from records that might not fully cover the question. Choose 'refetch' "
+        "whenever the follow-up references ANY time period, institution, topic, "
+        "PI, institute, mechanism, state, award-size, or activity status that is "
+        "not already fully inside the current scope — even if only maybe. Only "
+        "choose 'reuse' when you are confident the records already pulled "
+        "contain EVERYTHING the follow-up needs and it is purely a re-cut, "
+        "re-ranking, or re-summary of that same set. When in doubt, refetch.\n"
         f"The current NIH fiscal year is FY{current_fy}. Time rules: 'last N "
         "fiscal years' = the N most recent including the current; comparing "
         "years / trends = a RANGE of years (current and 5 prior if unstated); "
@@ -357,8 +366,10 @@ def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
             messages=[{"role": "user", "content": prompt}])
         text = next((b.text for b in resp.content if b.type == "text"), "")
         data = json.loads(_extract_json(text))
-        action = ("refetch" if str(data.get("action", "")).lower() == "refetch"
-                  else "reuse")
+        # Default to refetch: only an explicit 'reuse' keeps the current data,
+        # so any ambiguity errs toward pulling fresh data (as intended).
+        action = ("reuse" if str(data.get("action", "")).lower() == "reuse"
+                  else "refetch")
         new_scope = _validated(data.get("scope") or cur, followup,
                                ic_list, activity_list)
         if action == "reuse":

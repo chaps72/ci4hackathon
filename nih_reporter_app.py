@@ -1769,7 +1769,21 @@ _REFETCH_WORDS = (
     "all institution", "nationwide", "across institution", "every institution",
     "pull", "go back", "fetch", "since", "back to", "all years", "every year",
     "last ", "past ", "fiscal year", "fy20", "fy 20", " in 20", "this year",
-    "other institution", "another institution", "compare to", "vs ", "versus")
+    "other institution", "another institution", "compare to", "vs ", "versus",
+    "remove", "drop", "without", "not just", "beyond", "outside", "widen",
+    "narrow", "only", "just the", "restrict", "limit to", "exclude", "all of",
+    "month", "week", "quarter", "trend", "over time", "each year", "new data",
+    "different", "another", "recent", "current", "active", "ongoing", "renew")
+
+
+# When no API key is set (heuristic path), a follow-up that isn't clearly a
+# pure re-cut of the same data should re-pull — pulling fresh data is fine.
+_REUSE_ONLY_WORDS = (
+    "of those", "of these", "of that", "of the above", "among those",
+    "among these", "from those", "from that set", "in that set", "same set",
+    "same data", "break down", "break it down", "broken down", "sort", "rank",
+    "list them", "which of", "top ", "largest", "smallest", "chart", "graph",
+    "plot", "show them", "summar")
 
 
 def _needs_refetch(fparsed: dict, fq: str) -> bool:
@@ -1779,7 +1793,11 @@ def _needs_refetch(fparsed: dict, fq: str) -> bool:
                                     "days_back", "ic_codes", "activity_codes",
                                     "pi_name", "topic")):
         return True
-    return any(w in ql for w in _REFETCH_WORDS)
+    if any(w in ql for w in _REFETCH_WORDS):
+        return True
+    # Lean toward refetching: unless the follow-up is clearly a pure re-cut of
+    # the same records, pull fresh data (pulling is cheap and always allowed).
+    return not any(w in ql for w in _REUSE_ONLY_WORDS)
 
 
 # Phrasings that signal the follow-up is a brand-new search, not a refinement of
@@ -1876,7 +1894,16 @@ def run_followup(fq: str):
                 awards, err, label2 = ai_fetch(plan["scope"])
                 if not err and awards:
                     items, scope, label = awards, plan["scope"], label2
-                    note = f"_Scope updated for this follow-up: {label}._\n\n"
+                    note = f"_Pulled fresh data for this follow-up: {label}._\n\n"
+                elif err:
+                    note = (f"_Tried to pull fresh data ({label2}) but NIH "
+                            f"RePORTER was unreachable ({err}); answering from "
+                            "the data already loaded._\n\n")
+                else:  # pulled, but the new scope matched nothing
+                    items, scope, label = awards, plan["scope"], label2
+                    note = (f"_Pulled fresh data for: {label} — but no awards "
+                            "matched. Try widening the window or removing a "
+                            "filter._\n\n")
             else:
                 scope = plan["scope"]  # same data; chart hints may have moved
         else:
