@@ -1,7 +1,7 @@
 streamlit
 pandas
-requests
-anthropic
+requests==2.34.2
+anthropic==0.116.0
 openpyxl
 matplotlib
 altair>=5

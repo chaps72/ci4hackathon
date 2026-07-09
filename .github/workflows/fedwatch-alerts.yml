@@ -19,7 +19,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install requests==2.34.2
 
       - name: Restore alerted-items state
         uses: actions/cache@v4

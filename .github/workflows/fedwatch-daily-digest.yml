@@ -32,7 +32,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests anthropic
+        run: pip install requests==2.34.2 anthropic==0.116.0
 
       - name: Restore digest seen-state
         uses: actions/cache@v4

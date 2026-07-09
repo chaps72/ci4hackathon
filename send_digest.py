@@ -1,13 +1,14 @@
-"""Weekly executive digest for scheduled runs (Friday afternoons).
+"""Daily/weekly digest for scheduled runs.
 
-Fetches the week's research policy updates, generates an executive summary
-(Claude when ANTHROPIC_API_KEY is set, template otherwise), and posts it to
-Teams and/or email.
+Fetches recent research policy updates, generates an executive summary
+(Claude when ANTHROPIC_API_KEY is set, template otherwise), publishes an
+HTML page, and posts to Slack/Teams/email.
 
 Environment variables:
-    TEAMS_WEBHOOK_URL, FEDWATCH_APP_URL, ANTHROPIC_API_KEY (optional)
+    SLACK_WEBHOOK_URL, TEAMS_WEBHOOK_URL, ANTHROPIC_API_KEY (optional)
     SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD,
     ALERT_EMAIL_FROM, ALERT_EMAIL_TO          (all optional, enable email)
+    DIGEST_DAYS_BACK, FEDWATCH_FOCUS, DIGEST_FORCE, DIGEST_ONLY
 
 Usage:  python send_digest.py
 """
@@ -15,13 +16,45 @@ Usage:  python send_digest.py
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
-from fedwatch import emailer, notify, sources, summarize
+from fedwatch import deadlines, emailer, notify, sources, summarize
 from fedwatch.classify import DEFAULT_WATCHLIST, Classifier, sort_by_priority
 from fedwatch.relevance import filter_relevant
 
+# Item ids are kept in the dedupe cache this long. The fetch window is a few
+# days, so anything older cannot reappear; this keeps the cache from growing
+# without bound.
+SEEN_RETENTION_DAYS = 45
+HISTORY_RETENTION_DAYS = 21
 
+
+# --------------------------------------------------------------------------
+# Guards & scope
+
+def _scheduled_run_guards(now_et=None) -> str:
+    """Reason to skip a scheduled firing, or '' to proceed.
+
+    Two crons fire (21:00 & 22:00 UTC); across DST at least one lands at or
+    after 5pm New York. GitHub can delay scheduled runs by an hour or more,
+    so the window is "5pm ET or later" (never earlier) rather than an exact
+    hour - a once-per-day marker (see main) stops the twin crons from
+    double-posting. Manual runs (workflow_dispatch) bypass all guards.
+    """
+    if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
+        return ""
+    from fedwatch.holidays import is_us_federal_holiday
+
+    if now_et is None:
+        now_et = datetime.now(ZoneInfo("America/New_York"))
+    if now_et.weekday() >= 5:
+        return "weekend"
+    if is_us_federal_holiday(now_et.date()):
+        return f"US federal holiday ({now_et:%Y-%m-%d})"
+    if now_et.hour < 17:
+        return f"before 5pm ET target window ({now_et:%H:%M} ET)"
+    return ""
 
 
 def _nih_focused(items: list) -> list:
@@ -49,55 +82,78 @@ def _nih_focused(items: list) -> list:
             out.append(i)
     return out
 
-def _scheduled_run_guards() -> str:
-    """Reason to skip a scheduled firing, or '' to proceed.
 
-    Two crons fire (21:00 & 22:00 UTC); across DST at least one lands at or
-    after 5pm New York. GitHub can delay scheduled runs by an hour or more,
-    so the window is "5pm ET or later" (never earlier) rather than an exact
-    hour - a once-per-day marker (see main) stops the twin crons from
-    double-posting. Manual runs (workflow_dispatch) bypass all guards.
+# --------------------------------------------------------------------------
+# State (dedupe cache + rolling history)
+
+def _load_seen(path: str) -> dict:
+    """Dedupe cache mapping id/marker -> date first recorded (YYYY-MM-DD).
+
+    Older versions stored a bare list of ids; those migrate to today's date so
+    they age out of the cache on schedule.
     """
-    if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
-        return ""
-    from datetime import datetime
-    from zoneinfo import ZoneInfo
-
-    from fedwatch.holidays import is_us_federal_holiday
-
-    now_et = datetime.now(ZoneInfo("America/New_York"))
-    if now_et.weekday() >= 5:
-        return "weekend"
-    if is_us_federal_holiday(now_et.date()):
-        return f"US federal holiday ({now_et:%Y-%m-%d})"
-    if now_et.hour < 17:
-        return f"before 5pm ET target window ({now_et:%H:%M} ET)"
-    return ""
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (FileNotFoundError, ValueError):
+        return {}
+    if isinstance(data, list):  # legacy format
+        today = datetime.now().strftime("%Y-%m-%d")
+        return {k: today for k in data}
+    return data if isinstance(data, dict) else {}
 
 
-def _deadlines_section(items: list, max_items: int = 8) -> str:
-    """A compact 'Deadlines & comment opportunities' block from the structured
-    Federal Register fields. Lists items with a comment-close/effective date or
-    that are open for public comment (proposed rules / RFIs). '' when none."""
-    rows = []
-    for it in items:
-        comment_due = it.get("comment_due")
-        effective = it.get("effective_on")
-        is_comment = it.get("comment_opportunity")
-        if not (comment_due or effective or is_comment):
-            continue
-        bits = []
-        if comment_due:
-            bits.append(f"⏰ comment due {comment_due}")
-        elif effective:
-            bits.append(f"⏰ effective {effective}")
-        if is_comment:
-            link = it.get("comment_url") or it.get("url") or ""
-            bits.append(f"💬 comment{f': {link}' if link else ''}")
-        rows.append(f"- {(it.get('title') or '')[:100]} — " + " · ".join(bits))
-        if len(rows) >= max_items:
-            break
-    return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
+def _prune_seen(seen: dict, days: int = SEEN_RETENTION_DAYS) -> dict:
+    """Drop entries older than the retention window (ISO dates compare
+    lexically). Undated entries are dropped too - they can't age out."""
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    return {k: v for k, v in seen.items() if (v or "") >= cutoff}
+
+
+def _save_seen(path: str, seen: dict) -> None:
+    with open(path, "w") as f:
+        json.dump(_prune_seen(seen), f, sort_keys=True)
+
+
+def _load_history(path: str) -> list:
+    try:
+        with open(path) as f:
+            history = json.load(f)
+        return history if isinstance(history, list) else []
+    except (FileNotFoundError, ValueError):
+        return []
+
+
+def _prune_history(history: list, days: int = HISTORY_RETENTION_DAYS) -> list:
+    """Keep only history entries within the last `days` (ISO dates sort
+    lexically, so a string compare is enough); drop undated entries."""
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    return [h for h in history if (h.get("date") or "") >= cutoff]
+
+
+# --------------------------------------------------------------------------
+# Pipeline steps
+
+def _gather_items(days_back: int):
+    """Fetch, filter to relevance/NIH scope, classify, and analyze. Returns
+    the prioritized item list, or None when no live feeds were reachable."""
+    items, errors, used_sample = sources.fetch_all(
+        days_back=days_back, watchlist=DEFAULT_WATCHLIST,
+        include_funding=True)  # standing spec: new NIH grant opportunities belong in the digest
+    if used_sample:
+        print("No live feeds reachable; skipping digest.")
+        for err in errors:
+            print(f"  fetch error: {err}")
+        return None
+    items, _ = filter_relevant(items)
+    items = _nih_focused(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items))
+    if summarize.claude_available():
+        # AI relevance judgment per item (same brief as the dashboard).
+        items = [i for i in summarize.ai_classify(items) if i.get("relevant", True)]
+    items = sort_by_priority(items)
+    # Agent step: assess how each item affects Emory research (grounded in
+    # Emory's research profile). No-op without an API key.
+    return summarize.analyze_emory_impact(items)
 
 
 def _mark_updates(items: list, history: list) -> list:
@@ -136,124 +192,53 @@ def _updates_section(items: list, max_items: int = 8) -> str:
     return "🔄 Updates to earlier items\n" + "\n".join(rows) if rows else ""
 
 
-def _prune_history(history: list, days: int = 21) -> list:
-    """Keep only history entries within the last `days` (ISO dates sort
-    lexically, so a string compare is enough); drop undated entries."""
-    from datetime import timedelta
-    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
-    return [h for h in history if (h.get("date") or "") >= cutoff]
+def _deadlines_section(items: list, max_items: int = 8) -> str:
+    """A compact 'Deadlines & comment opportunities' block. Prefers the
+    structured Federal Register fields; falls back to a deadline extracted
+    from the notice text for sources without structured dates. '' when none."""
+    rows = []
+    for it in items:
+        comment_due = it.get("comment_due")
+        effective = it.get("effective_on")
+        is_comment = it.get("comment_opportunity")
+        text_deadline = None
+        if not (comment_due or effective or is_comment):
+            text_deadline = deadlines.extract_deadline(it)
+            if not text_deadline:
+                continue
+        bits = []
+        if comment_due:
+            bits.append(f"⏰ comment due {comment_due}")
+        elif effective:
+            bits.append(f"⏰ effective {effective}")
+        elif text_deadline:
+            bits.append(f"⏰ due {text_deadline}")
+        if is_comment:
+            link = it.get("comment_url") or it.get("url") or ""
+            bits.append(f"💬 comment{f': {link}' if link else ''}")
+        rows.append(f"- {(it.get('title') or '')[:100]} — " + " · ".join(bits))
+        if len(rows) >= max_items:
+            break
+    return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
 
 
-def _deliver_note(text: str, title: str, webhook: str, slack: str, only: str) -> None:
-    """Post a short operational note (quiet-day heartbeat / degraded-mode
-    warning) to the same chat channels the digest uses. Email is intentionally
-    skipped to avoid inbox noise. Never raises - a note must not break a run."""
-    try:
-        if slack and only in ("", "slack"):
-            notify.send_slack(slack, text, title=title)
-        if webhook and only in ("", "teams"):
-            notify.send_teams_summary(webhook, text, title=title)
-    except Exception as exc:  # noqa: BLE001
-        print(f"Note delivery failed ({exc}).")
+def _build_sections(items: list, history: list) -> str:
+    """Bottom-of-message sections, in order: updates to earlier items,
+    deadlines/comment opportunities, trend note, government-affairs roundup."""
+    updates_md = _updates_section(items)
+    deadlines_md = _deadlines_section(items)
+    trend = summarize.trend_note(items, history)  # history is the log BEFORE today
+    trend_md = f"📈 Trend watch\n{trend}" if trend else ""
+    brief = summarize.govt_affairs_brief(items)
+    gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
+    return "\n\n".join(s for s in (updates_md, deadlines_md, trend_md, gov_md) if s)
 
 
-def main() -> int:
-    skip = _scheduled_run_guards()
-    if skip:
-        print(f"SKIPPED scheduled run: {skip}.")
-        return 0
-    webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
-    slack = os.environ.get("SLACK_WEBHOOK_URL", "")
-    smtp_host = os.environ.get("SMTP_HOST", "")
-    if not webhook and not slack and not smtp_host:
-        print("SKIPPED: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
-        return 0
-
-    # Cross-day dedupe + once-per-day guard. Loaded up front so a delayed
-    # twin cron (or a re-fire) exits fast without spending API calls.
-    from zoneinfo import ZoneInfo
-    seen_file = os.environ.get("DIGEST_SEEN_FILE", ".fedwatch_digest_seen.json")
-    try:
-        with open(seen_file) as f:
-            seen = set(json.load(f))
-    except (FileNotFoundError, ValueError):
-        seen = set()
-    # Rolling item history (~3 weeks) for trend threading across digests.
-    hist_file = os.environ.get("DIGEST_HISTORY_FILE", ".fedwatch_history.json")
-    try:
-        with open(hist_file) as f:
-            history = json.load(f)
-        if not isinstance(history, list):
-            history = []
-    except (FileNotFoundError, ValueError):
-        history = []
-    et_date = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
-    sent_marker = f"sent:{et_date}"
-    # DIGEST_FORCE (manual "force" dispatch input) resends today's items even if
-    # they already went out - used to test delivery/rendering on demand.
-    force = os.environ.get("DIGEST_FORCE", "").lower() in ("1", "true", "yes")
-    if force:
-        print("DIGEST_FORCE set: bypassing dedupe and once-per-day guard.")
-    # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
-    # handy for testing a single destination without spamming the others.
-    only = os.environ.get("DIGEST_ONLY", "").strip().lower()
-    if not force and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
-        print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
-        return 0
-
-    days_back = int(os.environ.get("DIGEST_DAYS_BACK", "7"))
-    items, errors, used_sample = sources.fetch_all(
-        days_back=days_back, watchlist=DEFAULT_WATCHLIST,
-        include_funding=True)  # standing spec: new NIH grant opportunities belong in the digest
-    if used_sample:
-        print("No live feeds reachable; skipping digest.")
-        for err in errors:
-            print(f"  fetch error: {err}")
-        return 0
-
-    items, _ = filter_relevant(items)
-    items = _nih_focused(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items))
-    if summarize.claude_available():
-        # AI relevance judgment per item (same brief as the dashboard).
-        items = [i for i in summarize.ai_classify(items) if i.get("relevant", True)]
-    items = sort_by_priority(items)
-    # Agent step: assess how each item affects Emory research (grounded in
-    # Emory's research profile). No-op without an API key.
-    items = summarize.analyze_emory_impact(items)
-
-    # Never repeat an item across daily digests (seen-state loaded up top);
-    # a forced test run resends regardless.
-    if not force:
-        items = [i for i in items if i["id"] not in seen]
-    if not items:
-        print("Quiet window - no new relevant items; nothing to send.")
-        # Heartbeat: a quiet day should look different from a broken run, so
-        # post a one-line "ran, nothing new" note (real runs only, once per day).
-        if not force:
-            _deliver_note(
-                f"✅ FedWatch ran — no new federal research-policy items today ({et_date} ET).",
-                title=f"FedWatch — all quiet ({et_date})",
-                webhook=webhook, slack=slack, only=only)
-            seen.add(sent_marker)
-            with open(seen_file, "w") as f:
-                json.dump(sorted(seen), f)
-        return 0
-    # Flag items that update earlier coverage (corrections, shared FR docket)
-    # before rendering, so both the page and the message can mark them.
-    items = _mark_updates(items, history)
-    summary, engine = summarize.generate_summary(items, "Executive summary")
-    cadence = "Daily" if days_back <= 3 else "Weekly"
-    title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
-    print(f"Summary generated ({engine} engine, {len(items)} items).")
-
-    # Publish a styled HTML page (GitHub Pages) and link to it from Slack/Teams.
+def _publish_page(items: list, summary: str, title: str) -> None:
+    """Write the styled HTML digest page and refresh the archive index
+    (published to GitHub Pages by the workflow). Never blocks delivery."""
     import pathlib
     date_str = datetime.now().strftime("%Y-%m-%d")
-    page_url = os.environ.get("FEDWATCH_APP_URL", "")
-    repo = os.environ.get("GITHUB_REPOSITORY", "")
-    if repo and "/" in repo:
-        owner, name = repo.split("/", 1)
-        page_url = f"https://{owner}.github.io/{name}/digests/{date_str}.html"
     try:
         html = emailer.build_html(items, summary, title)
         ddir = pathlib.Path("docs/digests")
@@ -266,17 +251,10 @@ def main() -> int:
     except Exception as exc:  # noqa: BLE001 - page is a bonus, never block delivery
         print(f"Page write failed ({exc}); sending without link.")
 
-    # Bottom-of-message sections, in order: deadlines/comment opportunities
-    # (from FR structured fields), a trend note (today vs the rolling history),
-    # then the government-affairs roundup.
-    updates_md = _updates_section(items)
-    deadlines_md = _deadlines_section(items)
-    trend = summarize.trend_note(items, history)  # `history` is the log BEFORE today
-    trend_md = f"📈 Trend watch\n{trend}" if trend else ""
-    brief = summarize.govt_affairs_brief(items)
-    gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
-    extra_md = "\n\n".join(s for s in (updates_md, deadlines_md, trend_md, gov_md) if s)
 
+def _deliver_digest(summary: str, extra_md: str, title: str, cadence: str,
+                    items: list, webhook: str, slack: str, smtp_host: str,
+                    only: str) -> None:
     if webhook and only in ("", "teams"):
         notify.send_teams_summary(webhook, summary, title=title, extra_md=extra_md)
         print(f"Teams: {cadence.lower()} digest posted.")
@@ -293,7 +271,105 @@ def main() -> int:
             os.environ.get("ALERT_EMAIL_TO", ""),
             items, summary_md=summary, title=title,
         )
-        print("Email: weekly digest sent.")
+        print("Email: digest sent.")
+
+
+def _deliver_note(text: str, title: str, webhook: str, slack: str, only: str) -> None:
+    """Post a short operational note (quiet-day heartbeat / degraded-mode
+    warning) to the same chat channels the digest uses. Email is intentionally
+    skipped to avoid inbox noise. Never raises - a note must not break a run."""
+    try:
+        if slack and only in ("", "slack"):
+            notify.send_slack(slack, text, title=title)
+        if webhook and only in ("", "teams"):
+            notify.send_teams_summary(webhook, text, title=title)
+    except Exception as exc:  # noqa: BLE001
+        print(f"Note delivery failed ({exc}).")
+
+
+def _persist_state(seen_file: str, seen: dict, hist_file: str, history: list,
+                   items: list, sent_marker: str, et_date: str) -> None:
+    """Record today's items in the dedupe cache and rolling history."""
+    for i in items:
+        seen[i["id"]] = et_date
+    seen[sent_marker] = et_date  # once-per-day guard for the twin crons
+    _save_seen(seen_file, seen)
+    history.extend({
+        "id": i.get("id"), "date": i.get("date"), "agency": i.get("agency"),
+        "title": i.get("title"), "level": i.get("level"),
+        "docket": i.get("docket"), "type": i.get("type"),
+    } for i in items)
+    with open(hist_file, "w") as f:
+        json.dump(_prune_history(history), f)
+
+
+# --------------------------------------------------------------------------
+
+def main() -> int:
+    skip = _scheduled_run_guards()
+    if skip:
+        print(f"SKIPPED scheduled run: {skip}.")
+        return 0
+    webhook = os.environ.get("TEAMS_WEBHOOK_URL", "")
+    slack = os.environ.get("SLACK_WEBHOOK_URL", "")
+    smtp_host = os.environ.get("SMTP_HOST", "")
+    if not webhook and not slack and not smtp_host:
+        print("SKIPPED: no TEAMS_WEBHOOK_URL or SMTP_HOST secret configured.")
+        return 0
+
+    # Cross-day dedupe + once-per-day guard. Loaded up front so a delayed
+    # twin cron (or a re-fire) exits fast without spending API calls.
+    seen_file = os.environ.get("DIGEST_SEEN_FILE", ".fedwatch_digest_seen.json")
+    seen = _load_seen(seen_file)
+    hist_file = os.environ.get("DIGEST_HISTORY_FILE", ".fedwatch_history.json")
+    history = _load_history(hist_file)
+    et_date = datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
+    sent_marker = f"sent:{et_date}"
+    # DIGEST_FORCE (manual "force" dispatch input) resends today's items even if
+    # they already went out - used to test delivery/rendering on demand.
+    force = os.environ.get("DIGEST_FORCE", "").lower() in ("1", "true", "yes")
+    if force:
+        print("DIGEST_FORCE set: bypassing dedupe and once-per-day guard.")
+    # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
+    # handy for testing a single destination without spamming the others.
+    only = os.environ.get("DIGEST_ONLY", "").strip().lower()
+    if not force and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
+        print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
+        return 0
+
+    days_back = int(os.environ.get("DIGEST_DAYS_BACK", "7"))
+    items = _gather_items(days_back)
+    if items is None:
+        return 0
+
+    # Never repeat an item across daily digests; a forced test run resends.
+    if not force:
+        items = [i for i in items if i["id"] not in seen]
+    if not items:
+        print("Quiet window - no new relevant items; nothing to send.")
+        # Heartbeat: a quiet day should look different from a broken run, so
+        # post a one-line "ran, nothing new" note (real runs only, once per day).
+        if not force:
+            _deliver_note(
+                f"✅ FedWatch ran — no new federal research-policy items today ({et_date} ET).",
+                title=f"FedWatch — all quiet ({et_date})",
+                webhook=webhook, slack=slack, only=only)
+            seen[sent_marker] = et_date
+            _save_seen(seen_file, seen)
+        return 0
+
+    # Flag items that update earlier coverage (corrections, shared FR docket)
+    # before rendering, so both the page and the message can mark them.
+    items = _mark_updates(items, history)
+    summary, engine = summarize.generate_summary(items, "Executive summary")
+    cadence = "Daily" if days_back <= 3 else "Weekly"
+    title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
+    print(f"Summary generated ({engine} engine, {len(items)} items).")
+
+    _publish_page(items, summary, title)
+    extra_md = _build_sections(items, history)
+    _deliver_digest(summary, extra_md, title, cadence, items,
+                    webhook, slack, smtp_host, only)
 
     # Degraded-mode warning: the digest still went out, but if Claude was
     # configured yet unreachable (credits/outage) the analysis fell back to a
@@ -312,19 +388,7 @@ def main() -> int:
     # marker (or item ids) would make the real scheduled digest think it
     # already went out and skip. Only real runs persist seen-state.
     if not force:
-        seen.update(i["id"] for i in items)
-        seen.add(sent_marker)  # once-per-day guard for the twin crons
-        with open(seen_file, "w") as f:
-            json.dump(sorted(seen), f)
-        # Append today's items to the rolling history (for trend threading) and
-        # prune to the retention window.
-        history.extend({
-            "id": i.get("id"), "date": i.get("date"), "agency": i.get("agency"),
-            "title": i.get("title"), "level": i.get("level"),
-            "docket": i.get("docket"), "type": i.get("type"),
-        } for i in items)
-        with open(hist_file, "w") as f:
-            json.dump(_prune_history(history), f)
+        _persist_state(seen_file, seen, hist_file, history, items, sent_marker, et_date)
     else:
         print("Forced test run: not updating dedupe/seen-state.")
     return 0

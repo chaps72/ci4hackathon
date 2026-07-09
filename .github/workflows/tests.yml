@@ -1,0 +1,25 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Only what the digest pipeline itself needs (the Streamlit dashboard
+      # deps are managed by Streamlit Cloud and aren't exercised by tests).
+      - name: Install dependencies
+        run: pip install requests==2.34.2 anthropic==0.116.0 pytest==8.3.4
+
+      - name: Run tests
+        run: pytest tests/ -v

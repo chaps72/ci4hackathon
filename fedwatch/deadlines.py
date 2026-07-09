@@ -50,8 +50,15 @@ def _candidates(text: str):
 
 
 def extract_deadline(item: dict) -> str | None:
-    """Return the earliest future deadline (YYYY-MM-DD) found near deadline
-    language, or None."""
+    """Return the item's deadline (YYYY-MM-DD), or None.
+
+    The structured Federal Register field (comments_close_on) is authoritative
+    when present; the text regex is only a fallback for sources that don't
+    provide structured dates.
+    """
+    structured = item.get("comment_due") or ""
+    if structured:
+        return structured
     text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
     now = datetime.now()
     found = []
@@ -70,13 +77,20 @@ def days_until(date_str: str) -> int:
 
 def with_deadlines(items: list) -> list:
     """Items that carry a future deadline, each annotated with `deadline` and
-    `days_left`, sorted soonest first."""
+    `days_left`, sorted soonest first. Past deadlines (possible via the
+    structured field) are excluded to keep the semantics 'upcoming'."""
     out = []
     for it in items:
         deadline = extract_deadline(it)
         if deadline:
+            try:
+                left = days_until(deadline)
+            except ValueError:
+                continue
+            if left < 0:
+                continue
             annotated = dict(it)
             annotated["deadline"] = deadline
-            annotated["days_left"] = days_until(deadline)
+            annotated["days_left"] = left
             out.append(annotated)
     return sorted(out, key=lambda i: i["deadline"])

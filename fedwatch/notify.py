@@ -5,6 +5,7 @@ Webhook" -> copy the URL. Anyone with the URL can post to the channel, so
 treat it as a secret.
 """
 
+import re
 import smtplib
 from email.message import EmailMessage
 
@@ -13,6 +14,19 @@ import requests
 from .emailer import build_html, build_plain_text
 
 TIMEOUT = 15
+
+
+def _to_mrkdwn(text: str) -> str:
+    """Convert standard markdown to Slack mrkdwn.
+
+    Slack's mrkdwn uses *single asterisks* for bold and has no headers, so
+    Claude-style markdown (**bold**, ## headers, [text](url) links) renders
+    literally unless converted.
+    """
+    text = re.sub(r"(?m)^\s*#{1,6}\s*(.+?)\s*$", r"*\1*", text)   # headers -> bold line
+    text = re.sub(r"\*\*(.+?)\*\*", r"*\1*", text)                 # **bold** -> *bold*
+    text = re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r"<\2|\1>", text)  # links
+    return text
 
 
 def _post_card(webhook_url: str, title: str, text: str, app_url: str = "") -> None:
@@ -102,12 +116,12 @@ def send_slack(webhook_url: str, summary_md: str,
         {"type": "header",
          "text": {"type": "plain_text", "text": title[:150], "emoji": True}},
         {"type": "section",
-         "text": {"type": "mrkdwn", "text": summary_md[:2900]}},
+         "text": {"type": "mrkdwn", "text": _to_mrkdwn(summary_md)[:2900]}},
     ]
     if extra_md.strip():
         blocks.append({"type": "divider"})
         blocks.append({"type": "section",
-                       "text": {"type": "mrkdwn", "text": extra_md[:2900]}})
+                       "text": {"type": "mrkdwn", "text": _to_mrkdwn(extra_md)[:2900]}})
     resp = requests.post(webhook_url, json={"blocks": blocks}, timeout=TIMEOUT)
     resp.raise_for_status()
 
