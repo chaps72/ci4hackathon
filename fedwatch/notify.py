@@ -10,7 +10,7 @@ from email.message import EmailMessage
 
 import requests
 
-from .emailer import EMORY_BLUE, build_html, build_plain_text
+from .emailer import build_html, build_plain_text
 
 TIMEOUT = 15
 
