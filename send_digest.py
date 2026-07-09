@@ -354,6 +354,7 @@ def main() -> int:
                 f"✅ FedWatch ran — no new federal research-policy items today ({et_date} ET).",
                 title=f"FedWatch — all quiet ({et_date})",
                 webhook=webhook, slack=slack, only=only)
+            print("Quiet-day heartbeat posted.")
             seen[sent_marker] = et_date
             _save_seen(seen_file, seen)
         return 0
