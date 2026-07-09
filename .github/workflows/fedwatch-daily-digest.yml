@@ -5,10 +5,14 @@ permissions:
 
 on:
   schedule:
-    # Twin crons so one always lands at 5pm America/New_York across DST;
-    # the script skips the off-hour firing, weekends, and US federal holidays.
+    # Three crons: across DST one lands at 5pm America/New_York, and the
+    # extras are backups because GitHub sometimes delays or drops a scheduled
+    # firing entirely. The script skips off-hour firings (before 5pm ET),
+    # weekends, and US federal holidays, and a once-per-day marker stops
+    # double-posting - so extra firings are harmless.
     - cron: "0 21 * * 1-5"
     - cron: "0 22 * * 1-5"
+    - cron: "0 23 * * 1-5"
   workflow_dispatch:
     inputs:
       force:
