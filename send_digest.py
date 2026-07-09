@@ -36,11 +36,10 @@ HISTORY_RETENTION_DAYS = 21
 def _scheduled_run_guards(now_et=None) -> str:
     """Reason to skip a scheduled firing, or '' to proceed.
 
-    Two crons fire (21:00 & 22:00 UTC); across DST at least one lands at or
-    after 5pm New York. GitHub can delay scheduled runs by an hour or more,
-    so the window is "5pm ET or later" (never earlier) rather than an exact
-    hour - a once-per-day marker (see main) stops the twin crons from
-    double-posting. Manual runs (workflow_dispatch) bypass all guards.
+    Weekends and US federal holidays are skipped. Off-hour firings are NOT
+    skipped - the first cron fires before 5pm on purpose and main() holds
+    delivery until exactly 5:00pm ET (see _seconds_until_5pm_et). Manual runs
+    (workflow_dispatch) bypass all guards.
     """
     if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
         return ""
@@ -52,9 +51,20 @@ def _scheduled_run_guards(now_et=None) -> str:
         return "weekend"
     if is_us_federal_holiday(now_et.date()):
         return f"US federal holiday ({now_et:%Y-%m-%d})"
-    if now_et.hour < 17:
-        return f"before 5pm ET target window ({now_et:%H:%M} ET)"
     return ""
+
+
+def _seconds_until_5pm_et(now_et=None) -> int:
+    """Seconds to hold before delivering, so the digest lands AT 5:00pm ET.
+
+    GitHub's cron is best-effort and usually late, so the first cron of the
+    day fires early and waits here; a firing already past 5pm returns 0 and
+    posts immediately (that's the backup-cron path).
+    """
+    if now_et is None:
+        now_et = datetime.now(ZoneInfo("America/New_York"))
+    target = now_et.replace(hour=17, minute=0, second=0, microsecond=0)
+    return max(0, int((target - now_et).total_seconds()))
 
 
 def _nih_focused(items: list) -> list:
@@ -336,6 +346,16 @@ def main() -> int:
     if not force and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
         print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
         return 0
+
+    # Hold until exactly 5:00pm ET (scheduled runs only). The first cron of
+    # the day fires early because GitHub's scheduler is usually late; waiting
+    # here is what makes delivery land AT 5pm instead of 5:20-6:30.
+    if os.environ.get("GITHUB_EVENT_NAME", "") == "schedule":
+        wait = _seconds_until_5pm_et()
+        if wait > 0:
+            import time
+            print(f"Holding delivery for {wait // 60}m {wait % 60}s until 5:00pm ET...")
+            time.sleep(wait)
 
     days_back = int(os.environ.get("DIGEST_DAYS_BACK", "7"))
     items = _gather_items(days_back)

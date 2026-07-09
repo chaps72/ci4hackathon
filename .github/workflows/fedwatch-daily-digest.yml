@@ -3,16 +3,24 @@ name: FedWatch daily digest
 permissions:
   contents: write
 
+# A backup cron firing while an earlier run is still holding for 5pm queues
+# behind it (then sees the sent marker and skips) instead of double-posting.
+concurrency:
+  group: fedwatch-daily-digest
+  cancel-in-progress: false
+
 on:
   schedule:
-    # Three crons: across DST one lands at 5pm America/New_York, and the
-    # extras are backups because GitHub sometimes delays or drops a scheduled
-    # firing entirely. The script skips off-hour firings (before 5pm ET),
-    # weekends, and US federal holidays, and a once-per-day marker stops
-    # double-posting - so extra firings are harmless.
-    - cron: "0 21 * * 1-5"
-    - cron: "0 22 * * 1-5"
-    - cron: "0 23 * * 1-5"
+    # Deliver AT 5pm ET: GitHub's cron is best-effort (often 20-70 min late,
+    # occasionally dropped), so the first cron fires early and the script
+    # holds delivery until exactly 5:00pm America/New_York. The later crons
+    # are backups that post immediately (already past 5pm) if an earlier
+    # firing never ran. Weekends/holidays are skipped and a once-per-day
+    # marker stops double-posting, so extra firings are harmless.
+    - cron: "30 20 * * 1-5"   # 4:30pm EDT / 3:30pm EST -> waits for 5pm
+    - cron: "10 21 * * 1-5"   # 5:10pm EDT / 4:10pm EST
+    - cron: "10 22 * * 1-5"   # 6:10pm EDT / 5:10pm EST
+    - cron: "0 23 * * 1-5"    # 7:00pm EDT / 6:00pm EST
   workflow_dispatch:
     inputs:
       force:

@@ -27,12 +27,21 @@ def test_guards_skip_holiday(monkeypatch):
     assert "holiday" in sd._scheduled_run_guards(observed)
 
 
-def test_guards_skip_before_5pm_but_allow_late(monkeypatch):
+def test_guards_allow_weekday_regardless_of_hour(monkeypatch):
     monkeypatch.setenv("GITHUB_EVENT_NAME", "schedule")
-    early = datetime(2026, 7, 8, 16, 59, tzinfo=ET)   # Wednesday
-    late = datetime(2026, 7, 8, 18, 45, tzinfo=ET)    # delayed cron must still run
-    assert "before 5pm" in sd._scheduled_run_guards(early)
+    early = datetime(2026, 7, 8, 16, 30, tzinfo=ET)   # Wednesday, pre-5pm armer
+    late = datetime(2026, 7, 8, 18, 45, tzinfo=ET)    # delayed backup cron
+    assert sd._scheduled_run_guards(early) == ""      # runs, then holds for 5pm
     assert sd._scheduled_run_guards(late) == ""
+
+
+def test_hold_until_5pm_waits_before_and_not_after():
+    early = datetime(2026, 7, 8, 16, 30, 0, tzinfo=ET)
+    exactly = datetime(2026, 7, 8, 17, 0, 0, tzinfo=ET)
+    late = datetime(2026, 7, 8, 18, 45, 0, tzinfo=ET)
+    assert sd._seconds_until_5pm_et(early) == 30 * 60
+    assert sd._seconds_until_5pm_et(exactly) == 0
+    assert sd._seconds_until_5pm_et(late) == 0
 
 
 def test_guards_bypass_for_manual_runs(monkeypatch):
