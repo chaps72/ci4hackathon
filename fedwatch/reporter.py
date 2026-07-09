@@ -281,6 +281,26 @@ def _normalize(rec: dict) -> dict:
     }
 
 
+def project_count(ic_code: str = "", fiscal_year: int = None,
+                  org_names=None) -> tuple:
+    """Total matching project count straight from the API's meta.total —
+    one cheap 1-record request, no paging. Returns (count, error)."""
+    payload = _payload(org_names=org_names, pi_name="", text_query="",
+                       ic_codes=[ic_code] if ic_code else None,
+                       activity_codes=None, org_states=None, award_min=None,
+                       award_max=None, from_date=None, to_date=None,
+                       fiscal_years=[fiscal_year] if fiscal_year else None,
+                       newly_added_only=False, offset=0, limit=1)
+    try:
+        resp = requests.post(API_URL, json=payload, headers=HEADERS,
+                             timeout=TIMEOUT)
+        resp.raise_for_status()
+        total = ((resp.json().get("meta") or {}).get("total")) or 0
+        return int(total), None
+    except Exception as exc:  # noqa: BLE001 - fail soft
+        return 0, f"count failed: {exc}"
+
+
 def fetch_awards(org_names=None, pi_name: str = "", text_query: str = "",
                  ic_codes=None, activity_codes=None, org_states=None,
                  award_min=None, award_max=None, days_back: int = 7,

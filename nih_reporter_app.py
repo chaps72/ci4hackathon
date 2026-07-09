@@ -1432,6 +1432,79 @@ def _within_days(date_str: str, days: int) -> bool:
 
 
 @st.cache_data(ttl=1800, show_spinner=False)
+def _pi_portfolio(pi: str):
+    """A PI's full NIH portfolio (all institutions, all available years)."""
+    return reporter.fetch_awards(pi_name=pi, use_award_window=False, limit=2000)
+
+
+def render_pi_drilldown(items: list):
+    """Click-through from any report: pick an investigator in the current
+    result set and see their full NIH portfolio — KPIs, funding timeline,
+    mechanism mix, grant list, and linked publications."""
+    pis = list(reporter.pi_role_counts(items).keys())
+    if not pis:
+        return
+    with st.expander("🔎 Investigator drill-down — full NIH portfolio"):
+        c1, c2 = st.columns([3, 1])
+        sel = c1.selectbox("Investigator", pis, label_visibility="collapsed",
+                           key=f"pi_dd_sel{st.session_state.get('report_seq', 0)}")
+        if c2.button("View portfolio", use_container_width=True, key="pi_dd_go"):
+            with st.spinner("🔬 Assembling the investigator's NIH portfolio…"):
+                port, perr = _pi_portfolio(sel)
+            st.session_state.pi_dd = {"pi": sel, "items": port, "err": perr}
+        dd = st.session_state.get("pi_dd")
+        if not dd:
+            return
+        st.markdown(f"**{dd['pi']}** — full NIH record (all institutions, "
+                    "all available years; PD/PI roles only)")
+        if dd.get("err"):
+            st.warning(f"Portfolio pull failed: {dd['err']}")
+            return
+        port = dd.get("items") or []
+        if not port:
+            st.caption("No NIH awards found for this investigator name.")
+            return
+        pa = reporter.aggregate(port)
+        fys = sorted(pa.get("by_fy") or {})
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Distinct grants", pa["count"])
+        m2.metric("Total funding", reporter.fmt_money(pa["total_amount"]))
+        m3.metric("Years", f"FY{fys[0]}–FY{fys[-1]}" if fys else "—")
+        m4.metric("Institutes", len(pa.get("by_ic") or {}))
+        g1, g2 = st.columns(2)
+        with g1:
+            st.markdown("**Funding by fiscal year**")
+            plot_series(pd.Series({f"FY{k}": v for k, v in
+                                   (pa.get("funding_by_fy") or {}).items()},
+                                  name="Funding ($)"), "time")
+        with g2:
+            st.markdown("**Funding by mechanism**")
+            plot_series(pd.Series({str(k): v for k, v in list(
+                (pa.get("funding_by_activity") or {}).items())[:12]},
+                name="Funding ($)"), "cat")
+        pubs, perr2 = reporter.publication_counts(
+            [it.get("core_num") for it in port if it.get("core_num")])
+        if not perr2 and pubs:
+            st.caption(f"📚 Linked publications across this portfolio: "
+                       f"{sum(pubs.values())}")
+        st.dataframe(pd.DataFrame(
+            [{"FY": ", ".join(str(y) for y in it.get("years_in_window") or [])
+                     or it.get("fiscal_year", ""),
+              "IC": it.get("ic", ""), "Mechanism": it.get("activity_code", ""),
+              "Type": it.get("app_type", ""),
+              "Amount": it.get("amount"), "Organization": it.get("org", ""),
+              "Title": it.get("title", "")} for it in port]),
+            use_container_width=True, height=260)
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def _peer_fy_items(org: str, fy: int):
+    """One peer institution's awards for one fiscal year (for pace overlays)."""
+    return reporter.fetch_awards(org_names=[org], use_award_window=False,
+                                 fiscal_years=[fy], limit=8000)
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
 def _brief_fetch(kind: str, fy: int = 0):
     """Cached RePORTER pulls for the exec briefing (30-min TTL) — a re-run of
     the briefing within that window is instant instead of re-paginating."""
@@ -1471,6 +1544,43 @@ def run_exec_briefing():
         week_items = [it for it in (wk_all or [])
                       if _within_days(it.get("award_date"), 7)]
         st.write(f"_{_stage('crunch')}_")
+        # First-time NIH awardees: contact PIs on this week's awards whose NIH
+        # record starts within the past year (checked live, in parallel).
+        first_timers = []
+        _wk_pis = sorted({(it.get("contact_pi") or "").strip()
+                          for it in week_items if it.get("contact_pi")})[:12]
+        if _wk_pis:
+            _yr_ago = (datetime.now() - timedelta(days=370)).strftime("%Y-%m-%d")
+
+            def _hist(p):
+                its, e = reporter.fetch_awards(pi_name=p,
+                                               use_award_window=False, limit=200)
+                return p, its, e
+            with ThreadPoolExecutor(max_workers=6) as _pool:
+                for p, its, e in _pool.map(_hist, _wk_pis):
+                    if e or not its:
+                        continue
+                    dates = sorted(d for d in ((it.get("award_date") or "")[:10]
+                                               for it in its) if d)
+                    if dates and dates[0] >= _yr_ago:
+                        first_timers.append(p)
+        # Emory's share of each top institute's awards this FY (by award count,
+        # from the API's own totals — dollar totals aren't published).
+        shares = []
+        _top_ics = list((reporter.aggregate(fy_items or []).get("by_ic")
+                         or {}))[:5]
+        if _top_ics:
+            with ThreadPoolExecutor(max_workers=5) as _pool:
+                _nat = {ic: _pool.submit(reporter.project_count, ic, CURRENT_FY)
+                        for ic in _top_ics}
+                _emo = {ic: _pool.submit(reporter.project_count, ic, CURRENT_FY,
+                                         [reporter.DEFAULT_ORG])
+                        for ic in _top_ics}
+            for ic in _top_ics:
+                n, ne = _nat[ic].result()
+                e, ee = _emo[ic].result()
+                if not ne and not ee and n:
+                    shares.append((ic, e, n, 100.0 * e / n))
         facts = ("SECTION A — THIS WEEK (awards issued in the last 7 days):\n"
                  + build_facts(week_items)
                  + "\n\nSECTION B — RECENT WEEKS (last ~10 weeks, for context):\n"
@@ -1510,6 +1620,16 @@ def run_exec_briefing():
                 + ". Prior-year FULL-year totals for reference: "
                 + "; ".join(_full) + ". Use this to state whether FY"
                 f"{CURRENT_FY} is running AHEAD of or BEHIND prior years' pace.")
+        if first_timers:
+            facts += ("\n\nSECTION F — FIRST-TIME NIH AWARDEES THIS WEEK "
+                      "(contact PIs whose NIH record begins within the past "
+                      "year): " + "; ".join(first_timers)
+                      + ". Worth celebrating and flagging for early support.")
+        if shares:
+            facts += ("\n\nSECTION G — EMORY SHARE OF NIH (by award count, "
+                      f"FY{CURRENT_FY}): " + "; ".join(
+                          f"{ic}: {e} of {n} awards nationally ({p:.1f}%)"
+                          for ic, e, n, p in shares) + ".")
         st.write(f"_{_stage('write')}_")
         q = (f"Write a weekly executive summary for Emory research leadership, "
              f"dated {datetime.now():%B %d, %Y}. Two parts: (1) THIS WEEK — how "
@@ -1524,13 +1644,17 @@ def run_exec_briefing():
              f"FY{CURRENT_FY} is running AHEAD of or BEHIND prior years' pace "
              "at this same point in the year (cite the FY-vs-FY pace facts and "
              "give the dollar gap); then the leading institutes and mechanisms, "
-             "and any momentum or concentration worth flagging. Crisp and "
-             "executive in tone; many charts follow below, so keep it tight.")
+             "and any momentum or concentration worth flagging. If the facts "
+             "list FIRST-TIME NIH AWARDEES, name them in a short congratulatory "
+             "line; if they include EMORY SHARE OF NIH, cite the strongest and "
+             "weakest institute share. Crisp and executive in tone; many charts "
+             "follow below, so keep it tight.")
         ans, eng = _safe_report(q, facts)
         _prog.update(label="🔬 Briefing ready", state="complete", expanded=False)
     st.session_state.exec_brief = {
         "summary": ans, "engine": eng, "wk": wk_all or [],
         "week": week_items, "fy": fy_items or [], "fy_by_year": fy_by_year,
+        "first_timers": first_timers, "shares": shares,
         "note": (f"Recent-weeks pull failed ({wk_err})." if wk_err else
                  f"FY pull failed ({fy_err})." if fy_err else ""),
         "date": datetime.now().strftime("%B %d, %Y"),
@@ -1607,6 +1731,12 @@ def _exec_charts(eb: dict) -> list:
         "cat", money=True)
     add(f"FY{CURRENT_FY} — funding by application type",
         af.get("funding_by_app_type"), "cat", money=True)
+    shares = eb.get("shares") or []
+    if shares:
+        charts.append((f"Emory share of institute awards — FY{CURRENT_FY} "
+                       "(% of national count)",
+                       pd.Series({ic: round(p, 1) for ic, _e, _n, p in shares},
+                                 name="Share (%)"), "cat"))
     add(f"FY{CURRENT_FY} — top investigators by funding", _top_pi_funding(fy),
         "cat", money=True)
     largest = {f"{(it.get('contact_pi') or it.get('pi') or '?').split(';')[0][:28]} · "
@@ -1714,6 +1844,127 @@ def build_exec_pdf(eb: dict) -> bytes:
     return buf.getvalue()
 
 
+def _exec_chart_png(title: str, payload, kind: str) -> bytes:
+    """One briefing chart as a PNG (for the PowerPoint export)."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    navy, ink = "#012169", "#1d1d1f"
+    _pal = ["#012169", "#f2a900", "#8a94ad", "#5b7bb5", "#9aa7c7"]
+    money = "funding" in title.lower()
+    fig, ax = plt.subplots(figsize=(11, 5.2))
+    if kind == "cumcmp":
+        for ci, fy_lbl in enumerate(sorted(payload["FY"].unique(), reverse=True)):
+            sub = payload[payload["FY"] == fy_lbl].set_index("month")
+            sub = sub.reindex(FISCAL_MONTHS).dropna()
+            ax.plot(list(sub.index), list(sub["value"]),
+                    color=_pal[ci % len(_pal)], linewidth=2, marker="o",
+                    markersize=4, label=fy_lbl)
+        ax.legend(fontsize=9, frameon=False)
+        if money:
+            ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+    else:
+        labels = [str(x)[:34] for x in payload.index]
+        vals = list(payload.values)
+        if kind == "cum" or (kind == "time" and len(payload) > 8):
+            ax.plot(labels, vals, color=navy, linewidth=2, marker="o",
+                    markersize=4)
+            ax.tick_params(axis="x", rotation=45)
+            if money:
+                ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+        elif kind == "time":
+            ax.bar(labels, vals, color=navy)
+            ax.tick_params(axis="x", rotation=45)
+            if money:
+                ax.yaxis.set_major_formatter(FuncFormatter(_money_fmt))
+        else:
+            ax.barh(labels[::-1], vals[::-1], color=navy)
+            if money:
+                ax.xaxis.set_major_formatter(FuncFormatter(_money_fmt))
+    ax.set_title(title, color=navy, fontsize=15, fontweight="bold", loc="left",
+                 pad=12)
+    for s in ("top", "right"):
+        ax.spines[s].set_visible(False)
+    ax.tick_params(colors=ink, labelsize=9)
+    buf = io.BytesIO()
+    fig.tight_layout()
+    fig.savefig(buf, format="png", dpi=130)
+    plt.close(fig)
+    return buf.getvalue()
+
+
+def build_exec_pptx(eb: dict) -> bytes:
+    """The briefing as a leadership-ready PowerPoint deck: a title slide with
+    the KPIs, the executive summary, then one slide per chart."""
+    from pptx import Presentation
+    from pptx.dml.color import RGBColor
+    from pptx.util import Inches, Pt
+
+    NAVY, GOLD = RGBColor(0x01, 0x21, 0x69), RGBColor(0xF2, 0xA9, 0x00)
+    aw, af = reporter.aggregate(eb["week"]), reporter.aggregate(eb["fy"])
+    prs = Presentation()
+    prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
+    blank = prs.slide_layouts[6]
+
+    def text(slide, x, y, w, h, s, size, bold=False, color=NAVY):
+        tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+        tf = tb.text_frame
+        tf.word_wrap = True
+        p = tf.paragraphs[0]
+        p.text = s
+        p.font.size = Pt(size)
+        p.font.bold = bold
+        p.font.color.rgb = color
+        return tb
+
+    # Title slide
+    s = prs.slides.add_slide(blank)
+    text(s, 0.7, 0.6, 12, 0.5, "EMORY RESEARCH", 16, bold=True, color=GOLD)
+    text(s, 0.7, 1.2, 12, 1.0, "Weekly executive briefing", 40, bold=True)
+    text(s, 0.7, 2.3, 12, 0.5,
+         f"Week ending {eb['date']} · NIH RePORTER", 14,
+         color=RGBColor(0x6E, 0x6E, 0x73))
+    text(s, 0.7, 3.3, 12, 0.6,
+         f"This week: {aw['count']} new awards · "
+         f"{reporter.fmt_money(aw['total_amount'])}", 20, bold=True)
+    text(s, 0.7, 4.0, 12, 0.6,
+         f"FY{CURRENT_FY} to date: {af['count']} awards · "
+         f"{reporter.fmt_money(af['total_amount'])}", 20, bold=True)
+
+    # Summary slides (plain text, chunked)
+    body = re.sub(r"[*#`>]", "", eb.get("summary") or "").strip()
+    chunks, cur = [], ""
+    for para in body.split("\n"):
+        if len(cur) + len(para) > 1500:
+            chunks.append(cur)
+            cur = ""
+        cur += para + "\n"
+    if cur.strip():
+        chunks.append(cur)
+    for ci, chunk in enumerate(chunks[:3]):
+        s = prs.slides.add_slide(blank)
+        text(s, 0.7, 0.5, 12, 0.5,
+             "Executive summary" + (f" ({ci + 1})" if len(chunks) > 1 else ""),
+             22, bold=True)
+        tb = text(s, 0.7, 1.3, 12, 5.8, chunk.strip(), 13,
+                  color=RGBColor(0x1D, 0x1D, 0x1F))
+        tb.text_frame.word_wrap = True
+
+    # One slide per chart
+    for title, payload, kind in _exec_charts(eb):
+        try:
+            png = _exec_chart_png(title, payload, kind)
+        except Exception:  # noqa: BLE001 - skip a chart rather than fail
+            continue
+        s = prs.slides.add_slide(blank)
+        s.shapes.add_picture(io.BytesIO(png), Inches(0.55), Inches(0.7),
+                             width=Inches(12.2))
+    out = io.BytesIO()
+    prs.save(out)
+    return out.getvalue()
+
+
 def render_exec_brief():
     eb = st.session_state.exec_brief
     st.subheader("Weekly executive briefing")
@@ -1732,6 +1983,11 @@ def render_exec_brief():
         ai_md(eb["summary"])
         if eb.get("engine") == "claude":
             st.caption(f"Engine: Claude ({summarize.MODEL}) · figures pre-computed")
+    if eb.get("first_timers"):
+        st.success("🎉 **First-time NIH awardees this week:** "
+                   + "; ".join(eb["first_timers"])
+                   + "  \n_Contact PIs whose NIH record begins within the past "
+                   "year — worth a congratulations and early support._")
     charts = _exec_charts(eb)
     st.markdown(f"### The week and the year in {len(charts)} graphs")
     cols = st.columns(2)
@@ -1742,6 +1998,33 @@ def render_exec_brief():
                 plot_multiline(payload, money="funding" in title.lower())
             else:
                 plot_series(payload, kind)
+    # ---- Cumulative funding pace vs peer institutions (on demand) ----
+    st.markdown("**Cumulative funding pace vs peers**")
+    if st.toggle("Overlay peer institutions on this fiscal year's funding pace",
+                 key="peer_pace",
+                 help="Pulls Duke, Vanderbilt, and Johns Hopkins for "
+                      f"FY{CURRENT_FY} (cached 30 min) and compares cumulative "
+                      "funding through the current fiscal month."):
+        from concurrent.futures import ThreadPoolExecutor
+        _peers = [o for o in DEFAULT_PEERS if o != "EMORY UNIVERSITY"][:3]
+        with st.spinner("🏛️ Pulling peer portfolios for the pace overlay…"):
+            with ThreadPoolExecutor(max_workers=3) as _pool:
+                _pf = {o: _pool.submit(_peer_fy_items, o, CURRENT_FY)
+                       for o in _peers}
+        pos_today = (datetime.now().month - 10) % 12
+        rows = []
+        for org, items_ in ([("Emory", eb["fy"])]
+                            + [(o.title().split()[0], _pf[o].result()[0] or [])
+                               for o in _peers if not _pf[o].result()[1]]):
+            cum = _fiscal_cumulative(items_, "funding", pos_today)
+            rows += [{"month": FISCAL_MONTHS[i], "FY": org, "value": v}
+                     for i, v in enumerate(cum)]
+        if rows:
+            plot_multiline(pd.DataFrame(rows), money=True)
+            st.caption(f"Cumulative FY{CURRENT_FY} funding through "
+                       f"{FISCAL_MONTHS[pos_today]}, per institution "
+                       "(prime-org award records; on-screen only).")
+
     # Build the full PDF once per briefing (summary + every chart); the button
     # is then an instant download. Degrades to Markdown-only if the build fails.
     if "pdf" not in eb:
@@ -1750,12 +2033,26 @@ def render_exec_brief():
                 eb["pdf"] = build_exec_pdf(eb)
         except Exception:  # noqa: BLE001 - PDF is best-effort
             eb["pdf"] = None
-    d1, d2 = st.columns(2)
+    d1, d2, d3 = st.columns(3)
     if eb.get("pdf"):
-        d1.download_button("Download briefing (PDF — summary + all graphs)",
+        d1.download_button("Download PDF (summary + all graphs)",
                            eb["pdf"], file_name="nih_weekly_executive_briefing.pdf",
                            mime="application/pdf", use_container_width=True)
-    d2.download_button("Download briefing (Markdown)", eb["summary"],
+    if eb.get("pptx"):
+        d2.download_button("Download PowerPoint (deck)", eb["pptx"],
+                           file_name="nih_weekly_executive_briefing.pptx",
+                           mime="application/vnd.openxmlformats-officedocument."
+                                "presentationml.presentation",
+                           use_container_width=True)
+    elif d2.button("Create PowerPoint deck", use_container_width=True,
+                   help="Title + summary slides, then one slide per chart."):
+        try:
+            with st.spinner("📽️ Building the PowerPoint deck…"):
+                eb["pptx"] = build_exec_pptx(eb)
+            st.rerun()
+        except Exception as exc:  # noqa: BLE001
+            st.error(f"PowerPoint build failed: {exc}")
+    d3.download_button("Download Markdown", eb["summary"],
                        file_name="nih_weekly_executive_briefing.md",
                        mime="text/markdown", use_container_width=True)
     st.write("")
@@ -2154,6 +2451,9 @@ else:
     if _prim:
         complementary_charts(rep_items, st.session_state.get("last_parsed") or {},
                              agg, _prim[0], _prim[1], limit=2)
+
+    # Investigator drill-down: from this result set to a PI's full portfolio.
+    render_pi_drilldown(rep_items)
 
     _bench = st.session_state.get("benchmark")
     if _bench and _bench.get("rows"):
