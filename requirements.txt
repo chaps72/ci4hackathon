@@ -5,3 +5,4 @@ anthropic==0.116.0
 openpyxl
 matplotlib
 altair>=5
+python-pptx

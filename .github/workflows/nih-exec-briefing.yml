@@ -1,0 +1,32 @@
+name: NIH weekly executive briefing (email)
+
+# NOT YET SHIPPED: manual trigger only. When leadership signs off, uncomment
+# the schedule block below to send every Monday morning.
+on:
+  workflow_dispatch: {}
+  # schedule:
+  #   - cron: "0 12 * * 1"   # 8am ET Mondays (EDT)
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests anthropic matplotlib
+
+      - name: Email the executive briefing
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EXEC_EMAIL_FROM: ${{ secrets.ALERT_EMAIL_FROM }}
+          EXEC_EMAIL_TO: ${{ secrets.EXEC_EMAIL_TO }}
+        run: python nih_exec_briefing_email.py
