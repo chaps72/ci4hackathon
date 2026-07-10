@@ -2,10 +2,9 @@ import RealityKit
 import UIKit
 import simd
 
-/// Builds and updates the 3D virtual lab. Solid surfaces use lit `SimpleMaterial`
-/// (shaded by the scene's directional lights) for a realistic look, while the
-/// liquids, labels, and guidance sign stay unlit so the informative bits are
-/// always clearly visible.
+/// Builds and updates the 3D virtual lab. Everything uses unlit materials so the
+/// scene renders brightly and reliably in the fully immersive space, with no
+/// dependence on scene lighting.
 enum LabSceneBuilder {
 
     // Names used to identify what the user tapped.
@@ -35,7 +34,6 @@ enum LabSceneBuilder {
         root.children.removeAll()
         root.transform = .identity
 
-        root.addChild(makeLighting())
         root.addChild(makeRoom())
 
         let bench = Entity()
@@ -50,26 +48,6 @@ enum LabSceneBuilder {
         panel.position = [0, benchTopY + 0.36, -0.16]
         bench.addChild(panel)
         root.addChild(bench)
-    }
-
-    // MARK: - Lighting
-
-    /// Three directional lights (key + two fills) give even, bright, shaded
-    /// lighting so nothing goes dark in the fully immersive space.
-    private static func makeLighting() -> Entity {
-        let lights = Entity()
-        let aim: SIMD3<Float> = [0, benchTopY, -1.05]
-
-        func directional(_ intensity: Float, from: SIMD3<Float>) {
-            let e = Entity()
-            e.components.set(DirectionalLightComponent(color: .white, intensity: intensity))
-            e.look(at: aim, from: from, upVector: [0, 1, 0], relativeTo: nil)
-            lights.addChild(e)
-        }
-        directional(4200, from: [1.6, 3.0, 0.6])    // key (upper right)
-        directional(2600, from: [-1.8, 2.4, 0.8])   // fill (upper left)
-        directional(2200, from: [0.0, 2.2, -2.6])   // back / rim
-        return lights
     }
 
     // MARK: - Room
@@ -112,7 +90,6 @@ enum LabSceneBuilder {
         // Glossy worktop.
         let top = box(1.6, 0.05, 0.78, surface(0.90, 0.91, 0.93, roughness: 0.28))
         top.position = [0, benchTopY - 0.025, 0]
-        top.components.set(GroundingShadowComponent(castsShadow: false))
         bench.addChild(top)
         return bench
     }
@@ -197,7 +174,6 @@ enum LabSceneBuilder {
         bottle.addChild(labelText)
 
         makeTappable(bottle, size: [0.1, 0.36, 0.1], center: [0, 0.11, 0])
-        bottle.components.set(GroundingShadowComponent(castsShadow: true))
         return bottle
     }
 
@@ -252,7 +228,6 @@ enum LabSceneBuilder {
 
         pipette.name = pipetteName
         makeTappable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
-        pipette.components.set(GroundingShadowComponent(castsShadow: true))
         pipette.position = pipetteHome
         return pipette
     }
@@ -323,7 +298,6 @@ enum LabSceneBuilder {
         tube.addChild(liquids)
 
         makeTappable(tube, size: [0.1, 0.16, 0.1], center: [0, 0.03, 0])
-        tube.components.set(GroundingShadowComponent(castsShadow: true))
 
         let label = makeTextEntity("Reaction tube", fontSize: 0.015,
                                    color: .white, maxWidth: 0.2)
@@ -509,18 +483,15 @@ enum LabSceneBuilder {
 
     // MARK: - Materials
 
-    /// A lit, shaded opaque surface.
+    /// An opaque surface. Unlit so it always renders brightly regardless of the
+    /// immersive space's lighting (roughness is ignored — kept for call sites).
     private static func surface(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat,
-                                roughness: Float = 0.8) -> SimpleMaterial {
-        SimpleMaterial(color: UIColor(red: r, green: g, blue: b, alpha: 1.0),
-                       roughness: MaterialScalarParameter(floatLiteral: roughness),
-                       isMetallic: false)
+                                roughness: Float = 0.8) -> UnlitMaterial {
+        UnlitMaterial(color: UIColor(red: r, green: g, blue: b, alpha: 1.0))
     }
 
-    private static func litColor(_ c: ReagentColor, roughness: Float = 0.5) -> SimpleMaterial {
-        SimpleMaterial(color: c.uiColor,
-                       roughness: MaterialScalarParameter(floatLiteral: roughness),
-                       isMetallic: false)
+    private static func litColor(_ c: ReagentColor, roughness: Float = 0.5) -> UnlitMaterial {
+        UnlitMaterial(color: c.uiColor)
     }
 
     /// Unlit (always-bright) material — used for liquids, labels, and the sign.
