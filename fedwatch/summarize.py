@@ -7,6 +7,7 @@ template-based summary so the app always produces something useful.
 import json
 import os
 import re
+from datetime import datetime, timedelta
 
 from .classify import LEVELS, LEVEL_EMOJI
 
@@ -65,6 +66,28 @@ _MONTH_LAST = {1: 31, 2: 29, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30,
                10: 31, 11: 30, 12: 31}
 
 
+def _date_anchors(now=None) -> dict:
+    """Exact calendar anchors for conversational periods (weeks start Monday)."""
+    t = (now or datetime.now()).date()
+    mon = t - timedelta(days=t.weekday())
+    prev_mon, prev_sun = mon - timedelta(days=7), mon - timedelta(days=1)
+    m_start = t.replace(day=1)
+    pm_end = m_start - timedelta(days=1)
+    return {"today": t, "monday": mon, "prev_mon": prev_mon,
+            "prev_sun": prev_sun, "month_start": m_start,
+            "prev_month_start": pm_end.replace(day=1), "prev_month_end": pm_end}
+
+
+def _date_context() -> str:
+    """A prompt line that pins relative dates so the model can't guess wrong."""
+    a = _date_anchors()
+    return (f"Today is {a['today']:%A, %Y-%m-%d}. Weeks start Monday: 'this "
+            f"week' = {a['monday']} through today; 'last week' = "
+            f"{a['prev_mon']} through {a['prev_sun']}; 'this month' = "
+            f"{a['month_start']} through today; 'last month' = "
+            f"{a['prev_month_start']} through {a['prev_month_end']}. ")
+
+
 def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> dict:
     """Regex fallback that extracts the most common windows/scope from text."""
     q = (question or "").lower()
@@ -106,6 +129,34 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
                               "month by month", "month over month", "this month",
                               "last month", "recent month", "few months")):
         out["group_by"] = "month"
+    # Pin conversational single periods to EXACT calendar dates (weeks start
+    # Monday) so 'this week' is THIS week, not a rolling window. Comparisons
+    # ('vs previous weeks') skip this and keep the wider window below.
+    _cmp_signal = any(w in q for w in (
+        "compare", "vs ", "versus", " than ", "how does", "trend", "weeks",
+        "months", "week over", "month over", "couple", "few ", "prior",
+        "recent"))
+    if not out["fiscal_years"] and not out["date_from"]:
+        _a = _date_anchors()
+        if "this week" in q and "last week" in q:
+            out["date_from"], out["date_to"] = str(_a["prev_mon"]), str(_a["today"])
+        elif "this week" in q and not _cmp_signal:
+            out["date_from"], out["date_to"] = str(_a["monday"]), str(_a["today"])
+            out["group_by"] = None
+        elif any(w in q for w in ("last week", "previous week", "past week")) \
+                and not _cmp_signal:
+            out["date_from"], out["date_to"] = str(_a["prev_mon"]), str(_a["prev_sun"])
+            out["group_by"] = None
+        elif "this month" in q and not _cmp_signal:
+            out["date_from"], out["date_to"] = str(_a["month_start"]), str(_a["today"])
+            out["group_by"] = None
+        elif "last month" in q and not _cmp_signal:
+            out["date_from"] = str(_a["prev_month_start"])
+            out["date_to"] = str(_a["prev_month_end"])
+            out["group_by"] = None
+        elif "yesterday" in q:
+            _y = _a["today"] - timedelta(days=1)
+            out["date_from"], out["date_to"] = str(_y), str(_y)
     # Recent weekly/monthly activity without explicit dates -> bound the pull so
     # week/month buckets (and a week-over-week comparison) are actually possible.
     if (out["group_by"] and not out["fiscal_years"] and not out["date_from"]
@@ -134,7 +185,7 @@ def _heuristic_parse(question: str, current_fy: int, ic_list, activity_list) -> 
     # Named months -> an award-notice date range in the current FY year.
     months = sorted({n for name, n in _MONTHS.items()
                      if re.search(r"\b" + name + r"\b", q)})
-    if months and not out["fiscal_years"]:
+    if months and not out["fiscal_years"] and not out["date_from"]:
         y = current_fy
         lo, hi = months[0], months[-1]
         out["date_from"] = f"{y}-{lo:02d}-01"
@@ -230,6 +281,13 @@ def parse_query(question: str, current_fy: int, ic_list, activity_list):
         "self-evidently about home turf, the institution is Emory. Use the field "
         "rules below to encode that reasoned intent.\n\n"
         "Extract NIH RePORTER search parameters from the user's request below. "
+        f"{_date_context()}"
+        "CONFIRM DATES CAREFULLY: for a SINGLE conversational period, set the "
+        "exact calendar range above as date_from/date_to — 'this week' means "
+        "THIS calendar week (Monday through today), never a rolling 7 days and "
+        "never a different week; same for 'last week', 'this month', 'last "
+        "month', 'yesterday'. Only week-over-week or month-over-month "
+        "COMPARISONS use the wider days_back window instead. "
         f"The current NIH fiscal year is FY{current_fy}. Convert relative time "
         "windows to explicit values: 'last N fiscal years' means the N most recent "
         f"fiscal years including FY{current_fy} (e.g. last 4 -> "
@@ -345,12 +403,15 @@ def plan_followup(followup: str, scope: dict, current_fy: int, ic_list,
         "choose 'reuse' when you are confident the records already pulled "
         "contain EVERYTHING the follow-up needs and it is purely a re-cut, "
         "re-ranking, or re-summary of that same set. When in doubt, refetch.\n"
-        f"The current NIH fiscal year is FY{current_fy}. Time rules: 'last N "
-        "fiscal years' = the N most recent including the current; comparing "
-        "years / trends = a RANGE of years (current and 5 prior if unstated); "
-        "weekly phrasings ('this week', 'previous few weeks') = group_by 'week' "
-        "with days_back about 70, monthly = group_by 'month' with days_back "
-        f"about 210. Only use IC codes from: {', '.join(ic_list)}. Only use "
+        f"The current NIH fiscal year is FY{current_fy}. {_date_context()}"
+        "Time rules: a SINGLE conversational period ('this week', 'last "
+        "month') gets its exact calendar range above as date_from/date_to; "
+        "'last N fiscal years' = the N most recent including the current; "
+        "comparing years / trends = a RANGE of years (current and 5 prior if "
+        "unstated); week-over-week comparisons ('this week vs previous few "
+        "weeks') = group_by 'week' with days_back about 70, month-over-month = "
+        "group_by 'month' with days_back about 210. "
+        f"Only use IC codes from: {', '.join(ic_list)}. Only use "
         f"activity codes from: {', '.join(activity_list)}. "
         f"{_CHART_HINT_RULES}\n"
         "Respond with ONLY a JSON object (no prose): {\"action\": \"reuse\" or "
@@ -408,7 +469,8 @@ def clarify(question: str) -> dict:
     client = anthropic.Anthropic()
     prompt = (
         "You triage NIH RePORTER analytics requests for a university research "
-        "office before they run. Work through the request step by step:\n"
+        f"office before they run. {_date_context()}"
+        "Work through the request step by step:\n"
         "1. What is the person actually trying to LEARN or decide — the intent "
         "behind the words?\n"
         "2. What report would a knowledgeable analyst build to answer it: which "
@@ -572,7 +634,12 @@ def custom_report(question: str, facts_md: str, prior: str = "") -> tuple[str, s
         "Never refuse a chart request. "
         "ALWAYS begin your answer by stating the fiscal year(s) or date window the "
         "data covers (e.g. 'FY2026:' or 'April–May 2026:'), so the reader knows the "
-        "period. NIH RePORTER project data only goes back to FY1985. "
+        f"period. {_date_context()}"
+        "Never say 'this week', 'last week', or 'last month' without the "
+        "explicit dates (e.g. 'this week (Jul 6–10)'), and confirm the period "
+        "you describe matches the data window stated in the facts — if they "
+        "differ, say what the data actually covers. "
+        "NIH RePORTER project data only goes back to FY1985. "
         "TERMINOLOGY: NIH 'new awards' in a window are award NOTICES — a mix of "
         "entirely new grants (Type 1) and renewals/continuations of existing "
         "grants entering a new cycle or budget year. Whenever you report 'new "
