@@ -350,6 +350,8 @@ def build_facts(items: list, question: str = "") -> str:
     lines = [
         f"Filters: {st.session_state.get('rep_query', '')}.",
         "NIH RePORTER project data is available from FY1985 onward (no earlier years exist).",
+        summarize._date_context()
+        + "Weekly buckets below are labeled by their Monday start date.",
         f"Awards in result set: {a['count']}. Total funding: {reporter.fmt_money(a['total_amount'])}. "
         f"Median award: {reporter.fmt_money(a['median_amount'])}. Largest: {reporter.fmt_money(a['max_amount'])}.",
         f"Distinct principal investigators: {len(dist['counts'])}.",
