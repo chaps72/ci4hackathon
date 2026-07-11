@@ -50,6 +50,43 @@ def test_guards_bypass_for_manual_runs(monkeypatch):
 
 
 # --------------------------------------------------------------------------
+# Digest scope: NIH first, plus NSF and research-relevant DOD
+
+def _scoped(monkeypatch, item):
+    monkeypatch.setenv("FEDWATCH_FOCUS", "nih")
+    return sd._nih_focused([item])
+
+
+def test_scope_keeps_nsf(monkeypatch):
+    item = {"agency": "National Science Foundation", "title": "IPA policy update",
+            "summary": "changes to rotator program"}
+    assert _scoped(monkeypatch, item) == [item]
+
+
+def test_scope_keeps_dod_with_research_signal(monkeypatch):
+    item = {"agency": "Defense Department", "title": "Basic research funding at universities",
+            "summary": "changes to 6.1 basic research programs"}
+    assert _scoped(monkeypatch, item) == [item]
+
+
+def test_scope_drops_dod_without_research_signal(monkeypatch):
+    item = {"agency": "Defense Department", "title": "TRICARE co-pay adjustment",
+            "summary": "military health plan billing"}
+    assert _scoped(monkeypatch, item) == []
+
+
+def test_scope_keeps_nih(monkeypatch):
+    item = {"agency": "National Institutes of Health", "title": "Notice", "summary": ""}
+    assert _scoped(monkeypatch, item) == [item]
+
+
+def test_scope_all_disables_filter(monkeypatch):
+    monkeypatch.setenv("FEDWATCH_FOCUS", "all")
+    item = {"agency": "Department of the Interior", "title": "x", "summary": "y"}
+    assert sd._nih_focused([item]) == [item]
+
+
+# --------------------------------------------------------------------------
 # Update flagging (new items only, but mark follow-ups)
 
 HISTORY = [

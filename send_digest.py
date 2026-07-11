@@ -67,12 +67,22 @@ def _seconds_until_5pm_et(now_et=None) -> int:
     return max(0, int((target - now_et).total_seconds()))
 
 
+# DOD publishes far more procurement/operations than research; a Defense item
+# must show one of these signals to enter the digest (the AI relevance judge
+# then screens what remains against the SVPR brief).
+_DOD_RESEARCH_SIGNALS = (
+    "research", "universit", "grant", "academ", "scienc", "laborator",
+    "stem", "basic research", "darpa", "fellowship", "r&d",
+)
+
+
 def _nih_focused(items: list) -> list:
-    """Default digest scope: NIH first.
+    """Default digest scope: NIH first, plus NSF and research-relevant DOD.
 
     Keeps NIH/HHS research actions, NIH Guide/Nexus notices, watchlist and
-    tracked items, and OMB/EOP actions (already gated to research-touching).
-    Set FEDWATCH_FOCUS=all to widen to the full portfolio (NSF/DOE/DOD/...).
+    tracked items, OMB/EOP actions (already gated to research-touching), all
+    NSF actions, and DOD/DARPA actions that carry a research signal.
+    Set FEDWATCH_FOCUS=all to widen to the full portfolio (DOE/NASA/...).
     """
     if os.environ.get("FEDWATCH_FOCUS", "nih").lower() != "nih":
         return items
@@ -81,11 +91,18 @@ def _nih_focused(items: list) -> list:
         agency = (i.get("agency") or "").lower()
         source = i.get("source") or ""
         text = f"{i.get('title', '')} {i.get('summary', '')}".lower()
+        is_dod = ("defense" in agency or "darpa" in agency
+                  or "advanced research projects" in agency
+                  or any(b in agency for b in ("department of the army",
+                                               "department of the navy",
+                                               "department of the air force")))
         if (source in ("NIH Guide", "NIH Nexus", "OMB Memoranda")
                 or "institutes of health" in agency
                 or "health and human services" in agency
                 or "management and budget" in agency
                 or "executive office" in agency
+                or "science foundation" in agency          # NSF: inherently research
+                or (is_dod and any(s in text for s in _DOD_RESEARCH_SIGNALS))
                 or "nih" in text
                 or i.get("watchlist_targeted") or i.get("watchlist_hits")
                 or i.get("type") == "Tracked Notice"):
