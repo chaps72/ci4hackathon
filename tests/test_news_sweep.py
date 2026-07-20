@@ -60,3 +60,45 @@ def test_news_passes_nih_focus_filter(monkeypatch):
     item = {"type": "News", "source": "News", "agency": "Science",
             "title": "NSF slashes graduate fellowships", "summary": ""}
     assert sd._nih_focused([item]) == [item]
+
+
+# --------------------------------------------------------------------------
+# Separate press section (message + HTML)
+
+import fedwatch.emailer as emailer
+
+PRESS = {"type": "News", "source": "News", "agency": "Science",
+         "title": "Administration ends dozens of grants", "date": "2026-07-19",
+         "summary": "AHRQ terminated dozens of grants.", "level": "HIGH",
+         "url": "https://www.science.org/content/article/x"}
+OFFICIAL = {"type": "Notice", "source": "Federal Register", "agency": "NIH",
+            "title": "Official notice", "level": "HIGH", "id": "fr-1"}
+
+
+def test_split_press_separates_news_from_official():
+    official, press = sd._split_press([PRESS, OFFICIAL])
+    assert official == [OFFICIAL]
+    assert press == [PRESS]
+
+
+def test_press_section_lists_outlet_date_and_url():
+    out = sd._press_section([PRESS])
+    assert "From the research press" in out
+    assert "Science, 2026-07-19" in out
+    assert "https://www.science.org/content/article/x" in out
+
+
+def test_press_section_empty_without_stories():
+    assert sd._press_section([]) == ""
+
+
+def test_html_renders_press_in_own_section():
+    html_out = emailer.build_html([OFFICIAL], "s", "T", press_items=[PRESS])
+    assert "From the research press" in html_out
+    assert "press coverage" in html_out
+    assert "science.org" in html_out
+
+
+def test_html_no_press_section_when_empty():
+    html_out = emailer.build_html([OFFICIAL], "s", "T")
+    assert "From the research press" not in html_out

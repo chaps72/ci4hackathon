@@ -76,7 +76,38 @@ def build_plain_text(items: list, summary_md: str = "", title: str = "Federal Re
     return "\n".join(lines)
 
 
-def build_html(items: list, summary_md: str = "", title: str = "Federal Research Update") -> str:
+def _press_rows(press: list, e) -> str:
+    """A distinct 'From the research press' section: outlet-reported actions
+    that often never appear in the Federal Register."""
+    if not press:
+        return ""
+    rows = [f'<tr><td style="padding:16px 0 6px 0;font:bold 14px Arial,sans-serif;'
+            f'color:{EMORY_GRAY};">📰 From the research press ({len(press)})</td></tr>']
+    for it in press:
+        url = _safe_url(it.get("url", ""))
+        title_html = e(it.get("title", ""))
+        if url:
+            title_html = f'<a href="{e(url)}" style="color:{EMORY_BLUE};">{title_html}</a>'
+        rows.append(
+            '<tr><td style="padding:6px 0 10px 12px;border-left:3px solid '
+            f'{EMORY_GOLD};font:13px Arial,sans-serif;color:#2c3e50;background:#fffdf5;">'
+            f'<div style="font-weight:bold;">{title_html}</div>'
+            f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
+            f'{e(it.get("date", ""))} &middot; press coverage</div>'
+            f'<div style="padding-top:3px;">{e((it.get("summary") or "")[:400])}</div>'
+            + (f'<div style="padding-top:6px;background:#eef1f7;border-radius:4px;'
+               f'padding:8px 10px;margin-top:6px;font-size:12px;">'
+               f'<b style="color:{EMORY_BLUE};">Emory impact</b>'
+               + (f' &middot; <b>{e(it.get("exposure","").upper())} severity</b>' if it.get("exposure") else "")
+               + f'<br>{e(it.get("impact",""))}'
+               + (f'<br><b>SVPR office:</b> {e(it.get("svpr_impact",""))}' if it.get("svpr_impact") else "")
+               + '</div>' if it.get("impact") else "")
+            + "</td></tr>")
+    return "".join(rows)
+
+
+def build_html(items: list, summary_md: str = "", title: str = "Federal Research Update",
+               press_items: list | None = None) -> str:
     e = html.escape
     rows = []
     for lvl in LEVELS:
@@ -141,6 +172,7 @@ Generated {e(datetime.now().strftime('%Y-%m-%d %H:%M'))} &middot; Internal use</
 <tr><td style="height:14px;"></td></tr>
 {summary_html}
 {''.join(rows)}
+{_press_rows(press_items or [], e)}
 <tr><td style="padding-top:18px;border-top:2px solid {EMORY_GOLD};margin-top:12px;
 font:11px Arial,sans-serif;color:{EMORY_GRAY};">
 Sent by FedWatch (internal awareness tool). No tracking pixels, no external images.

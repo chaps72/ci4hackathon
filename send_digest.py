@@ -255,25 +255,53 @@ def _deadlines_section(items: list, max_items: int = 8) -> str:
     return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
 
 
-def _build_sections(items: list, history: list) -> str:
+def _split_press(items: list) -> tuple[list, list]:
+    """Separate press-sweep stories from official register items so the press
+    coverage renders as its own section rather than mixed into the item list."""
+    press = [i for i in items if i.get("type") == "News"]
+    official = [i for i in items if i.get("type") != "News"]
+    return official, press
+
+
+def _press_section(press: list, max_items: int = 5) -> str:
+    """A 'From the research press' block: outlet-reported actions (often never
+    published in the Federal Register). '' when the sweep found nothing."""
+    rows = []
+    for it in press[:max_items]:
+        line = f"- {(it.get('title') or '')[:120]} — {it.get('agency', '')}"
+        if it.get("date"):
+            line += f", {it['date']}"
+        if it.get("summary"):
+            line += f"\n  {it['summary'][:200]}"
+        if it.get("url"):
+            line += f"\n  {it['url']}"
+        rows.append(line)
+    return "📰 From the research press\n" + "\n".join(rows) if rows else ""
+
+
+def _build_sections(items: list, history: list, press: list | None = None) -> str:
     """Bottom-of-message sections, in order: updates to earlier items,
-    deadlines/comment opportunities, trend note, government-affairs roundup."""
+    deadlines/comment opportunities, research-press sweep, trend note,
+    government-affairs roundup."""
     updates_md = _updates_section(items)
     deadlines_md = _deadlines_section(items)
-    trend = summarize.trend_note(items, history)  # history is the log BEFORE today
+    press_md = _press_section(press or [])
+    everything = items + (press or [])
+    trend = summarize.trend_note(everything, history)  # history is the log BEFORE today
     trend_md = f"📈 Trend watch\n{trend}" if trend else ""
-    brief = summarize.govt_affairs_brief(items)
+    brief = summarize.govt_affairs_brief(everything)
     gov_md = f"🏛️ Government affairs\n{brief}" if brief else ""
-    return "\n\n".join(s for s in (updates_md, deadlines_md, trend_md, gov_md) if s)
+    return "\n\n".join(s for s in (updates_md, deadlines_md, press_md, trend_md, gov_md) if s)
 
 
-def _publish_page(items: list, summary: str, title: str) -> None:
+def _publish_page(items: list, summary: str, title: str,
+                  press: list | None = None) -> None:
     """Write the styled HTML digest page and refresh the archive index
     (published to GitHub Pages by the workflow). Never blocks delivery."""
     import pathlib
     date_str = datetime.now().strftime("%Y-%m-%d")
     try:
-        html = emailer.build_html(items, summary, title)
+        html = emailer.build_html(items, summary, title, press_items=press)
         ddir = pathlib.Path("docs/digests")
         ddir.mkdir(parents=True, exist_ok=True)
         (ddir / f"{date_str}.html").write_text(html, encoding="utf-8")
@@ -405,13 +433,16 @@ def main() -> int:
     # Flag items that update earlier coverage (corrections, shared FR docket)
     # before rendering, so both the page and the message can mark them.
     items = _mark_updates(items, history)
+    official, press = _split_press(items)
+    if press:
+        print(f"Research press: {len(press)} story(ies) in this digest.")
     summary, engine = summarize.generate_summary(items, "Executive summary")
     cadence = "Daily" if days_back <= 3 else "Weekly"
     title = f"FedWatch {cadence} - {datetime.now().strftime('%B %d, %Y')}"
     print(f"Summary generated ({engine} engine, {len(items)} items).")
 
-    _publish_page(items, summary, title)
-    extra_md = _build_sections(items, history)
+    _publish_page(official, summary, title, press=press)
+    extra_md = _build_sections(official, history, press=press)
     _deliver_digest(summary, extra_md, title, cadence, items,
                     webhook, slack, smtp_host, only)
 
