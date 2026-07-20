@@ -175,6 +175,11 @@ def is_research_relevant(item: dict) -> bool:
     # NIH Guide policy notices: trusted feed, but still require a domain OR
     # an OD-level policy notice number (NOT-OD-*) so routine IC notices
     # don't pile up.
+    # Press-sweep items are pre-scoped to research-policy news by the search
+    # prompt and re-screened by the AI relevance judge; keyword-domain rules
+    # would wrongly drop headlines like "administration ends dozens of grants".
+    if item.get("source") == "News":
+        return True
     if item.get("source") in TRUSTED_SOURCES:
         return bool(domains) or "not-od-" in (item.get("id") or "").lower() \
             or "not-od-" in (item.get("title") or "").lower()

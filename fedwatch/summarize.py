@@ -1148,6 +1148,90 @@ def enrich_with_news(items: list, max_items: int = 6) -> list:
     return items
 
 
+def _news_sweep_items(raw_json: str, days_back: int, now=None) -> list:
+    """Normalize the news-sweep model output into digest items.
+
+    Stable ids are derived from the article URL so the daily dedupe works
+    across runs. Items without a valid http(s) URL, or dated outside the
+    lookback window, are dropped.
+    """
+    import hashlib
+    from datetime import datetime as _dt, timedelta as _td
+
+    try:
+        entries = json.loads(_extract_json_array(raw_json))
+    except (ValueError, TypeError):
+        return []
+    if not isinstance(entries, list):
+        return []
+    cutoff = ((now or _dt.now()) - _td(days=days_back + 1)).strftime("%Y-%m-%d")
+    out, seen_urls = [], set()
+    for e in entries:
+        if not isinstance(e, dict):
+            continue
+        url = (e.get("url") or "").strip()
+        if not url.startswith(("http://", "https://")) or url in seen_urls:
+            continue
+        date = (e.get("date") or "").strip()[:10]
+        if date and date < cutoff:
+            continue
+        seen_urls.add(url)
+        out.append({
+            "id": f"news-{hashlib.sha1(url.encode()).hexdigest()[:12]}",
+            "source": "News",
+            "agency": (e.get("outlet") or "Press").strip()[:80],
+            "title": (e.get("title") or "").strip()[:300],
+            "summary": (e.get("summary") or "").strip()[:600],
+            "url": url,
+            "date": date,
+            "type": "News",
+        })
+    return out
+
+
+def news_sweep(days_back: int = 2, max_items: int = 6) -> list:
+    """Web-search the research press for federal actions that never appear in
+    the Federal Register - grant terminations announced by letter, funding
+    freezes, agency reorganizations - reported by outlets like Science, STAT,
+    Nature, Inside Higher Ed. Returns normalized digest items ([] without an
+    API key or on any error; never raises)."""
+    if not claude_available():
+        return []
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+        tools = [{"type": "web_search_20260209", "name": "web_search"}]
+        prompt = (
+            f"Search the web for news from the LAST {days_back + 1} DAYS about "
+            "federal actions affecting university research that may not appear in "
+            "the Federal Register: grant terminations or cancellations (NIH, NSF, "
+            "AHRQ, DOD, other science agencies), funding freezes or clawbacks, "
+            "indirect-cost actions, research-security crackdowns, science-agency "
+            "budget or leadership shakeups. Prioritize reporting from outlets like "
+            "Science, Nature, STAT News, Inside Higher Ed, Chronicle of Higher "
+            "Education, and major wire services. Run 2-3 searches with different "
+            "phrasings.\n\n"
+            f"Then reply with ONLY a JSON array (max {max_items} entries, [] if "
+            "nothing qualifies) of objects with keys: title, outlet, date "
+            "(YYYY-MM-DD publication date), url, summary (1-2 factual sentences). "
+            "Only include distinct stories from the time window; no opinion "
+            "pieces; no items about a single institution's internal news."
+        )
+        messages = [{"role": "user", "content": prompt}]
+        text = ""
+        for _ in range(4):  # allow the server-side search loop to resume
+            resp = client.messages.create(
+                model=MODEL, max_tokens=2500, tools=tools, messages=messages)
+            text = "".join(b.text for b in resp.content if b.type == "text").strip()
+            if resp.stop_reason == "pause_turn":
+                messages.append({"role": "assistant", "content": resp.content})
+                continue
+            break
+        return _news_sweep_items(text, days_back)[:max_items]
+    except Exception:  # noqa: BLE001 - news sweep is additive, never block the digest
+        return []
+
+
 def _template_summary(items: list, style: str) -> str:
     by_level = {lvl: [] for lvl in LEVELS}
     for it in items:

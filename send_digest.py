@@ -105,7 +105,7 @@ def _nih_focused(items: list) -> list:
                 or (is_dod and any(s in text for s in _DOD_RESEARCH_SIGNALS))
                 or "nih" in text
                 or i.get("watchlist_targeted") or i.get("watchlist_hits")
-                or i.get("type") == "Tracked Notice"):
+                or i.get("type") in ("Tracked Notice", "News")):
             out.append(i)
     return out
 
@@ -172,6 +172,12 @@ def _gather_items(days_back: int):
         for err in errors:
             print(f"  fetch error: {err}")
         return None
+    # Press sweep: web-search the research press for actions that never hit
+    # the Federal Register (terminations by letter, freezes, shakeups).
+    news = summarize.news_sweep(days_back=days_back)
+    if news:
+        print(f"News sweep: {len(news)} press item(s) found.")
+        items.extend(news)
     items, _ = filter_relevant(items)
     items = _nih_focused(Classifier(watchlist=DEFAULT_WATCHLIST).classify_all(items))
     if summarize.claude_available():
