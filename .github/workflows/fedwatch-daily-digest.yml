@@ -44,7 +44,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests==2.34.2 anthropic==0.116.0 google-auth==2.38.0
+        run: pip install requests==2.34.2 anthropic==0.116.0
 
       - name: Restore digest seen-state
         uses: actions/cache@v4
@@ -61,8 +61,6 @@ jobs:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           FEDWATCH_APP_URL: ${{ secrets.FEDWATCH_APP_URL }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          CHRONICLE_GDOC_ID: ${{ secrets.CHRONICLE_GDOC_ID }}
           DIGEST_DAYS_BACK: "2"
           FEDWATCH_FOCUS: nih
           DIGEST_FORCE: ${{ inputs.force }}

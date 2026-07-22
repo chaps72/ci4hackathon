@@ -224,11 +224,6 @@ def _update_chronicle(items: list) -> None:
             emailer.build_chronicle(chronicle), encoding="utf-8")
         print(f"Chronicle updated: {len(changed)} storyline(s) "
               f"({', '.join(changed)}); {len(chronicle)} total.")
-        # Mirror into the shared Google Doc when configured (fails soft).
-        from fedwatch import gdoc
-        if gdoc.sync_chronicle_doc(gdoc.chronicle_text(
-                chronicle, generated=datetime.now().strftime("%Y-%m-%d %H:%M"))):
-            print("Google Doc historical record synced.")
     except Exception as exc:  # noqa: BLE001
         print(f"Chronicle update failed ({exc}); continuing.")
 

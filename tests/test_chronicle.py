@@ -107,28 +107,3 @@ def test_digest_log_update_appends_and_replaces_same_day(tmp_path, monkeypatch):
 
 def test_archive_index_links_digest_log():
     assert "digest-log.html" in emailer.build_archive_index(["2026-07-22"])
-
-
-# --------------------------------------------------------------------------
-# Google Doc mirror
-
-from fedwatch import gdoc
-
-
-def test_chronicle_text_renders_sections_and_events():
-    chronicle = {"ahrq-terminations": {
-        "title": "AHRQ grant terminations",
-        "summary": "Dozens of grants ended; appeals pending.",
-        "events": [{"id": "a", "date": "2026-07-17", "title": "Press: AHRQ ends grants",
-                    "url": "https://ihe.com/x", "source": "News"}]}}
-    text = gdoc.chronicle_text(chronicle, generated="2026-07-22 17:00")
-    assert "HISTORICAL RECORD" in text
-    assert "AHRQ GRANT TERMINATIONS" in text
-    assert "appeals pending" in text
-    assert "2026-07-17" in text and "https://ihe.com/x" in text
-
-
-def test_sync_doc_unconfigured_is_noop(monkeypatch):
-    monkeypatch.delenv("GOOGLE_SERVICE_ACCOUNT_JSON", raising=False)
-    monkeypatch.delenv("CHRONICLE_GDOC_ID", raising=False)
-    assert gdoc.sync_chronicle_doc("text") is False
