@@ -1,0 +1,22 @@
+[
+ {
+  "date": "2026-07-22",
+  "summary": "Bottom line: AHRQ is abruptly cancelling already-appropriated health services research grants, putting active awards and multi-year funding at immediate risk for any team with AHRQ support.\n\n- **AHRQ grant terminations** - AHRQ sent near-identical \"non-award\"/cancellation letters ending congressionally appropriated funding, with STAT/AcademyHealth citing at least 78 grants (~$200M total, $109.2M remaining) affected as the agency realigns to White House priorities, so any PI holding an AHRQ award should assume possible disruption and flag exposure now.\n\nBoth source reports (Becker's, 7/20; STAT, 7/22) describe the same terminations and are consistent on the core facts.",
+  "extra": "\ud83d\udcf0 From the research press\n- AHRQ terminates dozens of patient care research grants: Report \u2014 Becker's Hospital Review, 2026-07-20\n  https://www.beckershospitalreview.com/quality/patient-safety-outcomes/ahrq-terminates-dozens-of-patient-care-research-grants/\n- Federal agency for healthcare quality cancels $109 million in grants \u2014 STAT News, 2026-07-22\n  https://www.statnews.com/2026/07/22/ahrq-grants-health-quality-researchers-lose-109-million-funding/\n\n\ud83d\udcc8 Trend watch\nToday's AHRQ grant terminations mark at least the 5th report of that agency cutting off patient-care/health-quality research funding since July 17 (a repeated agency action spanning ~5 days).\n\n\ud83c\udfdb\ufe0f Government affairs\nAHRQ has cancelled dozens of previously appropriated health services research grants, sending \"non-award\" letters affecting an estimated $109.2 million in remaining funding as the agency realigns its portfolio with White House priorities. HHS indicated the AHRQ director must determine whether continuation funding serves the federal government's best interest, with AcademyHealth confirming at least 78 grants worth roughly $200 million have been affected.",
+  "items": [],
+  "press": [
+   {
+    "title": "AHRQ terminates dozens of patient care research grants: Report",
+    "url": "https://www.beckershospitalreview.com/quality/patient-safety-outcomes/ahrq-terminates-dozens-of-patient-care-research-grants/",
+    "level": "CRITICAL",
+    "agency": "Becker's Hospital Review"
+   },
+   {
+    "title": "Federal agency for healthcare quality cancels $109 million in grants",
+    "url": "https://www.statnews.com/2026/07/22/ahrq-grants-health-quality-researchers-lose-109-million-funding/",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   }
+  ]
+ }
+]

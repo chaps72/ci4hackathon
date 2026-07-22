@@ -1,0 +1,22 @@
+{
+ "ahrq-grant-terminations": {
+  "events": [
+   {
+    "date": "2026-07-20",
+    "id": "news-9d8aa95e9b51",
+    "source": "News",
+    "title": "AHRQ terminates dozens of patient care research grants: Report",
+    "url": "https://www.beckershospitalreview.com/quality/patient-safety-outcomes/ahrq-terminates-dozens-of-patient-care-research-grants/"
+   },
+   {
+    "date": "2026-07-22",
+    "id": "news-5dd6dfbf49d6",
+    "source": "News",
+    "title": "Federal agency for healthcare quality cancels $109 million in grants",
+    "url": "https://www.statnews.com/2026/07/22/ahrq-grants-health-quality-researchers-lose-109-million-funding/"
+   }
+  ],
+  "summary": "On July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, followed by confirmation on July 22 that the federal healthcare quality agency canceled $109 million in grants. The situation reflects a significant and recent funding withdrawal affecting healthcare quality research. For our research office, this signals potential exposure for any active or pending AHRQ-funded projects and warrants immediate review of affected awards.",
+  "title": "AHRQ grant terminations"
+ }
+}
