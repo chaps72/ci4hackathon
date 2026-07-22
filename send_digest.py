@@ -228,6 +228,40 @@ def _update_chronicle(items: list) -> None:
         print(f"Chronicle update failed ({exc}); continuing.")
 
 
+DIGEST_LOG_JSON = "docs/digest_log.json"
+
+
+def _update_digest_log(et_date: str, summary: str, extra_md: str,
+                       official: list, press: list) -> None:
+    """Append today's digest to the running one-page log (docs/digest_log.json
+    + docs/digest-log.html, committed by the publish step). Replaces the entry
+    if today's date is already logged. Never raises."""
+    try:
+        try:
+            with open(DIGEST_LOG_JSON) as f:
+                log = json.load(f)
+            if not isinstance(log, list):
+                log = []
+        except (FileNotFoundError, ValueError):
+            log = []
+        def _slim(seq):
+            return [{"title": (i.get("title") or "")[:200], "url": i.get("url", ""),
+                     "level": i.get("level", ""), "agency": (i.get("agency") or "")[:80]}
+                    for i in seq]
+        entry = {"date": et_date, "summary": summary[:4000], "extra": extra_md[:3000],
+                 "items": _slim(official), "press": _slim(press)}
+        log = [d for d in log if d.get("date") != et_date] + [entry]
+        import pathlib
+        pathlib.Path("docs").mkdir(exist_ok=True)
+        with open(DIGEST_LOG_JSON, "w") as f:
+            json.dump(log, f, indent=1)
+        pathlib.Path("docs/digest-log.html").write_text(
+            emailer.build_digest_log(log), encoding="utf-8")
+        print(f"Running digest log updated ({len(log)} day(s)).")
+    except Exception as exc:  # noqa: BLE001
+        print(f"Digest log update failed ({exc}); continuing.")
+
+
 # --------------------------------------------------------------------------
 # Pipeline steps
 
@@ -532,6 +566,7 @@ def main() -> int:
     # marker (or item ids) would make the real scheduled digest think it
     # already went out and skip. Only real runs persist seen-state.
     if not force:
+        _update_digest_log(et_date, summary, extra_md, official, press)
         _update_chronicle(items)
         _persist_state(seen_file, seen, hist_file, history, items, sent_marker, et_date)
     else:

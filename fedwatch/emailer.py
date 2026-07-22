@@ -208,7 +208,8 @@ NIH &amp; Research Policy Digests · Office of the SVPR</div></td></tr>
 Daily digests of federal research-policy updates affecting Emory, curated and analyzed with Claude.
 Published each weekday at 5pm ET. <a href="{latest}" style="color:{EMORY_LIGHT_BLUE};font-weight:bold;">
 Open the latest &rarr;</a> &nbsp;·&nbsp; <a href="chronicle.html" style="color:{EMORY_LIGHT_BLUE};font-weight:bold;">
-📚 Historical record &rarr;</a></td></tr>
+📚 Historical record &rarr;</a> &nbsp;·&nbsp; <a href="digest-log.html" style="color:{EMORY_LIGHT_BLUE};font-weight:bold;">
+🗂️ Running log &rarr;</a></td></tr>
 <tr><td style="font:bold 13px Arial,sans-serif;color:{EMORY_GRAY};text-transform:uppercase;
 letter-spacing:.06em;padding:6px 0;">Archive</td></tr>
 <tr><td><table width="100%" cellpadding="0" cellspacing="0">{''.join(rows) or '<tr><td style="font:14px Arial,sans-serif;color:#7f8c8d;padding:8px 0;">No digests published yet.</td></tr>'}</table></td></tr>
@@ -273,4 +274,53 @@ Chronology of federal research-policy sagas · Office of the SVPR · updated wit
 <tr><td style="padding-top:20px;border-top:2px solid {EMORY_GOLD};font:11px Arial,sans-serif;
 color:{EMORY_GRAY};">Internal awareness tool. <a href="index.html" style="color:{EMORY_LIGHT_BLUE};">
 Back to digest archive</a></td></tr>
+</table></td></tr></table></body></html>"""
+
+
+def build_digest_log(log: list, title: str = "FedWatch — Running Digest Log") -> str:
+    """One continuously updated page containing every daily digest, newest
+    first: date, executive summary, bottom sections, and compact item lists."""
+    e = html.escape
+    days = []
+    for d in sorted(log, key=lambda x: x.get("date", ""), reverse=True):
+        def _rows(entries, tag=""):
+            out = []
+            for it in entries:
+                url = _safe_url(it.get("url", ""))
+                t = e(it.get("title", ""))
+                if url:
+                    t = f'<a href="{e(url)}" style="color:{EMORY_BLUE};">{t}</a>'
+                lvl = e(it.get("level", "") or "")
+                out.append(f'<div style="padding:2px 0;font:13px Arial,sans-serif;'
+                           f'color:#2c3e50;">{tag or ("[" + lvl + "] " if lvl else "")}{t}'
+                           f' <span style="color:#7f8c8d;font-size:11px;">'
+                           f'({e(it.get("agency", ""))})</span></div>')
+            return "".join(out)
+        days.append(
+            f'<tr><td style="padding:20px 0 4px 0;font:bold 17px Georgia,serif;color:{EMORY_BLUE};'
+            f'border-bottom:2px solid {EMORY_GOLD};">{e(d.get("date", ""))}</td></tr>'
+            f'<tr><td style="padding:10px 12px;margin-top:6px;background:#f4f6f7;border-radius:4px;'
+            f'font:13px Arial,sans-serif;color:#2c3e50;white-space:pre-wrap;">{e(d.get("summary", ""))}</td></tr>'
+            + (f'<tr><td style="padding:8px 12px;font:12px Arial,sans-serif;color:#2c3e50;'
+               f'white-space:pre-wrap;border-left:3px solid {EMORY_GOLD};margin-top:6px;">'
+               f'{e(d.get("extra", ""))}</td></tr>' if d.get("extra") else "")
+            + f'<tr><td style="padding:6px 0;">{_rows(d.get("items", []))}'
+              f'{_rows(d.get("press", []), tag="📰 ")}</td></tr>')
+    body = "".join(days) or ('<tr><td style="font:14px Arial,sans-serif;color:#7f8c8d;'
+                             'padding:14px 0;">No digests recorded yet.</td></tr>')
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{e(title)}</title></head>
+<body style="margin:0;padding:0;background:#ffffff;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:20px;">
+<table role="presentation" width="680" cellpadding="0" cellspacing="0">
+<tr><td style="background:{EMORY_BLUE};padding:18px 20px;border-bottom:4px solid {EMORY_GOLD};">
+<div style="font:bold 22px Georgia,'Times New Roman',serif;color:#ffffff;">🗂️ Running Digest Log</div>
+<div style="font:13px Arial,sans-serif;color:#d6deef;padding-top:4px;">
+Every daily digest in one continuously updated page · Office of the SVPR</div></td></tr>
+<tr><td style="height:10px;"></td></tr>
+{body}
+<tr><td style="padding-top:20px;border-top:2px solid {EMORY_GOLD};font:11px Arial,sans-serif;
+color:{EMORY_GRAY};">Internal awareness tool. <a href="index.html" style="color:{EMORY_LIGHT_BLUE};">
+Digest archive</a> · <a href="chronicle.html" style="color:{EMORY_LIGHT_BLUE};">Historical record</a></td></tr>
 </table></td></tr></table></body></html>"""

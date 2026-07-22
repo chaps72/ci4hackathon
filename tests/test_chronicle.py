@@ -68,3 +68,42 @@ def test_chronicle_page_empty_state():
 
 def test_archive_index_links_chronicle():
     assert "chronicle.html" in emailer.build_archive_index(["2026-07-22"])
+
+
+# --------------------------------------------------------------------------
+# Running digest log
+
+def test_digest_log_page_newest_first_with_summary_and_items():
+    log = [
+        {"date": "2026-07-21", "summary": "Monday bottom line.", "extra": "",
+         "items": [{"title": "Old notice", "url": "https://fr.gov/a",
+                    "level": "HIGH", "agency": "NIH"}], "press": []},
+        {"date": "2026-07-22", "summary": "Tuesday bottom line.",
+         "extra": "⏰ Deadlines\n- x",
+         "items": [], "press": [{"title": "AHRQ story",
+                                 "url": "https://ihe.com/x", "agency": "IHE"}]},
+    ]
+    html_out = emailer.build_digest_log(log)
+    assert html_out.index("2026-07-22") < html_out.index("2026-07-21")
+    assert "Tuesday bottom line." in html_out and "Monday bottom line." in html_out
+    assert "AHRQ story" in html_out and "Old notice" in html_out
+    assert "Deadlines" in html_out
+
+
+def test_digest_log_update_appends_and_replaces_same_day(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs").mkdir()
+    official = [{"title": "N1", "url": "https://fr.gov/1", "level": "HIGH",
+                 "agency": "NIH", "id": "fr-1"}]
+    sd._update_digest_log("2026-07-22", "first version", "", official, [])
+    sd._update_digest_log("2026-07-23", "next day", "", official, [])
+    sd._update_digest_log("2026-07-23", "corrected", "", official, [])
+    import json as J
+    log = J.load(open(tmp_path / "docs" / "digest_log.json"))
+    assert [d["date"] for d in log] == ["2026-07-22", "2026-07-23"]
+    assert log[1]["summary"] == "corrected"      # same-day rerun replaces
+    assert (tmp_path / "docs" / "digest-log.html").exists()
+
+
+def test_archive_index_links_digest_log():
+    assert "digest-log.html" in emailer.build_archive_index(["2026-07-22"])
