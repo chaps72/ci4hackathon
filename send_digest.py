@@ -158,6 +158,76 @@ def _prune_history(history: list, days: int = HISTORY_RETENTION_DAYS) -> list:
     return [h for h in history if (h.get("date") or "") >= cutoff]
 
 
+CHRONICLE_JSON = "docs/chronicle.json"
+
+
+def _significant(items: list) -> list:
+    """What belongs in the historical record: high-severity actions, press
+    stories, and follow-ups to earlier coverage."""
+    return [i for i in items if i.get("level") in ("CRITICAL", "HIGH")
+            or i.get("type") == "News" or i.get("update_note")]
+
+
+def _merge_chronicle(chronicle: dict, assignments: list, items: list) -> list:
+    """Apply storyline assignments to the chronicle in place. Each assigned
+    item becomes a dated event in its storyline (skipping ids already
+    recorded). Returns the list of storyline keys that changed."""
+    changed = []
+    for a in assignments:
+        key = a["key"]
+        story = chronicle.setdefault(key, {"title": a.get("title") or key,
+                                           "summary": "", "events": []})
+        known = {ev.get("id") for ev in story["events"]}
+        for idx in a["indexes"]:
+            it = items[idx]
+            if it.get("id") in known:
+                continue
+            story["events"].append({
+                "id": it.get("id"), "date": it.get("date", ""),
+                "title": (it.get("title") or "")[:200],
+                "url": it.get("url", ""), "source": it.get("source", ""),
+            })
+            if key not in changed:
+                changed.append(key)
+    return changed
+
+
+def _update_chronicle(items: list) -> None:
+    """Fold today's significant items into the living historical record
+    (docs/chronicle.json + docs/chronicle.html, committed by the publish
+    step). Never raises - the chronicle must not block a run."""
+    try:
+        sig = _significant(items)
+        if not sig:
+            return
+        try:
+            with open(CHRONICLE_JSON) as f:
+                chronicle = json.load(f)
+            if not isinstance(chronicle, dict):
+                chronicle = {}
+        except (FileNotFoundError, ValueError):
+            chronicle = {}
+        assigns = summarize.assign_storylines(
+            sig, {k: v.get("title", k) for k, v in chronicle.items()})
+        changed = _merge_chronicle(chronicle, assigns, sig)
+        if not changed:
+            return
+        # Refresh the state-of-play summary for storylines that gained events.
+        for key, text in summarize.storyline_summaries(
+                {k: chronicle[k] for k in changed}).items():
+            chronicle[key]["summary"] = text
+        import pathlib
+        pathlib.Path("docs").mkdir(exist_ok=True)
+        with open(CHRONICLE_JSON, "w") as f:
+            json.dump(chronicle, f, indent=1, sort_keys=True)
+        pathlib.Path("docs/chronicle.html").write_text(
+            emailer.build_chronicle(chronicle), encoding="utf-8")
+        print(f"Chronicle updated: {len(changed)} storyline(s) "
+              f"({', '.join(changed)}); {len(chronicle)} total.")
+    except Exception as exc:  # noqa: BLE001
+        print(f"Chronicle update failed ({exc}); continuing.")
+
+
 # --------------------------------------------------------------------------
 # Pipeline steps
 
@@ -462,6 +532,7 @@ def main() -> int:
     # marker (or item ids) would make the real scheduled digest think it
     # already went out and skip. Only real runs persist seen-state.
     if not force:
+        _update_chronicle(items)
         _persist_state(seen_file, seen, hist_file, history, items, sent_marker, et_date)
     else:
         print("Forced test run: not updating dedupe/seen-state.")

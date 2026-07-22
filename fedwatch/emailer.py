@@ -207,7 +207,8 @@ NIH &amp; Research Policy Digests · Office of the SVPR</div></td></tr>
 <tr><td style="font:14px Arial,sans-serif;color:#2c3e50;padding-bottom:12px;">
 Daily digests of federal research-policy updates affecting Emory, curated and analyzed with Claude.
 Published each weekday at 5pm ET. <a href="{latest}" style="color:{EMORY_LIGHT_BLUE};font-weight:bold;">
-Open the latest &rarr;</a></td></tr>
+Open the latest &rarr;</a> &nbsp;·&nbsp; <a href="chronicle.html" style="color:{EMORY_LIGHT_BLUE};font-weight:bold;">
+📚 Historical record &rarr;</a></td></tr>
 <tr><td style="font:bold 13px Arial,sans-serif;color:{EMORY_GRAY};text-transform:uppercase;
 letter-spacing:.06em;padding:6px 0;">Archive</td></tr>
 <tr><td><table width="100%" cellpadding="0" cellspacing="0">{''.join(rows) or '<tr><td style="font:14px Arial,sans-serif;color:#7f8c8d;padding:8px 0;">No digests published yet.</td></tr>'}</table></td></tr>
@@ -225,3 +226,51 @@ def build_eml(items: list, summary_md: str = "", title: str = "Federal Research 
     msg.set_content(build_plain_text(items, summary_md, title))
     msg.add_alternative(build_html(items, summary_md, title), subtype="html")
     return bytes(msg)
+
+
+def build_chronicle(chronicle: dict, title: str = "FedWatch — Historical Record") -> str:
+    """The living historical record: one section per storyline with its
+    state-of-play summary and dated chronology (most recently active first)."""
+    e = html.escape
+    def last_date(s):
+        return max((ev.get("date") or "" for ev in s.get("events", [])), default="")
+    sections = []
+    for key, s in sorted(chronicle.items(), key=lambda kv: last_date(kv[1]), reverse=True):
+        events = sorted(s.get("events", []), key=lambda ev: ev.get("date") or "")
+        rows = []
+        for ev in events:
+            url = _safe_url(ev.get("url", ""))
+            t = e(ev.get("title", ""))
+            if url:
+                t = f'<a href="{e(url)}" style="color:{EMORY_BLUE};">{t}</a>'
+            rows.append(
+                f'<tr><td style="padding:5px 10px 5px 0;font:12px Arial,sans-serif;'
+                f'color:{EMORY_GRAY};white-space:nowrap;vertical-align:top;">{e(ev.get("date", ""))}</td>'
+                f'<td style="padding:5px 0;font:13px Arial,sans-serif;color:#2c3e50;">{t}'
+                f' <span style="color:#7f8c8d;font-size:11px;">({e(ev.get("source", ""))})</span></td></tr>')
+        sections.append(
+            f'<tr><td style="padding:18px 0 4px 0;font:bold 16px Georgia,serif;color:{EMORY_BLUE};'
+            f'border-bottom:2px solid {EMORY_GOLD};">{e(s.get("title", key))}</td></tr>'
+            + (f'<tr><td style="padding:8px 0;font:13px Arial,sans-serif;color:#2c3e50;'
+               f'background:#f4f6f7;border-radius:4px;padding:10px 12px;">{e(s.get("summary", ""))}</td></tr>'
+               if s.get("summary") else "")
+            + f'<tr><td style="padding:4px 0 8px 0;"><table cellpadding="0" cellspacing="0">'
+              f'{"".join(rows)}</table></td></tr>')
+    body = "".join(sections) or ('<tr><td style="font:14px Arial,sans-serif;color:#7f8c8d;'
+                                 'padding:14px 0;">No storylines recorded yet.</td></tr>')
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{e(title)}</title></head>
+<body style="margin:0;padding:0;background:#ffffff;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:20px;">
+<table role="presentation" width="680" cellpadding="0" cellspacing="0">
+<tr><td style="background:{EMORY_BLUE};padding:18px 20px;border-bottom:4px solid {EMORY_GOLD};">
+<div style="font:bold 22px Georgia,'Times New Roman',serif;color:#ffffff;">📚 Historical Record</div>
+<div style="font:13px Arial,sans-serif;color:#d6deef;padding-top:4px;">
+Chronology of federal research-policy sagas · Office of the SVPR · updated with each digest</div></td></tr>
+<tr><td style="height:10px;"></td></tr>
+{body}
+<tr><td style="padding-top:20px;border-top:2px solid {EMORY_GOLD};font:11px Arial,sans-serif;
+color:{EMORY_GRAY};">Internal awareness tool. <a href="index.html" style="color:{EMORY_LIGHT_BLUE};">
+Back to digest archive</a></td></tr>
+</table></td></tr></table></body></html>"""

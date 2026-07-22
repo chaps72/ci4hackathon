@@ -1269,3 +1269,93 @@ def _template_summary(items: list, style: str) -> str:
         "AI-written summaries._"
     )
     return "\n".join(parts)
+
+
+def assign_storylines(items: list, existing: dict) -> list:
+    """Group today's significant items into ongoing storylines for the
+    historical chronicle.
+
+    existing maps storyline key -> title. Returns a list of
+    {"key", "title", "indexes": [item positions]} - reusing an existing key
+    when an item continues that saga, minting a new slug key for a genuinely
+    new one. Items that are routine one-offs are simply left unassigned.
+    Resilient; [] without an API key or on any error.
+    """
+    if not items or not claude_available():
+        return []
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+        existing_block = "\n".join(f"- {k}: {t}" for k, t in existing.items()) or "(none yet)"
+        items_block = "\n".join(
+            f"[{i}] {it.get('date', '')} | {it.get('agency', '')} | {it.get('title', '')}"
+            f" | {(it.get('summary') or '')[:150]}"
+            for i, it in enumerate(items))
+        prompt = (
+            "You maintain a historical chronicle of federal research-policy sagas "
+            "for a university research office. Each storyline tracks ONE ongoing "
+            "matter over time (e.g. 'AHRQ grant terminations', 'NIH indirect-cost "
+            "cap', 'Proposed cap on grants per PI').\n\n"
+            f"Existing storylines:\n{existing_block}\n\n"
+            f"Today's items:\n{items_block}\n\n"
+            "Assign each item that belongs to an ongoing or new SAGA to a "
+            "storyline. Reuse an existing storyline's exact key when the item "
+            "continues it. For a genuinely new saga, mint a short kebab-case key "
+            "and a concise title. Leave routine one-off items (individual funding "
+            "opportunities, meeting notices) unassigned by omitting them.\n\n"
+            'Reply with ONLY a JSON array: [{"key": "...", "title": "...", '
+            '"indexes": [0, 2]}] or [] if nothing belongs in the chronicle.'
+        )
+        resp = client.messages.create(
+            model=MODEL, max_tokens=1200,
+            messages=[{"role": "user", "content": prompt}])
+        if resp.stop_reason == "refusal":
+            return []
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        out = json.loads(_extract_json_array(text))
+        good = []
+        for a in out if isinstance(out, list) else []:
+            if not isinstance(a, dict) or not a.get("key"):
+                continue
+            idxs = [i for i in (a.get("indexes") or [])
+                    if isinstance(i, int) and 0 <= i < len(items)]
+            if idxs:
+                good.append({"key": str(a["key"])[:60], "title": str(a.get("title") or a["key"])[:120],
+                             "indexes": idxs})
+        return good
+    except Exception:  # noqa: BLE001 - the chronicle must never block a run
+        return []
+
+
+def storyline_summaries(changed: dict) -> dict:
+    """Fresh 2-3 sentence 'state of play' for each changed storyline, from its
+    full event chronology. changed maps key -> {"title", "events": [...]}.
+    Returns {key: summary}; {} on any error."""
+    if not changed or not claude_available():
+        return {}
+    try:
+        import anthropic
+        client = anthropic.Anthropic()
+        block = ""
+        for k, s in changed.items():
+            evs = "\n".join(f"  - {e.get('date', '')}: {e.get('title', '')}"
+                            for e in s.get("events", []))
+            block += f"[{k}] {s.get('title', '')}\n{evs}\n\n"
+        prompt = (
+            "For each storyline below, write a 2-3 sentence 'state of play' "
+            "summary of the saga so far for a university research office: what "
+            "has happened, where it stands now, and what it means. Ground it "
+            "ONLY in the listed events.\n\n" + block +
+            '\nReply with ONLY a JSON object: {"storyline-key": "summary", ...}'
+        )
+        resp = client.messages.create(
+            model=MODEL, max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}])
+        if resp.stop_reason == "refusal":
+            return {}
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        out = json.loads(_extract_json(text))
+        return {k: str(v)[:800] for k, v in out.items() if k in changed} \
+            if isinstance(out, dict) else {}
+    except Exception:  # noqa: BLE001
+        return {}
