@@ -15,11 +15,12 @@ MODEL = "claude-opus-4-8"
 
 SUMMARY_STYLES = {
     "Executive summary": (
-        "Write an executive summary for university research leadership (VP for Research, deans). "
-        "Open with a 2-3 sentence bottom line. Then cover the most consequential items in order of "
-        "urgency, each with what happened, who is affected, and the recommended action or owner. "
-        "Close with a short 'no action needed' line listing anything informational. "
-        "Keep it under 400 words. Use plain prose and short bullets, no hype."
+        "Write a TIGHT executive summary for university research leadership (VP for Research, "
+        "deans) who will read it on their phone. Open with a 1-2 sentence bottom line. Then one "
+        "bullet per consequential item: **bolded short name** - what happened and the so-what for "
+        "the institution, in a single sentence each. If several items are routine/informational, "
+        "roll them into one closing line rather than listing them. Hard limit 150 words. No "
+        "headers, no hype, no filler like 'this cycle contains'."
     ),
     "Team digest": (
         "Write a digest for research administrators and grants staff. Group items by criticality "
@@ -730,7 +731,7 @@ def govt_affairs_brief(items: list) -> str:
         prompt = (
             "You are the government-affairs analyst for the Office of the Senior "
             "Vice President for Research at Emory University. From ONLY the items "
-            "below, write a brief 'Government affairs' roundup of 2-3 sentences "
+            "below, write a brief 'Government affairs' roundup of AT MOST 2 short sentences "
             "focused strictly on the legislative, budget, and executive-branch "
             "angle relevant to federal research funding: appropriations, continuing "
             "resolutions, rescissions, executive orders and their agency "
@@ -774,7 +775,7 @@ def trend_note(items: list, history: list) -> str:
         prompt = (
             "You track federal research-policy trends for Emory University's research "
             "office. Below are TODAY's items and a LOG of items from the past few weeks. "
-            "In 1-2 sentences, surface only a genuine PATTERN that connects today's items "
+            "In ONE short sentence, surface only a genuine PATTERN that connects today's items "
             "to the log - a recurring theme (e.g. grant terminations, indirect-cost "
             "actions, RFIs on grant caps), an escalation, or a repeated agency action - "
             "and cite the count and timeframe from the log (e.g. '3rd termination notice "

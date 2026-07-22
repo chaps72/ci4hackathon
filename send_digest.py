@@ -217,15 +217,15 @@ def _mark_updates(items: list, history: list) -> list:
     return items
 
 
-def _updates_section(items: list, max_items: int = 8) -> str:
+def _updates_section(items: list, max_items: int = 6) -> str:
     """A compact 'Updates to earlier items' block for anything flagged by
     _mark_updates. '' when there are none."""
-    rows = [f"- {(it.get('title') or '')[:100]} — {it['update_note']}"
+    rows = [f"- {(it.get('title') or '')[:80]} — {it['update_note']}"
             for it in items if it.get("update_note")][:max_items]
     return "🔄 Updates to earlier items\n" + "\n".join(rows) if rows else ""
 
 
-def _deadlines_section(items: list, max_items: int = 8) -> str:
+def _deadlines_section(items: list, max_items: int = 6) -> str:
     """A compact 'Deadlines & comment opportunities' block. Prefers the
     structured Federal Register fields; falls back to a deadline extracted
     from the notice text for sources without structured dates. '' when none."""
@@ -249,7 +249,7 @@ def _deadlines_section(items: list, max_items: int = 8) -> str:
         if is_comment:
             link = it.get("comment_url") or it.get("url") or ""
             bits.append(f"💬 comment{f': {link}' if link else ''}")
-        rows.append(f"- {(it.get('title') or '')[:100]} — " + " · ".join(bits))
+        rows.append(f"- {(it.get('title') or '')[:80]} — " + " · ".join(bits))
         if len(rows) >= max_items:
             break
     return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
@@ -263,16 +263,15 @@ def _split_press(items: list) -> tuple[list, list]:
     return official, press
 
 
-def _press_section(press: list, max_items: int = 5) -> str:
+def _press_section(press: list, max_items: int = 4) -> str:
     """A 'From the research press' block: outlet-reported actions (often never
-    published in the Federal Register). '' when the sweep found nothing."""
+    published in the Federal Register). Headline + outlet + link only - the
+    story summaries live on the HTML page. '' when the sweep found nothing."""
     rows = []
     for it in press[:max_items]:
-        line = f"- {(it.get('title') or '')[:120]} — {it.get('agency', '')}"
+        line = f"- {(it.get('title') or '')[:90]} — {it.get('agency', '')}"
         if it.get("date"):
             line += f", {it['date']}"
-        if it.get("summary"):
-            line += f"\n  {it['summary'][:200]}"
         if it.get("url"):
             line += f"\n  {it['url']}"
         rows.append(line)
