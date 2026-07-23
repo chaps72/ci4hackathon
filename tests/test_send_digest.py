@@ -185,3 +185,27 @@ def test_prune_history_keeps_recent_drops_old_and_undated():
     old = (datetime.now() - timedelta(days=sd.HISTORY_RETENTION_DAYS + 2)).strftime("%Y-%m-%d")
     history = [{"date": today}, {"date": old}, {"date": ""}]
     assert sd._prune_history(history) == [{"date": today}]
+
+
+# --------------------------------------------------------------------------
+# Compact Teams tail
+
+def test_teams_sections_top_deadlines_and_press_only():
+    official = [
+        {"title": "RFI on grant caps with a very long descriptive federal register title",
+         "comment_due": "2026-09-08"},
+        {"title": "Effective rule", "effective_on": "2026-08-07"},
+        {"title": "No dates here"},
+    ]
+    press = [{"title": "AHRQ ends dozens of grants", "agency": "Science",
+              "url": "https://science.org/x"}]
+    out = sd._teams_sections(official, press)
+    assert "comment due 2026-09-08" in out
+    assert "effective 2026-08-07" in out
+    assert "[AHRQ ends dozens of grants](https://science.org/x)" in out
+    assert "No dates here" not in out
+    assert "Trend" not in out and "Government affairs" not in out
+
+
+def test_teams_sections_empty_when_nothing_qualifies():
+    assert sd._teams_sections([{"title": "plain"}], []) == ""

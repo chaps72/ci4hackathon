@@ -382,6 +382,32 @@ def _press_section(press: list, max_items: int = 4) -> str:
     return "📰 From the research press\n" + "\n".join(rows) if rows else ""
 
 
+def _teams_sections(official: list, press: list) -> str:
+    """Ultra-compact tail for the Teams card: top deadlines and press
+    headlines only. The fuller sections (updates, trend, government affairs)
+    stay in Slack and on the HTML page."""
+    parts = []
+    deadlines = []
+    for it in official:
+        if it.get("comment_due"):
+            deadlines.append(f"- {(it.get('title') or '')[:60]} — comment due {it['comment_due']}")
+        elif it.get("effective_on"):
+            deadlines.append(f"- {(it.get('title') or '')[:60]} — effective {it['effective_on']}")
+        if len(deadlines) >= 3:
+            break
+    if deadlines:
+        parts.append("⏰ Deadlines\n" + "\n".join(deadlines))
+    headlines = []
+    for it in press[:3]:
+        t = (it.get("title") or "")[:70]
+        url = it.get("url") or ""
+        headlines.append(f"- [{t}]({url}) — {it.get('agency', '')}" if url
+                         else f"- {t} — {it.get('agency', '')}")
+    if headlines:
+        parts.append("📰 Press\n" + "\n".join(headlines))
+    return "\n\n".join(parts)
+
+
 def _build_sections(items: list, history: list, press: list | None = None) -> str:
     """Bottom-of-message sections, in order: updates to earlier items,
     deadlines/comment opportunities, research-press sweep, trend note,
@@ -418,9 +444,9 @@ def _publish_page(items: list, summary: str, title: str,
 
 def _deliver_digest(summary: str, extra_md: str, title: str, cadence: str,
                     items: list, webhook: str, slack: str, smtp_host: str,
-                    only: str) -> None:
+                    only: str, teams_md: str = "") -> None:
     if webhook and only in ("", "teams"):
-        notify.send_teams_summary(webhook, summary, title=title, extra_md=extra_md)
+        notify.send_teams_summary(webhook, summary, title=title, extra_md=teams_md)
         print(f"Teams: {cadence.lower()} digest posted.")
     if slack and only in ("", "slack"):
         notify.send_slack(slack, summary, title=title, extra_md=extra_md)
@@ -547,7 +573,8 @@ def main() -> int:
     _publish_page(official, summary, title, press=press)
     extra_md = _build_sections(official, history, press=press)
     _deliver_digest(summary, extra_md, title, cadence, items,
-                    webhook, slack, smtp_host, only)
+                    webhook, slack, smtp_host, only,
+                    teams_md=_teams_sections(official, press))
 
     # Degraded-mode warning: the digest still went out, but if Claude was
     # configured yet unreachable (credits/outage) the analysis fell back to a
