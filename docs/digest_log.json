@@ -18,5 +18,31 @@
     "agency": "STAT News"
    }
   ]
+ },
+ {
+  "date": "2026-07-23",
+  "summary": "Bottom line: The administration is moving to fundamentally restructure federal science funding in ways that could cut money to research universities, while research-security restrictions on Chinese partners are tightening\u2014both warrant immediate attention.\n\n- **Science funding overhaul** \u2013 The White House proposed the most sweeping restructuring of federal research in 80+ years, centering AI and seeking alternatives to peer review, with major agencies ($3B+ FY2026 R&D) required to submit implementation plans within 90 days.\n- **OSTP \"Golden Age\" report** \u2013 Kratsios's report recommends significantly reducing university research funding and redirecting it to individual scientists and new mission-driven organizations, directly threatening our institutional funding model.\n- **Pentagon blacklist expansion** \u2013 Fudan and Shanghai Jiao Tong were added to the DoD threat list, so any collaborations or personnel ties with these universities now carry heightened compliance and security risk.\n\nRecommend Research Office track the 90-day agency plans and assess exposure to the two named institutions.",
+  "extra": "\ud83d\udcf0 From the research press\n- White House unveils science funding overhaul \u2014 Prokerala / AFP wire, 2026-07-22\n  https://www.prokerala.com/news/articles/a1790848.html\n- White House Science Report Calls For Reducing University Research Funding \u2014 Forbes, 2026-07-23\n  https://www.forbes.com/sites/michaeltnietzel/2026/07/23/white-house-science-report-calls-for-reducing-university-research-funding/\n- Pentagon expands blacklist to include China's top civilian universities \u2014 South China Morning Post, 2026-07-23\n  https://www.scmp.com/news/us/politics/article/3361647/pentagon-expands-blacklist-include-chinas-top-civilian-universities\n\n\ud83d\udcc8 Trend watch\nToday's Pentagon blacklist of Chinese universities marks at least the 2nd federal action targeting university funding tied to foreign watch-listed entities in about a week (following the 07-19 CBS and 07-19 Inside Higher Ed items).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Trump administration, via an OSTP report by director Michael Kratsios, proposed a sweeping overhaul of the federal research system that would reduce university research funding in favor of individual scientists and mission-driven organizations, and directed agencies with at least $3 billion in FY2026 R&D budget authority to submit implementation plans within 90 days. Separately, the Pentagon added Fudan University and Shanghai Jiao Tong University to its research-security blacklist of institutions deemed national security threats.",
+  "items": [],
+  "press": [
+   {
+    "title": "White House unveils science funding overhaul",
+    "url": "https://www.prokerala.com/news/articles/a1790848.html",
+    "level": "CRITICAL",
+    "agency": "Prokerala / AFP wire"
+   },
+   {
+    "title": "White House Science Report Calls For Reducing University Research Funding",
+    "url": "https://www.forbes.com/sites/michaeltnietzel/2026/07/23/white-house-science-report-calls-for-reducing-university-research-funding/",
+    "level": "CRITICAL",
+    "agency": "Forbes"
+   },
+   {
+    "title": "Pentagon expands blacklist to include China's top civilian universities",
+    "url": "https://www.scmp.com/news/us/politics/article/3361647/pentagon-expands-blacklist-include-chinas-top-civilian-universities",
+    "level": "HIGH",
+    "agency": "South China Morning Post"
+   }
+  ]
  }
 ]

@@ -18,5 +18,38 @@
   ],
   "summary": "On July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, followed by confirmation on July 22 that the federal healthcare quality agency canceled $109 million in grants. The situation reflects a significant and recent funding withdrawal affecting healthcare quality research. For our research office, this signals potential exposure for any active or pending AHRQ-funded projects and warrants immediate review of affected awards.",
   "title": "AHRQ grant terminations"
+ },
+ "pentagon-university-blacklist": {
+  "events": [
+   {
+    "date": "2026-07-23",
+    "id": "news-da3e33c76a67",
+    "source": "News",
+    "title": "Pentagon expands blacklist to include China's top civilian universities",
+    "url": "https://www.scmp.com/news/us/politics/article/3361647/pentagon-expands-blacklist-include-chinas-top-civilian-universities"
+   }
+  ],
+  "summary": "On July 23, 2026, the Pentagon expanded its blacklist of foreign universities to include China's top civilian institutions. The action currently broadens restrictions to encompass leading civilian, not just military-linked, universities. This may complicate or restrict research collaborations and partnerships with the affected Chinese institutions.",
+  "title": "Pentagon blacklist of foreign universities"
+ },
+ "science-funding-overhaul": {
+  "events": [
+   {
+    "date": "2026-07-22",
+    "id": "news-9e5a6b94bddf",
+    "source": "News",
+    "title": "White House unveils science funding overhaul",
+    "url": "https://www.prokerala.com/news/articles/a1790848.html"
+   },
+   {
+    "date": "2026-07-23",
+    "id": "news-5ac4dcc050e3",
+    "source": "News",
+    "title": "White House Science Report Calls For Reducing University Research Funding",
+    "url": "https://www.forbes.com/sites/michaeltnietzel/2026/07/23/white-house-science-report-calls-for-reducing-university-research-funding/"
+   }
+  ],
+  "summary": "On July 22, 2026, the White House unveiled a science funding overhaul, followed the next day by a science report calling for reduced university research funding. The initiative currently signals a policy direction toward cutting federal support for university-based research. This could mean significant funding pressures ahead for university research operations.",
+  "title": "White House science funding overhaul"
  }
 }
