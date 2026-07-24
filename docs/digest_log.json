@@ -44,5 +44,38 @@
     "agency": "South China Morning Post"
    }
   ]
+ },
+ {
+  "date": "2026-07-24",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udcf0 3 press\n\nBottom line: The administration is moving to restructure federal science funding away from major universities and is defending keyword-based grant terminations, while also rolling back civil-rights compliance rules\u2014each with direct financial and legal exposure for us.\n\n\ud83d\udd34 **Keyword Grant Cuts** - Agencies admitted screening on diversity, gender, and COVID terms to terminate ~$2B in UC grants now challenged as unconstitutional, signaling both litigation leverage and continued risk to our awards.\n\n\ud83d\udd34 **Kratsios Science Report** - White House calls for cutting funding to leading universities, replacing investigator-led grants with large team \"grand challenge\" awards, and moving beyond peer review\u2014threatening our core research model.\n\n\ud83d\udfe0 **Funding Outside Academia** - New strategy steers agencies to fund individual \"blue-sky\" researchers who choose host institutions and favors multiyear grants, pressuring our indirect-cost base and early-career pipeline.\n\n\ud83d\udfe0 **HHS Title VI Rollback** - HHS rescinded disparate-impact provisions, changing compliance obligations for federally funded programs.",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- Rescinding Portions of the U.S. Department of Health and Human Services Title VI \u2014 \u23f0 effective 2026-07-24\n\n\ud83d\udcf0 From the research press\n- White House admits it used keywords to kill billions worth of California research grants \u2014 CalMatters, 2026-07-22\n  https://calmatters.org/education/higher-education/2026/07/research-grants-california-2/\n- White House report calls for big changes to 'calcified' U.S. science system \u2014 Science (AAAS), 2026-07-24\n  https://www.science.org/content/article/white-house-report-calls-big-changes-calcified-u-s-science-system\n- White House Seeks to Steer Research Funding Outside Academia \u2014 Inside Higher Ed, 2026-07-24\n  https://www.insidehighered.com/news/government/science-research-policy/2026/07/24/white-house-seeks-steer-research-funding-outside\n\n\ud83d\udcc8 Trend watch\nToday's coverage of the White House science overhaul (funding cuts, keyword-based grant kills, steering money outside academia) extends a sustained push to cut/redirect university research funding\u2014at least the 4th such item since July 22 (Prokerala 7/22, Forbes 7/23, plus today's CalMatters, Science, and Inside Higher Ed pieces).\n\n\ud83c\udfdb\ufe0f Government affairs\nHHS has rescinded portions of its Title VI regulations to remove disparate-impact provisions and conform to Executive Order 14281, while federal agencies acknowledged using keywords tied to diversity, gender, vaccine hesitancy, and COVID-19 to terminate roughly $2 billion in University of California research grants that UC contends are unconstitutional. A new White House report from science adviser Michael Kratsios directs agencies to reduce funding to leading universities, shift support toward research outside academia and large team awards, and seek alternatives to peer review, which critics warn could justify further cuts to agency budgets and staffing.",
+  "items": [
+   {
+    "title": "Rescinding Portions of the U.S. Department of Health and Human Services Title VI Regulations To Align With the Statutory Text and Conform to Executive Order 14281",
+    "url": "https://www.federalregister.gov/documents/2026/07/24/2026-15000/rescinding-portions-of-the-us-department-of-health-and-human-services-title-vi-regulations-to-align",
+    "level": "HIGH",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": [
+   {
+    "title": "White House admits it used keywords to kill billions worth of California research grants",
+    "url": "https://calmatters.org/education/higher-education/2026/07/research-grants-california-2/",
+    "level": "CRITICAL",
+    "agency": "CalMatters"
+   },
+   {
+    "title": "White House report calls for big changes to 'calcified' U.S. science system",
+    "url": "https://www.science.org/content/article/white-house-report-calls-big-changes-calcified-u-s-science-system",
+    "level": "CRITICAL",
+    "agency": "Science (AAAS)"
+   },
+   {
+    "title": "White House Seeks to Steer Research Funding Outside Academia",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/07/24/white-house-seeks-steer-research-funding-outside",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]

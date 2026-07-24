@@ -19,6 +19,32 @@
   "summary": "On July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, followed by confirmation on July 22 that the federal healthcare quality agency canceled $109 million in grants. The situation reflects a significant and recent funding withdrawal affecting healthcare quality research. For our research office, this signals potential exposure for any active or pending AHRQ-funded projects and warrants immediate review of affected awards.",
   "title": "AHRQ grant terminations"
  },
+ "grant-termination-keywords": {
+  "events": [
+   {
+    "date": "2026-07-22",
+    "id": "news-06f80a2ec0f3",
+    "source": "News",
+    "title": "White House admits it used keywords to kill billions worth of California research grants",
+    "url": "https://calmatters.org/education/higher-education/2026/07/research-grants-california-2/"
+   }
+  ],
+  "summary": "On July 22, 2026, the White House admitted it used keyword-based criteria to terminate billions of dollars worth of California research grants. This confirms that automated keyword screening drove the terminations, raising concerns about how grants are being flagged and cut.",
+  "title": "Keyword-based research grant terminations"
+ },
+ "hhs-title-vi-rollback": {
+  "events": [
+   {
+    "date": "2026-07-24",
+    "id": "fr-2026-15000",
+    "source": "Federal Register",
+    "title": "Rescinding Portions of the U.S. Department of Health and Human Services Title VI Regulations To Align With the Statutory Text and Conform to Executive Order 14281",
+    "url": "https://www.federalregister.gov/documents/2026/07/24/2026-15000/rescinding-portions-of-the-us-department-of-health-and-human-services-title-vi-regulations-to-align"
+   }
+  ],
+  "summary": "On July 24, 2026, HHS rescinded portions of its Title VI civil rights regulations, stating the goal was to align them with the statutory text and conform to Executive Order 14281. This narrows the scope of HHS civil rights regulations, which may affect compliance obligations tied to federally funded research.",
+  "title": "HHS Title VI civil rights regulation rollback"
+ },
  "pentagon-university-blacklist": {
   "events": [
    {
@@ -47,9 +73,23 @@
     "source": "News",
     "title": "White House Science Report Calls For Reducing University Research Funding",
     "url": "https://www.forbes.com/sites/michaeltnietzel/2026/07/23/white-house-science-report-calls-for-reducing-university-research-funding/"
+   },
+   {
+    "date": "2026-07-24",
+    "id": "news-8bfde15ebbda",
+    "source": "News",
+    "title": "White House report calls for big changes to 'calcified' U.S. science system",
+    "url": "https://www.science.org/content/article/white-house-report-calls-big-changes-calcified-u-s-science-system"
+   },
+   {
+    "date": "2026-07-24",
+    "id": "news-d5482c9243ab",
+    "source": "News",
+    "title": "White House Seeks to Steer Research Funding Outside Academia",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/07/24/white-house-seeks-steer-research-funding-outside"
    }
   ],
-  "summary": "On July 22, 2026, the White House unveiled a science funding overhaul, followed the next day by a science report calling for reduced university research funding. The initiative currently signals a policy direction toward cutting federal support for university-based research. This could mean significant funding pressures ahead for university research operations.",
+  "summary": "On July 22, 2026, the White House unveiled a science funding overhaul, followed by reports on July 23-24 describing the current U.S. science system as 'calcified' and calling for big changes, including reducing university research funding. The overhaul now seeks to steer research funding outside academia, meaning universities may face reduced federal research support and increased competition from non-academic recipients.",
   "title": "White House science funding overhaul"
  }
 }
