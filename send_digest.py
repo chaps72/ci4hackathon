@@ -382,6 +382,18 @@ def _press_section(press: list, max_items: int = 4) -> str:
     return "📰 From the research press\n" + "\n".join(rows) if rows else ""
 
 
+def _level_line(official: list, press: list) -> str:
+    """One-line criticality banner - the original 'notification of level'
+    promise, kept visible even in the compact messages."""
+    from fedwatch.classify import LEVEL_EMOJI, LEVELS
+    counts = {lvl: sum(1 for i in official if i.get("level") == lvl) for lvl in LEVELS}
+    bits = [f"{LEVEL_EMOJI[lvl]} {counts[lvl]} {lvl.lower()}"
+            for lvl in LEVELS if counts[lvl]]
+    if press:
+        bits.append(f"📰 {len(press)} press")
+    return " · ".join(bits)
+
+
 def _teams_sections(official: list, press: list) -> str:
     """Ultra-compact tail for the Teams card: top deadlines and press
     headlines only. The fuller sections (updates, trend, government affairs)
@@ -571,6 +583,9 @@ def main() -> int:
     print(f"Summary generated ({engine} engine, {len(items)} items).")
 
     _publish_page(official, summary, title, press=press)
+    banner = _level_line(official, press)
+    if banner:
+        summary = f"{banner}\n\n{summary}"
     extra_md = _build_sections(official, history, press=press)
     _deliver_digest(summary, extra_md, title, cadence, items,
                     webhook, slack, smtp_host, only,

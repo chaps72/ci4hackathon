@@ -17,7 +17,8 @@ SUMMARY_STYLES = {
     "Executive summary": (
         "Write a TIGHT executive summary for university research leadership (VP for Research, "
         "deans) who will read it on their phone. Open with a 1-2 sentence bottom line. Then one "
-        "bullet per consequential item: **bolded short name** - what happened and the so-what for "
+        "bullet per consequential item, MOST URGENT FIRST, prefixing critical items with 🔴 and "
+        "high-priority items with 🟠: **bolded short name** - what happened and the so-what for "
         "the institution, in a single sentence each. If several items are routine/informational, "
         "roll them into one closing line rather than listing them. Hard limit 150 words. No "
         "headers, no hype, no filler like 'this cycle contains'."

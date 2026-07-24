@@ -209,3 +209,20 @@ def test_teams_sections_top_deadlines_and_press_only():
 
 def test_teams_sections_empty_when_nothing_qualifies():
     assert sd._teams_sections([{"title": "plain"}], []) == ""
+
+
+# --------------------------------------------------------------------------
+# Criticality banner (original 'notification of level' promise)
+
+def test_level_line_counts_by_level_and_press():
+    official = [{"level": "CRITICAL"}, {"level": "HIGH"}, {"level": "HIGH"},
+                {"level": "INFO"}]
+    press = [{"title": "story"}]
+    line = sd._level_line(official, press)
+    assert "1 critical" in line and "2 high" in line and "1 info" in line
+    assert "📰 1 press" in line
+    assert "moderate" not in line          # zero counts omitted
+
+
+def test_level_line_empty_when_no_items():
+    assert sd._level_line([], []) == ""
