@@ -77,5 +77,44 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-07-27",
+  "summary": "\ud83d\udfe1 2 moderate \u00b7 \ud83d\udcf0 3 press\n\n**Bottom line:** NIH has resumed terminating grants tied to disfavored topics, and court records now expose the automated keyword lists driving these cancellations\u2014active portfolios are at risk and funding priorities are shifting toward AI.\n\n- \ud83d\udd34 **NIH grant terminations** - NIH is again canceling grants conflicting with administration priorities despite prior court rulings, so any active or pending awards on sensitive topics face renewed termination risk.\n- \ud83d\udd34 **Keyword cancellation lists** - Court records reveal the specific automated search terms agencies used to cut billions in grants, letting us proactively audit our portfolio and language for exposure.\n- \ud83d\udfe0 **AI funding shift** - The White House plan redirects billions toward AI and individual scientists and away from traditional university peer-reviewed grants, signaling we should reposition proposals accordingly.\n\nRoutine: NIH Guide notice NOT-OD-26-094 replaces Letters of Support with Letters of Collaboration to reduce administrative burden.",
+  "extra": "\ud83d\udcf0 From the research press\n- NIH is again terminating grants that the Trump administration dislikes \u2014 Science, 2026-07-24\n  https://www.science.org/content/article/nih-again-terminating-grants-trump-administration-dislikes\n- Inside the federal keyword lists that canceled billions in research funding \u2014 Higher Ed Dive, 2026-07-26\n  https://www.highereddive.com/news/inside-the-federal-keyword-lists-that-canceled-billions-in-research-funding/826203/\n- White House rolls out AI funding \u2014 and signals a new era for US science \u2014 Nature, 2026-07-24\n  https://www.nature.com/articles/d41586-026-02332-8\n\n\ud83d\udcc8 Trend watch\nToday's grant-termination coverage (Science, Higher Ed Dive) extends a sustained pattern of funding cancellations, marking at least the 6th termination-related item in roughly two weeks (AHRQ patient-care cuts, keyword-driven cancellations, and the July 20 court ruling).\n\n\ud83c\udfdb\ufe0f Government affairs\nNIH has resumed terminating research grants that conflict with Trump administration priorities\u2014reportedly using automated keyword lists to flag cancellations en masse\u2014despite prior court rulings against earlier mass terminations. Separately, the White House unveiled a plan to redirect billions in federal research funding toward AI initiatives and individual scientists, shifting money away from traditional university-based peer-reviewed grants.",
+  "items": [
+   {
+    "title": "NIH Is Replacing Letters of Support with Letters of Collaboration to Reduce Administrative Burden",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-094.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "NIH Is Replacing Letters of Support with Letters of Collaboration to Reduce Administrative Burden",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-094.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "NIH is again terminating grants that the Trump administration dislikes",
+    "url": "https://www.science.org/content/article/nih-again-terminating-grants-trump-administration-dislikes",
+    "level": "CRITICAL",
+    "agency": "Science"
+   },
+   {
+    "title": "Inside the federal keyword lists that canceled billions in research funding",
+    "url": "https://www.highereddive.com/news/inside-the-federal-keyword-lists-that-canceled-billions-in-research-funding/826203/",
+    "level": "CRITICAL",
+    "agency": "Higher Ed Dive"
+   },
+   {
+    "title": "White House rolls out AI funding \u2014 and signals a new era for US science",
+    "url": "https://www.nature.com/articles/d41586-026-02332-8",
+    "level": "HIGH",
+    "agency": "Nature"
+   }
+  ]
  }
 ]

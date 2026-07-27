@@ -27,9 +27,16 @@
     "source": "News",
     "title": "White House admits it used keywords to kill billions worth of California research grants",
     "url": "https://calmatters.org/education/higher-education/2026/07/research-grants-california-2/"
+   },
+   {
+    "date": "2026-07-26",
+    "id": "news-8e88b0de3e38",
+    "source": "News",
+    "title": "Inside the federal keyword lists that canceled billions in research funding",
+    "url": "https://www.highereddive.com/news/inside-the-federal-keyword-lists-that-canceled-billions-in-research-funding/826203/"
    }
   ],
-  "summary": "On July 22, 2026, the White House admitted it used keyword-based criteria to terminate billions of dollars worth of California research grants. This confirms that automated keyword screening drove the terminations, raising concerns about how grants are being flagged and cut.",
+  "summary": "The White House has admitted to using keyword-based lists to terminate billions of dollars' worth of California research grants, with subsequent reporting exposing the contents of these federal keyword lists. The revelations show that grant cancellations were driven by automated or list-based screening rather than case-by-case review, raising significant concerns for institutions whose funding may have been flagged by targeted terms.",
   "title": "Keyword-based research grant terminations"
  },
  "hhs-title-vi-rollback": {
@@ -44,6 +51,19 @@
   ],
   "summary": "On July 24, 2026, HHS rescinded portions of its Title VI civil rights regulations, stating the goal was to align them with the statutory text and conform to Executive Order 14281. This narrows the scope of HHS civil rights regulations, which may affect compliance obligations tied to federally funded research.",
   "title": "HHS Title VI civil rights regulation rollback"
+ },
+ "nih-grant-terminations": {
+  "events": [
+   {
+    "date": "2026-07-24",
+    "id": "news-9fa5c198862f",
+    "source": "News",
+    "title": "NIH is again terminating grants that the Trump administration dislikes",
+    "url": "https://www.science.org/content/article/nih-again-terminating-grants-trump-administration-dislikes"
+   }
+  ],
+  "summary": "The NIH has resumed terminating research grants that the Trump administration opposes, marking a renewed round of cancellations. This signals continued funding instability for NIH-supported research and suggests investigators should anticipate further terminations aligned with administration priorities.",
+  "title": "NIH grant terminations under Trump priorities"
  },
  "pentagon-university-blacklist": {
   "events": [
@@ -87,9 +107,16 @@
     "source": "News",
     "title": "White House Seeks to Steer Research Funding Outside Academia",
     "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/07/24/white-house-seeks-steer-research-funding-outside"
+   },
+   {
+    "date": "2026-07-24",
+    "id": "news-cf24fc9282c0",
+    "source": "News",
+    "title": "White House rolls out AI funding \u2014 and signals a new era for US science",
+    "url": "https://www.nature.com/articles/d41586-026-02332-8"
    }
   ],
-  "summary": "On July 22, 2026, the White House unveiled a science funding overhaul, followed by reports on July 23-24 describing the current U.S. science system as 'calcified' and calling for big changes, including reducing university research funding. The overhaul now seeks to steer research funding outside academia, meaning universities may face reduced federal research support and increased competition from non-academic recipients.",
+  "summary": "The White House unveiled a major science funding overhaul accompanied by a report characterizing the U.S. science system as 'calcified' and calling for reduced university research funding, with a stated push to steer research support outside academia and toward new AI funding initiatives. The plan signals a potential structural shift in how federal research dollars are allocated, with universities positioned to lose funding share under the proposed changes.",
   "title": "White House science funding overhaul"
  }
 }
