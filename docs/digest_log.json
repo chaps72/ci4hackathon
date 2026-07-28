@@ -116,5 +116,43 @@
     "agency": "Nature"
    }
   ]
+ },
+ {
+  "date": "2026-07-28",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udfe1 3 moderate\n\nBottom line: One new NIH biosafety policy warrants compliance review; the rest are routine FDA cancer-trial guidance finalizations.\n\n\ud83d\udfe0 **NIH High-Risk Life Sciences Policy** \u2013 NIH issued notice NOT-OD-26-101 establishing USG policy for stopping high-risk life sciences research, so oversight, biosafety, and compliance offices should assess implications for affected labs and awards.\n\nRoutine/informational: FDA finalized three cancer clinical trial eligibility guidances (laboratory values, washout periods and concomitant medications, and performance status) on 2026-07-28, each updating April 2024 drafts to reduce unjustified participant exclusions\u2014relevant for IRBs and clinical investigators running oncology trials.",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's three FDA cancer clinical trial eligibility guidances extend a sustained HHS/FDA stream of clinical-research guidance and RFIs, marking at least the 4th such issuance in three weeks (psychedelics guidance/RFI 7/14, CLIA RFI 7/16, Expedited IND RFI 7/21).\n\n\ud83c\udfdb\ufe0f Government affairs\nThese items contain little government-affairs signal on appropriations, continuing resolutions, rescissions, executive orders, or OMB actions; they consist of NIH and FDA guidance/policy notices, including an NIH policy on stopping high-risk life sciences research and three final FDA cancer clinical trial eligibility guidances.",
+  "items": [
+   {
+    "title": "USG Policy for Stopping High-Risk Life Sciences Research",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-101.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "USG Policy for Stopping High-Risk Life Sciences Research",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-101.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Cancer Clinical Trial Eligibility Criteria: Laboratory Values; Guidance for Industry, Institutional Review Boards, and Clinical Investigators; Availability",
+    "url": "https://www.federalregister.gov/documents/2026/07/28/2026-15187/cancer-clinical-trial-eligibility-criteria-laboratory-values-guidance-for-industry-institutional",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   },
+   {
+    "title": "Cancer Clinical Trial Eligibility Criteria: Washout Periods and Concomitant Medications; Guidance for Industry, Institutional Review Boards, and Clinical Investigators; Availability",
+    "url": "https://www.federalregister.gov/documents/2026/07/28/2026-15186/cancer-clinical-trial-eligibility-criteria-washout-periods-and-concomitant-medications-guidance-for",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   },
+   {
+    "title": "Cancer Clinical Trial Eligibility Criteria: Performance Status; Guidance for Industry, Institutional Review Boards, and Clinical Investigators; Availability",
+    "url": "https://www.federalregister.gov/documents/2026/07/28/2026-15185/cancer-clinical-trial-eligibility-criteria-performance-status-guidance-for-industry-institutional",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": []
  }
 ]

@@ -52,6 +52,26 @@
   "summary": "On July 24, 2026, HHS rescinded portions of its Title VI civil rights regulations, stating the goal was to align them with the statutory text and conform to Executive Order 14281. This narrows the scope of HHS civil rights regulations, which may affect compliance obligations tied to federally funded research.",
   "title": "HHS Title VI civil rights regulation rollback"
  },
+ "high-risk-life-sciences-policy": {
+  "events": [
+   {
+    "date": "2026-07-28",
+    "id": "nih-NOT-OD-26-101",
+    "source": "NIH Guide",
+    "title": "USG Policy for Stopping High-Risk Life Sciences Research",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-101.html"
+   },
+   {
+    "date": "Tue, 28 Ju",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-101.html",
+    "source": "NIH Guide",
+    "title": "USG Policy for Stopping High-Risk Life Sciences Research",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-101.html"
+   }
+  ],
+  "summary": "On July 28, 2026, the U.S. Government issued a policy for stopping high-risk life sciences research. The policy currently stands as newly announced, and its implementation details and scope of application remain to be clarified. For the research office, this signals a need to review affected life sciences projects for compliance with the new federal requirements.",
+  "title": "USG policy for stopping high-risk life sciences research"
+ },
  "nih-grant-terminations": {
   "events": [
    {
