@@ -154,5 +154,25 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-07-29",
+  "summary": "\ud83d\udfe0 2 high\n\nBottom line: One actionable NIH update to flag; both listed entries reference the same notice (NOT-OD-26-100), so treat as a single item.\n\n\ud83d\udfe0 **NIH Data Sharing** - NIH issued an implementation update to Data Management and Sharing Plan requirements (Guide notice NOT-OD-26-100, dated 2026-07-29), so review current DMSP guidance and confirm affected proposals and awards align with the revised expectations.\n\nNote: The second listing is a duplicate of the same notice, not a separate development.",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's NIH data-management policy update is the 4th NIH administrative/policy-streamlining action in about a week (Letters of Collaboration 7/27, High-Risk Life Sciences policy 7/28, plus the loan repayment revisions 7/13).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe items contain little government-affairs signal, as both are duplicate NIH Guide notices on data management and sharing plan implementation (NOT-OD-26-100) rather than legislative, budget, or executive-branch actions.",
+  "items": [
+   {
+    "title": "Implementation Update: NIH Data Management and Sharing Plan Requirements",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-100.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Implementation Update: NIH Data Management and Sharing Plan Requirements",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-100.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]
