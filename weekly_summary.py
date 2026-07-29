@@ -96,6 +96,36 @@ def _template_narrative(days, start, end):
             "item list below; AI narrative was unavailable for this edition.")
 
 
+def _add_md_text(doc, text):
+    """Render the narrative's light markdown into real Word formatting:
+    '#' lines become bold headings, '- ' lines become bullets, **bold**
+    becomes bold runs. Everything else is a plain paragraph."""
+    import re
+    from docx.shared import RGBColor
+    blue = RGBColor(*EMORY_BLUE)
+
+    def runs(p, line):
+        for part in re.split(r"(\*\*[^*]+\*\*)", line):
+            if part.startswith("**") and part.endswith("**"):
+                p.add_run(part[2:-2]).bold = True
+            elif part:
+                p.add_run(part.replace("*", ""))
+
+    for raw in (text or "").split("\n"):
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith("#"):
+            p = doc.add_paragraph()
+            r = p.add_run(line.lstrip("# ").strip())
+            r.bold = True
+            r.font.color.rgb = blue
+        elif line.startswith(("- ", "* ")):
+            runs(doc.add_paragraph(style="List Bullet"), line[2:])
+        else:
+            runs(doc.add_paragraph(), line)
+
+
 def _add_hyperlink(paragraph, url, text):
     """python-docx has no hyperlink API; standard OOXML recipe."""
     import docx.opc.constants
@@ -137,9 +167,7 @@ def build_docx(path, start, end, narrative, days, storylines):
 
     h = doc.add_heading("Executive overview", level=1)
     h.runs[0].font.color.rgb = blue
-    for para in (narrative or "").split("\n"):
-        if para.strip():
-            doc.add_paragraph(para.strip())
+    _add_md_text(doc, narrative)
 
     if storylines:
         h = doc.add_heading("Ongoing storylines", level=1)
