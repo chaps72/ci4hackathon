@@ -19,7 +19,7 @@ jobs:
       # Only what the digest pipeline itself needs (the Streamlit dashboard
       # deps are managed by Streamlit Cloud and aren't exercised by tests).
       - name: Install dependencies
-        run: pip install requests==2.34.2 anthropic==0.116.0 pytest==8.3.4
+        run: pip install requests==2.34.2 anthropic==0.116.0 python-docx==1.1.2 pytest==8.3.4
 
       - name: Run tests
         run: pytest tests/ -v

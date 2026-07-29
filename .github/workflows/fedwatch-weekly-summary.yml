@@ -1,0 +1,44 @@
+name: FedWatch weekly summary
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # Friday evening after the 5pm daily digest; second cron is a backup
+    # (the script skips if this week's file already exists).
+    - cron: "30 22 * * 5"
+    - cron: "30 23 * * 5"
+  workflow_dispatch: {}
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests==2.34.2 anthropic==0.116.0 python-docx==1.1.2
+
+      - name: Build weekly summary
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python weekly_summary.py
+
+      - name: Publish weekly doc
+        run: |
+          if [ -n "$(git status --porcelain docs/)" ]; then
+            git config user.name "FedWatch Bot"
+            git config user.email "noreply@anthropic.com"
+            git add docs/
+            git commit -m "Publish weekly summary $(date -u +%Y-%m-%d)"
+            git pull --rebase origin main
+            git push
+          else
+            echo "No weekly doc to publish."
+          fi
