@@ -65,6 +65,9 @@ def weekly_narrative(days, storylines, start, end):
         day_block = ""
         for d in days:
             day_block += f"\n{d.get('date')}:\n{(d.get('summary') or '')[:900]}\n"
+            for it in (d.get("items") or []) + (d.get("press") or []):
+                if it.get("url"):
+                    day_block += f"  SOURCE: {(it.get('title') or '')[:90]} -> {it['url']}\n"
         story_block = "\n".join(
             f"- {s.get('title')}: {(s.get('summary') or '')[:300]}" for s in storylines)
         prompt = (
@@ -78,6 +81,8 @@ def weekly_narrative(days, storylines, start, end):
             "label** followed by an em dash and 1-2 plain sentences on what "
             "happened and the so-what for the institution.\n"
             "3. '**What to watch:**' followed by 1-2 sentences.\n"
+            "End every Top developments bullet with its most relevant source "
+            "link in parentheses, as a bare URL taken from the SOURCE lines.\n"
             "300-400 words total, no hype, no headers other than the bolded "
             "labels above. Ground it ONLY in the material below.\n\n"
             f"DAILY SUMMARIES:{day_block}\n\nACTIVE STORYLINES:\n{story_block}"
@@ -110,10 +115,14 @@ def _add_md_text(doc, text):
     blue = RGBColor(*EMORY_BLUE)
 
     def runs(p, line):
-        for part in re.split(r"(\*\*[^*]+\*\*)", line):
+        for part in re.split(r"(\*\*[^*]+\*\*|https?://[^\s)\]]+)", line):
+            if not part:
+                continue
             if part.startswith("**") and part.endswith("**"):
                 p.add_run(part[2:-2]).bold = True
-            elif part:
+            elif part.startswith(("http://", "https://")):
+                _add_hyperlink(p, part, part)
+            else:
                 p.add_run(part.replace("*", ""))
 
     for raw in (text or "").split("\n"):
