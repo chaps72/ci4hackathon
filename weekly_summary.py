@@ -69,12 +69,17 @@ def weekly_narrative(days, storylines, start, end):
             f"- {s.get('title')}: {(s.get('summary') or '')[:300]}" for s in storylines)
         prompt = (
             "Write the weekly federal research-policy summary for Emory's Office "
-            f"of the SVPR covering {start} to {end}. It will be pasted into a "
-            "monthly email to research leadership, so write clean standalone "
-            "prose: a 2-3 sentence bottom line for the week, then 'Key "
-            "developments' as short bullets grouped by theme (not by day), then "
-            "a 1-2 sentence 'What to watch'. 250-350 words, no hype, plain "
-            "professional tone. Ground it ONLY in the material below.\n\n"
+            f"of the SVPR covering {start} to {end}. It will be COPY-PASTED "
+            "directly into an email to research leadership, so it must stand "
+            "alone. Use EXACTLY this structure:\n"
+            "1. '**Bottom line:**' followed by 2-3 sentences on the week.\n"
+            "2. '**Top developments:**' then one bullet per theme (most "
+            "consequential first), each starting with a **bolded 3-6 word "
+            "label** followed by an em dash and 1-2 plain sentences on what "
+            "happened and the so-what for the institution.\n"
+            "3. '**What to watch:**' followed by 1-2 sentences.\n"
+            "300-400 words total, no hype, no headers other than the bolded "
+            "labels above. Ground it ONLY in the material below.\n\n"
             f"DAILY SUMMARIES:{day_block}\n\nACTIVE STORYLINES:\n{story_block}"
         )
         resp = client.messages.create(
@@ -165,9 +170,13 @@ def build_docx(path, start, end, narrative, days, storylines):
     sub.runs[0].font.color.rgb = gray
     sub.runs[0].font.size = Pt(10)
 
-    h = doc.add_heading("Executive overview", level=1)
+    h = doc.add_heading("Weekly summary — ready to copy into email", level=1)
     h.runs[0].font.color.rgb = blue
     _add_md_text(doc, narrative)
+    links = doc.add_paragraph("Full daily digests: https://chaps72.github.io/ci4hackathon/"
+                              "  ·  Historical record: https://chaps72.github.io/ci4hackathon/chronicle.html")
+    links.runs[0].font.size = Pt(9)
+    links.runs[0].font.color.rgb = gray
 
     if storylines:
         h = doc.add_heading("Ongoing storylines", level=1)
