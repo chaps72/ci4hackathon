@@ -174,5 +174,43 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-07-30",
+  "summary": "\ud83d\udcf0 5 press\n\n**Bottom line:** Federal research funding is being actively frozen and clawed back\u2014AHRQ has halted grants nationwide, and Harvard's $2.2B freeze is now a legal battleground with implications for all universities.\n\n- \ud83d\udd34 **AHRQ grant freeze** - AHRQ has canceled 100+ grants, cutting $131.3M in committed funding across 28 states and halting patient-safety research nationwide, while leaving most of its $345M appropriation unspent\u2014check exposure for any AHRQ-funded projects and prepare for stalled reimbursements. (Inside Higher Ed, CBS, AJMC, Becker's)\n- \ud83d\udfe0 **Harvard funding fight** - About three dozen universities backed Harvard's court challenge to a $2.2B research funding freeze, with the administration also threatening its tax-exempt status and grant-derived patents, signaling escalating federal leverage that could set precedent for peer institutions.\n\nConsider whether to join the amicus effort and monitor the case's outcome as a bellwether for institutional funding risk.",
+  "extra": "\ud83d\udcf0 From the research press\n- 3 dozen of Harvard's peers back its court fight against the Trump administration \u2014 Higher Ed Dive, 2026-07-27\n  https://www.highereddive.com/news/3-dozen-of-harvards-peers-back-its-court-fight-against-the-trump-administr/826300/\n- Group Says AHRQ Grant Cancellations Top $131M Across 28 States \u2014 Inside Higher Ed, 2026-07-29\n  https://www.insidehighered.com/news/quick-takes/2026/07/29/group-says-canceled-ahrq-grants-top-131m-across-28-states\n- Trump administration has quietly throttled an agency devoted to the safety of American hea \u2014 CBS News, 2026-07-29\n  https://www.cbsnews.com/news/trump-healthcare-safety-agency-ahrq/\n- AHRQ Grant Freeze Halts Patient Safety Research Nationwide \u2014 AJMC (American Journal of Managed Care), 2026-07-30\n  https://www.ajmc.com/view/ahrq-grant-freeze-halts-patient-safety-research-nationwide\n\n\ud83d\udcc8 Trend watch\nToday's AHRQ grant cancellations ($131M/28 states) mark at least the 6th report of AHRQ patient-care research terminations in roughly two weeks (log entries on 7/17, 7/18, 7/19, 7/20, and 7/22), with the tallied amount escalating from $109M to $131M.\n\n\ud83c\udfdb\ufe0f Government affairs\nDespite Congress appropriating $345 million for AHRQ this fiscal year, the agency has canceled more than 100 grants\u2014cutting off roughly $131 million in committed funding across 28 states\u2014while spending under $15 million and issuing no new grants in over a year. Separately, the administration's freeze of $2.2 billion in Harvard research funding, alongside threats to the university's tax-exempt status and grant-derived patents, is now the subject of a court challenge backed by about three dozen other universities.",
+  "items": [],
+  "press": [
+   {
+    "title": "3 dozen of Harvard's peers back its court fight against the Trump administration",
+    "url": "https://www.highereddive.com/news/3-dozen-of-harvards-peers-back-its-court-fight-against-the-trump-administr/826300/",
+    "level": "HIGH",
+    "agency": "Higher Ed Dive"
+   },
+   {
+    "title": "Group Says AHRQ Grant Cancellations Top $131M Across 28 States",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/07/29/group-says-canceled-ahrq-grants-top-131m-across-28-states",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   },
+   {
+    "title": "Trump administration has quietly throttled an agency devoted to the safety of American healthcare",
+    "url": "https://www.cbsnews.com/news/trump-healthcare-safety-agency-ahrq/",
+    "level": "HIGH",
+    "agency": "CBS News"
+   },
+   {
+    "title": "AHRQ Grant Freeze Halts Patient Safety Research Nationwide",
+    "url": "https://www.ajmc.com/view/ahrq-grant-freeze-halts-patient-safety-research-nationwide",
+    "level": "HIGH",
+    "agency": "AJMC (American Journal of Managed Care)"
+   },
+   {
+    "title": "$131M in AHRQ grant cancellations by state",
+    "url": "https://www.beckershospitalreview.com/quality/patient-safety-outcomes/131m-in-ahrq-grant-cancellations-by-state/",
+    "level": "MODERATE",
+    "agency": "Becker's Hospital Review"
+   }
+  ]
  }
 ]

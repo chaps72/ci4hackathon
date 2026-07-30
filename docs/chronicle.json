@@ -14,9 +14,37 @@
     "source": "News",
     "title": "Federal agency for healthcare quality cancels $109 million in grants",
     "url": "https://www.statnews.com/2026/07/22/ahrq-grants-health-quality-researchers-lose-109-million-funding/"
+   },
+   {
+    "date": "2026-07-29",
+    "id": "news-a7b5a30053b3",
+    "source": "News",
+    "title": "Group Says AHRQ Grant Cancellations Top $131M Across 28 States",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/07/29/group-says-canceled-ahrq-grants-top-131m-across-28-states"
+   },
+   {
+    "date": "2026-07-29",
+    "id": "news-c452cf58843c",
+    "source": "News",
+    "title": "Trump administration has quietly throttled an agency devoted to the safety of American healthcare",
+    "url": "https://www.cbsnews.com/news/trump-healthcare-safety-agency-ahrq/"
+   },
+   {
+    "date": "2026-07-30",
+    "id": "news-e3705095fd3e",
+    "source": "News",
+    "title": "AHRQ Grant Freeze Halts Patient Safety Research Nationwide",
+    "url": "https://www.ajmc.com/view/ahrq-grant-freeze-halts-patient-safety-research-nationwide"
+   },
+   {
+    "date": "2026-07-28",
+    "id": "news-87646395ec43",
+    "source": "News",
+    "title": "$131M in AHRQ grant cancellations by state",
+    "url": "https://www.beckershospitalreview.com/quality/patient-safety-outcomes/131m-in-ahrq-grant-cancellations-by-state/"
    }
   ],
-  "summary": "On July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, followed by confirmation on July 22 that the federal healthcare quality agency canceled $109 million in grants. The situation reflects a significant and recent funding withdrawal affecting healthcare quality research. For our research office, this signals potential exposure for any active or pending AHRQ-funded projects and warrants immediate review of affected awards.",
+  "summary": "Beginning July 20, 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported at $109 million and later tallied by a group at more than $131 million across 28 states. As of late July, the cuts\u2014described as a quiet throttling of the agency devoted to healthcare safety\u2014have halted patient safety research nationwide. This represents a significant and geographically widespread disruption to federally funded healthcare quality and safety research.",
   "title": "AHRQ grant terminations"
  },
  "grant-termination-keywords": {
@@ -38,6 +66,19 @@
   ],
   "summary": "The White House has admitted to using keyword-based lists to terminate billions of dollars' worth of California research grants, with subsequent reporting exposing the contents of these federal keyword lists. The revelations show that grant cancellations were driven by automated or list-based screening rather than case-by-case review, raising significant concerns for institutions whose funding may have been flagged by targeted terms.",
   "title": "Keyword-based research grant terminations"
+ },
+ "harvard-funding-legal-fight": {
+  "events": [
+   {
+    "date": "2026-07-27",
+    "id": "news-e6ef8dbbf2ec",
+    "source": "News",
+    "title": "3 dozen of Harvard's peers back its court fight against the Trump administration",
+    "url": "https://www.highereddive.com/news/3-dozen-of-harvards-peers-back-its-court-fight-against-the-trump-administr/826300/"
+   }
+  ],
+  "summary": "As of July 27, 2026, three dozen of Harvard's peer institutions have filed to back its court fight against the Trump administration over its research funding freeze. The case remains in litigation, and the broad support signals that other universities view the outcome as consequential for the wider research community.",
+  "title": "Harvard research funding freeze and legal challenge"
  },
  "hhs-title-vi-rollback": {
   "events": [
