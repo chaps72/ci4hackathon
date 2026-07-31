@@ -212,5 +212,37 @@
     "agency": "Becker's Hospital Review"
    }
   ]
+ },
+ {
+  "date": "2026-07-31",
+  "summary": "\ud83d\udcf0 4 press\n\n**Bottom line:** Federal biomedical and health-services funding is contracting sharply, and new compliance risks around foreign collaborations are emerging\u2014both warrant near-term action.\n\n- \ud83d\udd34 **NIH success rates** - A new lump-sum funding policy plus spending delays have cut success rates (NCI ~1-in-10 to 1-in-25), so plan for far tougher odds and delayed awards across NIH submissions.\n- \ud83d\udd34 **AHRQ collapse** - AHRQ has issued no new grants since April 2025, lost ~80% of staff, and terminated 80+ awards worth $200M+, jeopardizing our patient-safety, quality, and workforce projects.\n- \ud83d\udfe0 **China sanctions list** - DoD's July 23 blacklist names 130 institutions (including Fudan and Shanghai Jiao Tong), so review active collaborations and pending partnerships for compliance exposure.\n- Informational: NSF launched a $47M pilot funding ~250 hybrid university-industry PhD students, signaling a broader federal push toward industry-linked training models worth monitoring.",
+  "extra": "\ud83d\udcf0 From the research press\n- AHRQ Grant Cancellations Escalate Fears Over Future of U.S. Health Services Research \u2014 Healthcare Innovation (HCI Innovation Group), 2026-07-29\n  https://www.hcinnovationgroup.com/policy-value-based-care/article/55394555/ahrq-grant-cancellations-escalate-fears-over-future-of-us-health-services-research\n- Odds of winning NIH grants plummet as new funding policy and spending delays bite \u2014 Science (AAAS), 2026-07-29\n  https://www.science.org/content/article/odds-winning-nih-grants-plummet-new-funding-policy-and-spending-delays-bite\n- US sanctions top Chinese universities and research institutes, citing national security th \u2014 Breakthrough News, 2026-07-29\n  https://breakthroughnews.org/2026/07/29/us-sanctions-top-chinese-universities-and-research-institutes-citing-national-security-threat/\n- $47 million program offers hybrid university-industry Ph.D. training \u2014 STAT News, 2026-07-29\n  https://www.statnews.com/2026/07/29/hybrid-academia-industry-phd-program-announced-uidp/\n\n\ud83d\udcc8 Trend watch\nToday's AHRQ cancellation coverage marks at least the 8th item on AHRQ grant terminations since July 17 (~two weeks), an escalating pattern now tallied at $131M across 28 states.\n\n\ud83c\udfdb\ufe0f Government affairs\nA new NIH policy requiring multiyear grants to be funded as a single upfront lump sum, combined with spending delays, has sharply lowered grant success rates, prompting fourteen GOP senators to press OMB Director Russ Vought in a July 25 letter to let NIH spend its full appropriated 2025 budget, while AHRQ has issued no new grants since April 2025 amid mass workforce departures and grant terminations. Separately, the administration launched a $47 million NSF pilot steering funding toward industry-linked PhD training, and the Defense Department blacklisted 130 foreign institutions on national-security grounds.",
+  "items": [],
+  "press": [
+   {
+    "title": "AHRQ Grant Cancellations Escalate Fears Over Future of U.S. Health Services Research",
+    "url": "https://www.hcinnovationgroup.com/policy-value-based-care/article/55394555/ahrq-grant-cancellations-escalate-fears-over-future-of-us-health-services-research",
+    "level": "CRITICAL",
+    "agency": "Healthcare Innovation (HCI Innovation Group)"
+   },
+   {
+    "title": "Odds of winning NIH grants plummet as new funding policy and spending delays bite",
+    "url": "https://www.science.org/content/article/odds-winning-nih-grants-plummet-new-funding-policy-and-spending-delays-bite",
+    "level": "CRITICAL",
+    "agency": "Science (AAAS)"
+   },
+   {
+    "title": "US sanctions top Chinese universities and research institutes, citing national security threat",
+    "url": "https://breakthroughnews.org/2026/07/29/us-sanctions-top-chinese-universities-and-research-institutes-citing-national-security-threat/",
+    "level": "HIGH",
+    "agency": "Breakthrough News"
+   },
+   {
+    "title": "$47 million program offers hybrid university-industry Ph.D. training",
+    "url": "https://www.statnews.com/2026/07/29/hybrid-academia-industry-phd-program-announced-uidp/",
+    "level": "MODERATE",
+    "agency": "STAT News"
+   }
+  ]
  }
 ]

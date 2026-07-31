@@ -42,9 +42,16 @@
     "source": "News",
     "title": "$131M in AHRQ grant cancellations by state",
     "url": "https://www.beckershospitalreview.com/quality/patient-safety-outcomes/131m-in-ahrq-grant-cancellations-by-state/"
+   },
+   {
+    "date": "2026-07-29",
+    "id": "news-f3f8dcf8b4d4",
+    "source": "News",
+    "title": "AHRQ Grant Cancellations Escalate Fears Over Future of U.S. Health Services Research",
+    "url": "https://www.hcinnovationgroup.com/policy-value-based-care/article/55394555/ahrq-grant-cancellations-escalate-fears-over-future-of-us-health-services-research"
    }
   ],
-  "summary": "Beginning July 20, 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported at $109 million and later tallied by a group at more than $131 million across 28 states. As of late July, the cuts\u2014described as a quiet throttling of the agency devoted to healthcare safety\u2014have halted patient safety research nationwide. This represents a significant and geographically widespread disruption to federally funded healthcare quality and safety research.",
+  "summary": "Beginning July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, with cancellations initially reported at $109 million and subsequently escalating to over $131 million across 28 states. The freeze has reportedly halted patient safety research nationwide and raised broader fears about the future of U.S. health services research. For the research office, this represents a significant and growing threat to funding for healthcare quality and patient safety work spanning multiple states.",
   "title": "AHRQ grant terminations"
  },
  "grant-termination-keywords": {
@@ -121,9 +128,16 @@
     "source": "News",
     "title": "NIH is again terminating grants that the Trump administration dislikes",
     "url": "https://www.science.org/content/article/nih-again-terminating-grants-trump-administration-dislikes"
+   },
+   {
+    "date": "2026-07-29",
+    "id": "news-648c6770191a",
+    "source": "News",
+    "title": "Odds of winning NIH grants plummet as new funding policy and spending delays bite",
+    "url": "https://www.science.org/content/article/odds-winning-nih-grants-plummet-new-funding-policy-and-spending-delays-bite"
    }
   ],
-  "summary": "The NIH has resumed terminating research grants that the Trump administration opposes, marking a renewed round of cancellations. This signals continued funding instability for NIH-supported research and suggests investigators should anticipate further terminations aligned with administration priorities.",
+  "summary": "In late July 2026, NIH resumed terminating grants disfavored by the Trump administration, while new funding policies and spending delays sharply reduced the odds of winning NIH awards. The situation signals both active cancellations and a tightening funding environment that could substantially affect the office's ability to secure and retain NIH support.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "pentagon-university-blacklist": {
@@ -134,9 +148,16 @@
     "source": "News",
     "title": "Pentagon expands blacklist to include China's top civilian universities",
     "url": "https://www.scmp.com/news/us/politics/article/3361647/pentagon-expands-blacklist-include-chinas-top-civilian-universities"
+   },
+   {
+    "date": "2026-07-29",
+    "id": "news-413de2533c4e",
+    "source": "News",
+    "title": "US sanctions top Chinese universities and research institutes, citing national security threat",
+    "url": "https://breakthroughnews.org/2026/07/29/us-sanctions-top-chinese-universities-and-research-institutes-citing-national-security-threat/"
    }
   ],
-  "summary": "On July 23, 2026, the Pentagon expanded its blacklist of foreign universities to include China's top civilian institutions. The action currently broadens restrictions to encompass leading civilian, not just military-linked, universities. This may complicate or restrict research collaborations and partnerships with the affected Chinese institutions.",
+  "summary": "In late July 2026, the Pentagon expanded its blacklist to include China's top civilian universities and research institutes, with sanctions justified on national security grounds. This escalation could complicate or restrict research collaborations and partnerships involving the named Chinese institutions.",
   "title": "Pentagon blacklist of foreign universities"
  },
  "science-funding-overhaul": {
