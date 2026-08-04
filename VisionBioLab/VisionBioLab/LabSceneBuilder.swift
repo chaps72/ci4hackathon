@@ -2,9 +2,10 @@ import RealityKit
 import UIKit
 import simd
 
-/// Builds and updates the 3D virtual lab. Everything uses unlit materials so the
-/// scene renders brightly and reliably in the fully immersive space, with no
-/// dependence on scene lighting.
+/// Builds and updates the 3D virtual lab. Solid surfaces use lit
+/// `PhysicallyBasedMaterial` shaded by three directional lights (key + fills),
+/// with contact shadows, for a realistic look. Liquids, labels, and the guidance
+/// sign stay unlit so the informative bits are always clearly legible.
 enum LabSceneBuilder {
 
     // Names used to identify what the user tapped.
@@ -35,6 +36,7 @@ enum LabSceneBuilder {
         root.children.removeAll()
         root.transform = .identity
 
+        root.addChild(makeLighting())
         root.addChild(makeRoom())
 
         let bench = Entity()
@@ -48,6 +50,27 @@ enum LabSceneBuilder {
         panel.position = [0, benchTopY + 0.36, -0.16]
         bench.addChild(panel)
         root.addChild(bench)
+    }
+
+    // MARK: - Lighting
+
+    /// Three directional lights — a bright key plus two softer fills — give the
+    /// physically-based surfaces even, well-exposed shading and specular
+    /// highlights from several angles so nothing reads as flat or dark.
+    private static func makeLighting() -> Entity {
+        let lights = Entity()
+        let aim: SIMD3<Float> = [0, benchTopY, -1.05]
+
+        func directional(_ intensity: Float, from: SIMD3<Float>) {
+            let e = Entity()
+            e.components.set(DirectionalLightComponent(color: .white, intensity: intensity))
+            e.look(at: aim, from: from, upVector: [0, 1, 0], relativeTo: nil)
+            lights.addChild(e)
+        }
+        directional(4200, from: [1.6, 3.0, 0.6])    // key (upper right)
+        directional(2600, from: [-1.8, 2.4, 0.8])   // fill (upper left)
+        directional(2000, from: [0.0, 2.2, -2.6])   // rim / back
+        return lights
     }
 
     // MARK: - Room
@@ -87,8 +110,8 @@ enum LabSceneBuilder {
         cabinet.position = [0, (benchTopY - 0.06) / 2, 0]
         bench.addChild(cabinet)
 
-        // Glossy worktop.
-        let top = box(1.6, 0.05, 0.78, surface(0.90, 0.91, 0.93, roughness: 0.28))
+        // Glossy lacquered worktop.
+        let top = box(1.6, 0.05, 0.78, surface(0.90, 0.91, 0.93, roughness: 0.28, clearcoat: 1.0))
         top.position = [0, benchTopY - 0.025, 0]
         bench.addChild(top)
         return bench
@@ -137,6 +160,7 @@ enum LabSceneBuilder {
             materials: [glassy()]
         )
         body.position = [0, bodyHeight / 2, 0]
+        castsShadow(body)
         bottle.addChild(body)
 
         let liquid = ModelEntity(
@@ -226,6 +250,12 @@ enum LabSceneBuilder {
              metal, [0.019, 0.13, 0])
         part(.generateCylinder(height: 0.016, radius: 0.008), darkGrey, [0.019, 0.185, 0])
 
+        // Solid parts cast a soft contact shadow (skip the clear tip and the
+        // hidden liquid so we don't shadow translucent/disabled geometry).
+        for case let m as ModelEntity in pipette.children where m !== liquid && m !== tip {
+            castsShadow(m)
+        }
+
         pipette.name = pipetteName
         makeTappable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
         pipette.position = pipetteHome
@@ -252,6 +282,7 @@ enum LabSceneBuilder {
             materials: [glassy()]
         )
         body.position = [0, bodyHeight / 2, 0]
+        castsShadow(body)
         tube.addChild(body)
 
         let cone = ModelEntity(
@@ -458,16 +489,39 @@ enum LabSceneBuilder {
     }
 
     // MARK: - Materials
+    //
+    // Solid surfaces are physically-based and dielectric (metallic = 0) so the
+    // directional lights give them realistic diffuse shading plus specular
+    // highlights. We deliberately keep metalness at 0 — a fully metallic PBR
+    // surface renders black without an environment map to reflect, which we
+    // don't ship. Liquids, labels, and the sign stay unlit for legibility.
 
-    /// An opaque surface. Unlit so it always renders brightly regardless of the
-    /// immersive space's lighting (roughness is ignored — kept for call sites).
+    /// A lit, physically-based opaque surface. `roughness` sets the gloss (low =
+    /// shiny, high = matte); `clearcoat` adds a glossy lacquer layer on top (used
+    /// for the worktop and glossy panels).
     private static func surface(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat,
-                                roughness: Float = 0.8) -> UnlitMaterial {
-        UnlitMaterial(color: UIColor(red: r, green: g, blue: b, alpha: 1.0))
+                                roughness: Float = 0.8,
+                                clearcoat: Float = 0) -> PhysicallyBasedMaterial {
+        pbr(UIColor(red: r, green: g, blue: b, alpha: 1.0),
+            roughness: roughness, clearcoat: clearcoat)
     }
 
-    private static func litColor(_ c: ReagentColor, roughness: Float = 0.5) -> UnlitMaterial {
-        UnlitMaterial(color: c.uiColor)
+    private static func litColor(_ c: ReagentColor, roughness: Float = 0.5) -> PhysicallyBasedMaterial {
+        pbr(c.uiColor, roughness: roughness)
+    }
+
+    /// Build a dielectric physically-based material.
+    private static func pbr(_ color: UIColor, roughness: Float,
+                            clearcoat: Float = 0) -> PhysicallyBasedMaterial {
+        var m = PhysicallyBasedMaterial()
+        m.baseColor = .init(tint: color)
+        m.roughness = .init(floatLiteral: roughness)
+        m.metallic = .init(floatLiteral: 0.0)
+        if clearcoat > 0 {
+            m.clearcoat = .init(floatLiteral: clearcoat)
+            m.clearcoatRoughness = .init(floatLiteral: 0.1)
+        }
+        return m
     }
 
     /// Unlit (always-bright) material — used for liquids, labels, and the sign.
@@ -479,12 +533,22 @@ enum LabSceneBuilder {
         UnlitMaterial(color: UIColor(red: r, green: g, blue: b, alpha: 1.0))
     }
 
-    /// A frosted-glass look for glassware — translucent and unlit so it always
-    /// reads clearly.
-    private static func glassy() -> UnlitMaterial {
-        var material = UnlitMaterial(color: UIColor(white: 0.85, alpha: 0.4))
-        material.blending = .transparent(opacity: 0.4)
-        return material
+    /// A clear-glass look for glassware — a lit, glossy, translucent dielectric
+    /// with a clearcoat sheen so it catches highlights like real glass.
+    private static func glassy() -> PhysicallyBasedMaterial {
+        var m = PhysicallyBasedMaterial()
+        m.baseColor = .init(tint: UIColor(white: 0.9, alpha: 1.0))
+        m.roughness = .init(floatLiteral: 0.12)
+        m.metallic = .init(floatLiteral: 0.0)
+        m.clearcoat = .init(floatLiteral: 1.0)
+        m.clearcoatRoughness = .init(floatLiteral: 0.08)
+        m.blending = .transparent(opacity: 0.35)
+        return m
+    }
+
+    /// Add a soft contact shadow beneath a standing/floating object.
+    private static func castsShadow(_ entity: ModelEntity) {
+        entity.components.set(GroundingShadowComponent(castsShadow: true))
     }
 
     private static func translucent(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat,
