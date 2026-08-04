@@ -1,60 +1,30 @@
 import SwiftUI
 
-/// The 2D window: protocol sheet, reagent controls, status, and a button to
-/// open / close the immersive lab. Works hand-in-hand with the 3D scene — both
-/// drive the same `LabModel`.
+/// The 2D control window: reagent controls, status, and buttons to open the
+/// immersive lab and the floating protocol notepad. Works hand-in-hand with the
+/// 3D scene — both drive the same `LabModel`.
 struct ContentView: View {
     @Environment(LabModel.self) private var model
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    @Environment(\.openWindow) private var openWindow
 
     @State private var immersiveOpen = false
 
     var body: some View {
-        NavigationSplitView {
-            protocolSheet
-                .navigationTitle("Protocol")
-                .frame(minWidth: 320)
-        } detail: {
+        NavigationStack {
             controls
                 .navigationTitle("Virtual Bio Lab")
-        }
-    }
-
-    // MARK: - Protocol sheet
-
-    private var protocolSheet: some View {
-        List {
-            Section("Master Mix — add in order") {
-                ForEach(model.steps) { step in
-                    HStack(spacing: 12) {
-                        statusIcon(for: step)
-                        Circle()
-                            .fill(step.reagent.color.swiftUI)
-                            .frame(width: 18, height: 18)
-                            .overlay(Circle().strokeBorder(.secondary.opacity(0.4)))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("\(step.order). \(step.reagent.name)")
-                                .font(.headline)
-                            Text("\(step.reagent.volumeUL) µL · \(step.note)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            openWindow(id: ProtocolWindow.windowID)
+                        } label: {
+                            Label("Protocol", systemImage: "list.clipboard")
                         }
                     }
-                    .padding(.vertical, 4)
                 }
-            }
         }
-    }
-
-    private func statusIcon(for step: ProtocolStep) -> some View {
-        let done = model.dispensedReagents.contains(step.reagent)
-            && model.dispensedReagents.count >= step.order
-        let isCurrent = model.currentStep?.id == step.id
-        return Image(systemName: done ? "checkmark.circle.fill"
-                     : (isCurrent ? "arrow.right.circle.fill" : "circle"))
-            .foregroundStyle(done ? .green : (isCurrent ? .blue : .secondary))
-            .font(.title3)
     }
 
     // MARK: - Controls
@@ -63,14 +33,24 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
 
-                Button {
-                    Task { await toggleImmersive() }
-                } label: {
-                    Label(immersiveOpen ? "Exit Lab" : "Enter Lab",
-                          systemImage: immersiveOpen ? "xmark.circle" : "cube.transparent")
-                        .frame(maxWidth: .infinity)
+                HStack(spacing: 12) {
+                    Button {
+                        Task { await toggleImmersive() }
+                    } label: {
+                        Label(immersiveOpen ? "Exit Lab" : "Enter Lab",
+                              systemImage: immersiveOpen ? "xmark.circle" : "cube.transparent")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        openWindow(id: ProtocolWindow.windowID)
+                    } label: {
+                        Label("Open Protocol", systemImage: "list.clipboard")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.borderedProminent)
 
                 statusCard
 
@@ -193,6 +173,108 @@ struct ContentView: View {
                 immersiveOpen = false
             }
         }
+    }
+}
+
+// MARK: - Protocol notepad window
+
+/// A standalone floating window that shows the protocol like a notepad. The user
+/// can open it, drag it anywhere in space, and close it independently.
+struct ProtocolWindow: View {
+    static let windowID = "protocol"
+
+    var body: some View {
+        ProtocolListView()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(.regularMaterial)
+    }
+}
+
+/// The ordered protocol steps with live completion status. Shared so the same
+/// content could appear anywhere; here it lives in the notepad window.
+struct ProtocolListView: View {
+    @Environment(LabModel.self) private var model
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                Image(systemName: "list.clipboard.fill")
+                    .font(.title2)
+                    .foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Master Mix Protocol")
+                        .font(.title2.bold())
+                    Text("Add the reagents in order")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(20)
+
+            Divider()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(model.steps.enumerated()), id: \.element.id) { idx, step in
+                        stepRow(step)
+                        if idx < model.steps.count - 1 {
+                            Divider().padding(.leading, 20)
+                        }
+                    }
+                }
+            }
+
+            Divider()
+
+            HStack(spacing: 8) {
+                Image(systemName: model.isMixed ? "checkmark.seal.fill" : "flask")
+                    .foregroundStyle(model.isMixed ? .green : .secondary)
+                Text(footerMessage)
+                    .font(.callout)
+                    .foregroundStyle(model.isMixed ? .green : .secondary)
+            }
+            .padding(20)
+        }
+    }
+
+    private func stepRow(_ step: ProtocolStep) -> some View {
+        let done = model.dispensedReagents.contains(step.reagent)
+            && model.dispensedReagents.count >= step.order
+        let isCurrent = model.currentStep?.id == step.id
+
+        return HStack(alignment: .top, spacing: 14) {
+            Image(systemName: done ? "checkmark.circle.fill"
+                  : (isCurrent ? "arrow.right.circle.fill" : "circle"))
+                .foregroundStyle(done ? .green : (isCurrent ? .blue : .secondary))
+                .font(.title3)
+
+            Circle()
+                .fill(step.reagent.color.swiftUI)
+                .frame(width: 18, height: 18)
+                .overlay(Circle().strokeBorder(.secondary.opacity(0.4)))
+                .padding(.top, 3)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(step.order). \(step.reagent.name)")
+                    .font(.headline)
+                    .strikethrough(done, color: .secondary)
+                Text("\(step.reagent.volumeUL) µL · \(step.note)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(20)
+        .background(isCurrent ? Color.blue.opacity(0.08) : .clear)
+    }
+
+    private var footerMessage: String {
+        if model.isMixed { return "Protocol complete — reaction assembled." }
+        if model.isComplete { return "All reagents added — mix to finish." }
+        if let step = model.currentStep {
+            return "Next: step \(step.order), \(step.reagent.name)."
+        }
+        return ""
     }
 }
 

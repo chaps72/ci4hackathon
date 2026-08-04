@@ -19,8 +19,9 @@ enum LabSceneBuilder {
     private static let capClosedLocal: SIMD3<Float> = [0, 0.205, 0]
     private static let capOpenLocal: SIMD3<Float> = [0.05, 0.275, 0]
 
-    /// Resting position of the pipette (local to the bench group).
-    static let pipetteHome: SIMD3<Float> = [0.46, benchTopY + 0.09, 0.06]
+    /// Where the pipette floats when idle — hovering in the air above the bench
+    /// (it is never re-racked; after each action it simply stays where it is).
+    static let pipetteHome: SIMD3<Float> = [0.34, benchTopY + 0.30, 0.14]
 
     // MARK: - Build
 
@@ -40,7 +41,6 @@ enum LabSceneBuilder {
         bench.position = benchGroupOffset
         bench.addChild(makeWorkbench())
         bench.addChild(makeReagentRack(model: model))
-        bench.addChild(makePipetteStand())
         bench.addChild(makePipette(into: pipette, liquid: pipetteLiquid))
         bench.addChild(makeEppendorf(liquids: eppendorfLiquids))
 
@@ -230,30 +230,6 @@ enum LabSceneBuilder {
         makeTappable(pipette, size: [0.08, 0.34, 0.08], center: [0, 0.07, 0])
         pipette.position = pipetteHome
         return pipette
-    }
-
-    private static func makePipetteStand() -> Entity {
-        let stand = Entity()
-        let standMat = { surface(0.32, 0.34, 0.38, roughness: 0.5) }
-
-        let base = box(0.1, 0.03, 0.1, standMat())
-        base.position = [0.46, benchTopY + 0.015, 0.06]
-        stand.addChild(base)
-
-        let post = ModelEntity(
-            mesh: .generateCylinder(height: 0.24, radius: 0.008),
-            materials: [standMat()]
-        )
-        post.position = [0.46, benchTopY + 0.14, 0.015]
-        stand.addChild(post)
-
-        let cradle = ModelEntity(
-            mesh: .generateBox(width: 0.05, height: 0.008, depth: 0.04, cornerRadius: 0.002),
-            materials: [standMat()]
-        )
-        cradle.position = [0.46, benchTopY + 0.22, 0.04]
-        stand.addChild(cradle)
-        return stand
     }
 
     // MARK: - Eppendorf tube

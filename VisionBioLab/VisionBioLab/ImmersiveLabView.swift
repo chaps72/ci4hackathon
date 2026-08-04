@@ -96,21 +96,21 @@ struct ImmersiveLabView: View {
 
     // MARK: - Pipette animation
 
-    /// Fly the pipette from its stand → above the target → down into it → back
-    /// up → home, running `bottomAction` (draw / dispense) at the lowest point.
+    /// Fly the pipette from wherever it is floating → above the target → down
+    /// into it → back up, running `bottomAction` (draw / dispense) at the lowest
+    /// point. The pipette is never re-racked: it stays floating above the last
+    /// target it visited until the next tap.
     private func visit(x: Float, z: Float, mouthY: Float,
                        bottomAction: @escaping () -> Void) {
         busy = true
         let hoverY = mouthY + 0.16
         let dipY = mouthY + 0.03
-        let home = LabSceneBuilder.pipetteHome
 
         move(to: [x, hoverY, z], duration: 0.5)                 // travel over target
         after(0.55) { move(to: [x, dipY, z], duration: 0.35) }  // dip in
         after(1.05, bottomAction)                               // draw / dispense
-        after(1.35) { move(to: [x, hoverY, z], duration: 0.35) } // lift out
-        after(1.8) { move(to: home, duration: 0.5) }            // return to stand
-        after(2.4) { busy = false }
+        after(1.35) { move(to: [x, hoverY, z], duration: 0.35) } // lift out, stay floating
+        after(1.85) { busy = false }
     }
 
     private func move(to translation: SIMD3<Float>, duration: Double) {
