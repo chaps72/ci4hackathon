@@ -258,5 +258,32 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-08-04",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udcf0 2 press\n\nBottom line: Three federal developments tighten research-security constraints and signal funding shifting away from universities\u2014each warrants near-term review of DoD collaborations, portfolio strategy, and compliance.\n\n- \ud83d\udfe0 **Pentagon blacklist** - DoD expanded its research-security blacklist to include Fudan, Shanghai Jiao Tong and other Chinese universities, barring Defense funds for fundamental research collaborations\u2014including co-authorship and equipment sharing\u2014starting FY2026, so audit affected projects now.\n- \ud83d\udfe0 **White House science plan** - The July priorities plan directs agencies with $3B+ research budgets toward national-security portfolios and signals redirecting funding from universities to individual scientists and alternative institutions, threatening our institutional share.\n- \ud83d\udfe0 **NSF Title VI rule** - NSF is revising its nondiscrimination regulations to align with DOJ's rule and E.O. 14281, so compliance and program review will need updating.\n\n(All three are high-priority but currently informational; no immediate action deadlines are stated beyond the FY2026 DoD effective date.)",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- Nondiscrimination in Federally Assisted Programs of the National Science Foundat \u2014 \u23f0 effective 2026-08-04\n\n\ud83d\udcf0 From the research press\n- Pentagon list threatens US science edge \u2014 China Daily, 2026-08-01\n  http://global.chinadaily.com.cn/a/202608/01/WS6a6d2d0da310986e2b46873c.html\n- What's missing from the White House plan for the future of US science \u2014 Nature, 2026-08-03\n  https://www.nature.com/articles/d41586-026-02384-w\n\n\ud83d\udcc8 Trend watch\nToday's China Daily Pentagon-list item continues a run of federal actions targeting university funding tied to blacklisted Chinese institutions (4th such item since ~July 19, alongside the CBS, SCMP, and Breakthrough News reports).\n\n\ud83c\udfdb\ufe0f Government affairs\nNSF is revising its Title VI nondiscrimination regulations to implement Executive Order 14281 and align with DOJ's recent final rule, while the Pentagon has expanded a research-security blacklist barring Defense Department funds for collaborative fundamental research with listed Chinese universities beginning in FY2026. Separately, the White House's July research-priorities plan directs agencies with research budgets of at least $3 billion to reorient funding toward national-security portfolios and away from universities.",
+  "items": [
+   {
+    "title": "Nondiscrimination in Federally Assisted Programs of the National Science Foundation",
+    "url": "https://www.federalregister.gov/documents/2026/08/04/2026-15778/nondiscrimination-in-federally-assisted-programs-of-the-national-science-foundation",
+    "level": "HIGH",
+    "agency": "National Science Foundation"
+   }
+  ],
+  "press": [
+   {
+    "title": "Pentagon list threatens US science edge",
+    "url": "http://global.chinadaily.com.cn/a/202608/01/WS6a6d2d0da310986e2b46873c.html",
+    "level": "HIGH",
+    "agency": "China Daily"
+   },
+   {
+    "title": "What's missing from the White House plan for the future of US science",
+    "url": "https://www.nature.com/articles/d41586-026-02384-w",
+    "level": "HIGH",
+    "agency": "Nature"
+   }
+  ]
  }
 ]

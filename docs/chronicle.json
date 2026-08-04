@@ -95,9 +95,16 @@
     "source": "Federal Register",
     "title": "Rescinding Portions of the U.S. Department of Health and Human Services Title VI Regulations To Align With the Statutory Text and Conform to Executive Order 14281",
     "url": "https://www.federalregister.gov/documents/2026/07/24/2026-15000/rescinding-portions-of-the-us-department-of-health-and-human-services-title-vi-regulations-to-align"
+   },
+   {
+    "date": "2026-08-04",
+    "id": "fr-2026-15778",
+    "source": "Federal Register",
+    "title": "Nondiscrimination in Federally Assisted Programs of the National Science Foundation",
+    "url": "https://www.federalregister.gov/documents/2026/08/04/2026-15778/nondiscrimination-in-federally-assisted-programs-of-the-national-science-foundation"
    }
   ],
-  "summary": "On July 24, 2026, HHS rescinded portions of its Title VI civil rights regulations, stating the goal was to align them with the statutory text and conform to Executive Order 14281. This narrows the scope of HHS civil rights regulations, which may affect compliance obligations tied to federally funded research.",
+  "summary": "On July 24, 2026, HHS rescinded portions of its Title VI civil rights regulations to align with statutory text and Executive Order 14281, followed on August 4 by a related NSF nondiscrimination rule in federally assisted programs. These changes signal an evolving federal civil rights compliance landscape for grant-receiving institutions that the office should review against current policies.",
   "title": "HHS Title VI civil rights regulation rollback"
  },
  "high-risk-life-sciences-policy": {
@@ -155,9 +162,16 @@
     "source": "News",
     "title": "US sanctions top Chinese universities and research institutes, citing national security threat",
     "url": "https://breakthroughnews.org/2026/07/29/us-sanctions-top-chinese-universities-and-research-institutes-citing-national-security-threat/"
+   },
+   {
+    "date": "2026-08-01",
+    "id": "news-95883b65f673",
+    "source": "News",
+    "title": "Pentagon list threatens US science edge",
+    "url": "http://global.chinadaily.com.cn/a/202608/01/WS6a6d2d0da310986e2b46873c.html"
    }
   ],
-  "summary": "In late July 2026, the Pentagon expanded its blacklist to include China's top civilian universities and research institutes, with sanctions justified on national security grounds. This escalation could complicate or restrict research collaborations and partnerships involving the named Chinese institutions.",
+  "summary": "Over late July 2026, the Pentagon expanded its blacklist to include China's top civilian universities, followed by US sanctions on leading Chinese universities and research institutes on national security grounds. By August 1, analysts were warning that the list itself threatens the US science edge, meaning our office should watch for disruptions to research collaborations and partnerships involving named Chinese institutions.",
   "title": "Pentagon blacklist of foreign universities"
  },
  "science-funding-overhaul": {
@@ -196,9 +210,16 @@
     "source": "News",
     "title": "White House rolls out AI funding \u2014 and signals a new era for US science",
     "url": "https://www.nature.com/articles/d41586-026-02332-8"
+   },
+   {
+    "date": "2026-08-03",
+    "id": "news-09ec9f8b4c01",
+    "source": "News",
+    "title": "What's missing from the White House plan for the future of US science",
+    "url": "https://www.nature.com/articles/d41586-026-02384-w"
    }
   ],
-  "summary": "The White House unveiled a major science funding overhaul accompanied by a report characterizing the U.S. science system as 'calcified' and calling for reduced university research funding, with a stated push to steer research support outside academia and toward new AI funding initiatives. The plan signals a potential structural shift in how federal research dollars are allocated, with universities positioned to lose funding share under the proposed changes.",
+  "summary": "Beginning July 22, 2026, the White House unveiled a major science funding overhaul, with an accompanying report calling for reduced university research funding, big changes to a 'calcified' science system, and a push to steer funding outside academia while boosting AI. As of August 3, commentators noted gaps in the plan, signaling significant potential shifts in how university research is funded that warrant close monitoring.",
   "title": "White House science funding overhaul"
  }
 }
