@@ -54,22 +54,27 @@ enum LabSceneBuilder {
 
     // MARK: - Lighting
 
-    /// Three directional lights — a bright key plus two softer fills — give the
-    /// physically-based surfaces even, well-exposed shading and specular
-    /// highlights from several angles so nothing reads as flat or dark.
+    /// Colour-varied directional lighting that approximates the ambient bounce
+    /// of a bright lab: a warm key, cool "sky" fills, and a soft overhead. The
+    /// warm/cool spread across the physically-based surfaces makes them read as
+    /// lit by an environment rather than a single flat lamp. (True mirror-like
+    /// image-based reflections need a bundled HDRI environment — a follow-up.)
     private static func makeLighting() -> Entity {
         let lights = Entity()
         let aim: SIMD3<Float> = [0, benchTopY, -1.05]
 
-        func directional(_ intensity: Float, from: SIMD3<Float>) {
+        func directional(_ intensity: Float, from: SIMD3<Float>, color: UIColor) {
             let e = Entity()
-            e.components.set(DirectionalLightComponent(color: .white, intensity: intensity))
+            e.components.set(DirectionalLightComponent(color: color, intensity: intensity))
             e.look(at: aim, from: from, upVector: [0, 1, 0], relativeTo: nil)
             lights.addChild(e)
         }
-        directional(4200, from: [1.6, 3.0, 0.6])    // key (upper right)
-        directional(2600, from: [-1.8, 2.4, 0.8])   // fill (upper left)
-        directional(2000, from: [0.0, 2.2, -2.6])   // rim / back
+        let warm = UIColor(red: 1.00, green: 0.96, blue: 0.90, alpha: 1)
+        let cool = UIColor(red: 0.90, green: 0.94, blue: 1.00, alpha: 1)
+        directional(4200, from: [1.6, 3.0, 0.6],  color: warm)     // warm key (upper right)
+        directional(2600, from: [-1.8, 2.4, 0.8], color: cool)     // cool fill (upper left)
+        directional(2000, from: [0.0, 2.2, -2.6], color: .white)   // neutral rim / back
+        directional(1500, from: [0.0, 4.0, 0.2],  color: cool)     // cool overhead sky
         return lights
     }
 
