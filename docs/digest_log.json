@@ -285,5 +285,37 @@
     "agency": "Nature"
    }
   ]
+ },
+ {
+  "date": "2026-08-05",
+  "summary": "\ud83d\udcf0 4 press\n\n**Bottom line:** A bipartisan Senate stopgap spending bill (to avert an Oct. 1/Dec. 11 shutdown) would temporarily block the White House OMB rule that would hand federal grant decisions to political appointees over independent peer review\u2014a direct near-term threat to how our research is funded.\n\n- \ud83d\udd34 **OMB grant-review block** - Senate appropriators, including Republican Susan Collins, moved to pause the OMB proposal requiring political-appointee approval of all federal grants (and restricting international collaboration), meaning our peer-reviewed funding pipeline is protected for now but remains contested pending the bill's passage (WaPo, Scientific American, Nature, Fierce Healthcare, Aug 2\u20134).\n\nNote: the public comment period on the OMB rule closed July 13; watch the stopgap bill's progress, as protection is temporary and outcome uncertain.",
+  "extra": "\ud83d\udcf0 From the research press\n- Senate Republicans join in rebuking White House over science funding \u2014 The Washington Post, 2026-08-02\n  https://www.washingtonpost.com/business/2026/08/02/senate-aims-block-white-house-gaining-new-power-over-science-funding/\n- U.S. senators push against giving political appointees control over science funding \u2014 Scientific American, 2026-08-03\n  https://www.scientificamerican.com/article/senate-funding-resolution-seeks-to-put-omb-rule-changes-to-research-grants-on-hold/\n- Controversial White House plan to overhaul US science funding faces Senate opposition \u2014 Nature, 2026-08-04\n  https://www.nature.com/articles/d41586-026-02436-1\n- Senate appropriators unveil stopgap funding bill that blocks Trump's attempt to change sci \u2014 Fierce Healthcare, 2026-08-04\n  https://www.fiercehealthcare.com/regulatory/senate-appropriators-unveil-stopgap-funding-bill-blocks-trumps-attempt-change-science\n\n\ud83d\udcc8 Trend watch\nToday's four items mark the emergence of Senate/appropriator pushback against the White House science-funding overhaul, escalating a theme building in the log since the plan's July 22 rollout (at least 6 overhaul-related items: Prokerala 7/22, Forbes 7/23, Science 7/24, Inside Higher Ed 7/24, Nature 7/24, Nature 8/3).\n\n\ud83c\udfdb\ufe0f Government affairs\nSenate appropriators, with bipartisan Republican support including Susan Collins, released a stopgap spending bill funding the government through Dec. 11 that would temporarily block an OMB proposal to give political appointees\u2014rather than peer-review panels\u2014control over federal research grant decisions and to restrict international scientific collaboration. The contested OMB rule changes had drawn widespread scientist opposition during a public comment period that closed July 13.",
+  "items": [],
+  "press": [
+   {
+    "title": "Senate Republicans join in rebuking White House over science funding",
+    "url": "https://www.washingtonpost.com/business/2026/08/02/senate-aims-block-white-house-gaining-new-power-over-science-funding/",
+    "level": "CRITICAL",
+    "agency": "The Washington Post"
+   },
+   {
+    "title": "U.S. senators push against giving political appointees control over science funding",
+    "url": "https://www.scientificamerican.com/article/senate-funding-resolution-seeks-to-put-omb-rule-changes-to-research-grants-on-hold/",
+    "level": "CRITICAL",
+    "agency": "Scientific American"
+   },
+   {
+    "title": "Controversial White House plan to overhaul US science funding faces Senate opposition",
+    "url": "https://www.nature.com/articles/d41586-026-02436-1",
+    "level": "CRITICAL",
+    "agency": "Nature"
+   },
+   {
+    "title": "Senate appropriators unveil stopgap funding bill that blocks Trump's attempt to change science funding",
+    "url": "https://www.fiercehealthcare.com/regulatory/senate-appropriators-unveil-stopgap-funding-bill-blocks-trumps-attempt-change-science",
+    "level": "CRITICAL",
+    "agency": "Fierce Healthcare"
+   }
+  ]
  }
 ]

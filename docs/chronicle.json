@@ -217,9 +217,37 @@
     "source": "News",
     "title": "What's missing from the White House plan for the future of US science",
     "url": "https://www.nature.com/articles/d41586-026-02384-w"
+   },
+   {
+    "date": "2026-08-02",
+    "id": "news-2ad628b9d368",
+    "source": "News",
+    "title": "Senate Republicans join in rebuking White House over science funding",
+    "url": "https://www.washingtonpost.com/business/2026/08/02/senate-aims-block-white-house-gaining-new-power-over-science-funding/"
+   },
+   {
+    "date": "2026-08-03",
+    "id": "news-de80e54c6ace",
+    "source": "News",
+    "title": "U.S. senators push against giving political appointees control over science funding",
+    "url": "https://www.scientificamerican.com/article/senate-funding-resolution-seeks-to-put-omb-rule-changes-to-research-grants-on-hold/"
+   },
+   {
+    "date": "2026-08-04",
+    "id": "news-6794e0f42512",
+    "source": "News",
+    "title": "Controversial White House plan to overhaul US science funding faces Senate opposition",
+    "url": "https://www.nature.com/articles/d41586-026-02436-1"
+   },
+   {
+    "date": "2026-08-04",
+    "id": "news-bbcf2693291f",
+    "source": "News",
+    "title": "Senate appropriators unveil stopgap funding bill that blocks Trump's attempt to change science funding",
+    "url": "https://www.fiercehealthcare.com/regulatory/senate-appropriators-unveil-stopgap-funding-bill-blocks-trumps-attempt-change-science"
    }
   ],
-  "summary": "Beginning July 22, 2026, the White House unveiled a major science funding overhaul, with an accompanying report calling for reduced university research funding, big changes to a 'calcified' science system, and a push to steer funding outside academia while boosting AI. As of August 3, commentators noted gaps in the plan, signaling significant potential shifts in how university research is funded that warrant close monitoring.",
+  "summary": "In late July 2026, the White House unveiled a major science funding overhaul that called for reducing university research funding, steering money outside academia, boosting AI investment, and reforming what it termed a 'calcified' U.S. science system. The plan quickly drew bipartisan criticism, with Senate Republicans joining Democrats to rebuke the proposal and push back against giving political appointees control over science funding. As of early August, Senate appropriators had unveiled a stopgap funding bill that blocks the administration's attempt to change science funding, leaving the overhaul stalled and facing significant legislative opposition.",
   "title": "White House science funding overhaul"
  }
 }
