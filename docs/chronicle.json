@@ -142,10 +142,30 @@
     "source": "News",
     "title": "Odds of winning NIH grants plummet as new funding policy and spending delays bite",
     "url": "https://www.science.org/content/article/odds-winning-nih-grants-plummet-new-funding-policy-and-spending-delays-bite"
+   },
+   {
+    "date": "2026-08-05",
+    "id": "news-525b7ee3cac8",
+    "source": "News",
+    "title": "NIH Director Bhattacharya kills more health disparities grants",
+    "url": "https://www.science.org/content/article/nih-director-bhattacharya-kills-more-health-disparities-grants"
    }
   ],
-  "summary": "In late July 2026, NIH resumed terminating grants disfavored by the Trump administration, while new funding policies and spending delays sharply reduced the odds of winning NIH awards. The situation signals both active cancellations and a tightening funding environment that could substantially affect the office's ability to secure and retain NIH support.",
+  "summary": "Since late July 2026, NIH has resumed terminating grants disfavored by the Trump administration, with Director Bhattacharya specifically killing more health disparities grants by August 5. Meanwhile, new funding policies and spending delays have caused the odds of winning NIH grants to plummet. This signals a sustained contraction of NIH funding tied to administration priorities, putting disparities-related and other targeted research at heightened risk.",
   "title": "NIH grant terminations under Trump priorities"
+ },
+ "nih-international-researcher-funding-block": {
+  "events": [
+   {
+    "date": "2026-08-07",
+    "id": "statnews-https://www.statnews.com/2026/08/07/nih-k99-pathways-independence-awards-scientists-on-visas-barred/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "STAT+: NIH plans to block international researchers on visas from accessing key funding avenue",
+    "url": "https://www.statnews.com/2026/08/07/nih-k99-pathways-independence-awards-scientists-on-visas-barred/?utm_campaign=rss"
+   }
+  ],
+  "summary": "On August 7, 2026, reporting revealed that NIH plans to block international researchers on visas from accessing a key funding avenue. As this is a newly announced plan, its full scope and implementation remain unclear, but it threatens to restrict funding access for visa-holding researchers at the university.",
+  "title": "NIH block on international researchers accessing funding"
  },
  "pentagon-university-blacklist": {
   "events": [
