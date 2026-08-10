@@ -344,5 +344,50 @@
     "agency": "Science"
    }
   ]
+ },
+ {
+  "date": "2026-08-10",
+  "summary": "\ud83d\udd34 3 critical \u00b7 \ud83d\udfe0 1 high \u00b7 \ud83d\udcf0 2 press\n\n**Bottom line:** 6 federal research updates in this period - 4 critical and 2 high-priority item(s) require attention.\n\n### \ud83d\udd34 Critical (4)\n- **Determination That OZOBAX (Baclofen) Oral Solution, 5 Milligrams/5 Milliliters Was Not Withdrawn From Sale for Reasons of Safety or Effectiveness** (Health and Human Services Department, 2026-08-10)\n  - The Food and Drug Administration (FDA, Agency, or we) has determined that OZOBAX (baclofen) oral solution, 5 milligrams (mg)/5 milliliters (mL), was not withdrawn from sale for reasons of safety or effectiveness. This determination means that FDA will not begin procedures to withdraw approval of abb\n- **Determination of Regulatory Review Period for Purposes of Patent Extension; BRINSUPRI** (Health and Human Services Department, 2026-08-10)\n  - The Food and Drug Administration (FDA or the Agency) has determined the regulatory review period for BRINSUPRI and is publishing this notice of that determination as required by law. FDA has made the determination because of the submission of an application to the Director of the U.S. Patent and Tra\n- **Determination of Regulatory Review Period for Purposes of Patent Extension; DAYVIGO** (Health and Human Services Department, 2026-08-10)\n  - The Food and Drug Administration (FDA or the Agency) has determined the regulatory review period for DAYVIGO and is publishing this notice of that determination as required by law. FDA has made the determination because of the submission of an application to the Director of the U.S. Patent and Trade\n- **Senate Passes Stopgap Funding Bill Blocking OMB Grantmaking Rule** (AIP FYI (Science Policy News), 2026-08-10)\n  - The Senate passed a short-term spending bill, by a 90-6 vote, that includes a provision temporarily blocking the White House Office of Management and Budget from finalizing its controversial proposed rule to overhaul federal grantmaking. The block would take effect only if the House also adopts the \n\n### \ud83d\udfe0 High (2)\n- **National Academies Pulls Climate Chapter From Court Manual Under Trump Pressure** (Bloomberg Law, 2026-08-07)\n  - The National Academies of Sciences, Engineering, and Medicine announced it will stop posting online a climate-science chapter of its judicial reference manual pending an independent process review, following a Trump directive that questioned the federally funded institution's conduct. The move came \n- **Notice of Early Expiration of PAR-25-204, \"NIDA Research Education Program for Clinical Researchers and Clinicians (R25 Clinical Trial Not Allowed)\"** (National Institutes of Health, Thu, 06 Au)\n  - Notice NOT-DA-26-015 from the NIH Guide for Grants and Contracts\n\n_Generated with the built-in template engine. Set ANTHROPIC_API_KEY for AI-written summaries._",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- Determination of Regulatory Review Period for Purposes of Patent Extension; BRIN \u2014 \u23f0 comment due 2027-02-08 \u00b7 \ud83d\udcac comment: http://www.regulations.gov/commenton/FDA-2025-E-5206-0005\n- Determination of Regulatory Review Period for Purposes of Patent Extension; DAYV \u2014 \u23f0 comment due 2027-02-08 \u00b7 \ud83d\udcac comment: http://www.regulations.gov/commenton/FDA-2025-E-0707-0005\n\n\ud83d\udcf0 From the research press\n- Senate Passes Stopgap Funding Bill Blocking OMB Grantmaking Rule \u2014 AIP FYI (Science Policy News), 2026-08-10\n  https://www.aip.org/fyi/senate-passes-stopgap-funding-bill-blocking-omb-grantmaking-rule\n- National Academies Pulls Climate Chapter From Court Manual Under Trump Pressure \u2014 Bloomberg Law, 2026-08-07\n  https://news.bloomberglaw.com/environment-and-energy/national-academies-pulls-climate-chapter-from-manual-courts-use",
+  "items": [
+   {
+    "title": "Determination That OZOBAX (Baclofen) Oral Solution, 5 Milligrams/5 Milliliters Was Not Withdrawn From Sale for Reasons of Safety or Effectiveness",
+    "url": "https://www.federalregister.gov/documents/2026/08/10/2026-16248/determination-that-ozobax-baclofen-oral-solution-5-milligrams5-milliliters-was-not-withdrawn-from",
+    "level": "CRITICAL",
+    "agency": "Health and Human Services Department"
+   },
+   {
+    "title": "Determination of Regulatory Review Period for Purposes of Patent Extension; BRINSUPRI",
+    "url": "https://www.federalregister.gov/documents/2026/08/10/2026-16247/determination-of-regulatory-review-period-for-purposes-of-patent-extension-brinsupri",
+    "level": "CRITICAL",
+    "agency": "Health and Human Services Department"
+   },
+   {
+    "title": "Determination of Regulatory Review Period for Purposes of Patent Extension; DAYVIGO",
+    "url": "https://www.federalregister.gov/documents/2026/08/10/2026-16246/determination-of-regulatory-review-period-for-purposes-of-patent-extension-dayvigo",
+    "level": "CRITICAL",
+    "agency": "Health and Human Services Department"
+   },
+   {
+    "title": "Notice of Early Expiration of PAR-25-204, \"NIDA Research Education Program for Clinical Researchers and Clinicians (R25 Clinical Trial Not Allowed)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-DA-26-015.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Senate Passes Stopgap Funding Bill Blocking OMB Grantmaking Rule",
+    "url": "https://www.aip.org/fyi/senate-passes-stopgap-funding-bill-blocking-omb-grantmaking-rule",
+    "level": "CRITICAL",
+    "agency": "AIP FYI (Science Policy News)"
+   },
+   {
+    "title": "National Academies Pulls Climate Chapter From Court Manual Under Trump Pressure",
+    "url": "https://news.bloomberglaw.com/environment-and-energy/national-academies-pulls-climate-chapter-from-manual-courts-use",
+    "level": "HIGH",
+    "agency": "Bloomberg Law"
+   }
+  ]
  }
 ]
