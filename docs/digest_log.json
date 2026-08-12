@@ -389,5 +389,49 @@
     "agency": "Bloomberg Law"
    }
   ]
+ },
+ {
+  "date": "2026-08-12",
+  "summary": "\ud83d\udfe0 4 high \u00b7 \ud83d\udfe1 2 moderate\n\nBottom line: Three NIH notices posted Aug 12, 2026\u2014two carry institutional action, one is comment-only.\n\n\ud83d\udfe0 **Safe & Respectful Workplace (NOT-OD-26-097)** - NIH updated workplace conduct expectations for funded institutions, so review our compliance and reporting obligations. https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-097.html\n\n\ud83d\udfe0 **K Award Updates (NOT-OD-26-098)** - NIH revised Career Development (K) award programs, so brief early-career faculty and mentors before upcoming applications. https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-098.html\n\nInformational: NIH issued an RFI seeking input on future clinical-trial investigator funding (NOT-OD-26-095)\u2014optional response if we want to shape direction. https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-095.html",
+  "extra": "\ud83c\udfdb\ufe0f Government affairs\nThese items contain little government-affairs signal, consisting only of NIH Guide notices on workplace policy, Career Development (K) award updates, and a request for information on funding future clinical trial investigators, with no appropriations, continuing resolution, rescission, executive order, or OMB action referenced.",
+  "items": [
+   {
+    "title": "Recent Updates: Supporting a Safe and Respectful Workplace at Institutions that Receive NIH Funding",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-097.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NIH Updates to Career Development (K) Award Programs",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-098.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Recent Updates: Supporting a Safe and Respectful Workplace at Institutions that Receive NIH Funding",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-097.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NIH Updates to Career Development (K) Award Programs",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-098.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "REQUEST FOR INFORMATION (RFI): INPUT ON POTENTIAL NIH FUNDING APPROACHES TO SUPPORT THE DEVELOPMENT OF FUTURE CLINICAL TRIAL INVESTIGATORS",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-095.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "REQUEST FOR INFORMATION (RFI): INPUT ON POTENTIAL NIH FUNDING APPROACHES TO SUPPORT THE DEVELOPMENT OF FUTURE CLINICAL TRIAL INVESTIGATORS",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-095.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]
