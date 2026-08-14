@@ -433,5 +433,43 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-08-14",
+  "summary": "\ud83d\udfe1 3 moderate \u00b7 \ud83d\udd35 2 info\n\nBottom line: One actionable NIH comment opportunity and a routine export-control renewal warrant attention; the rest is informational.\n\n- \ud83d\udfe0 **NIH Peer Review RFI** - NIH (NOT-OD-26-088) seeks input on proposed changes to how peer review outcomes are reported, so investigators and the research office should review and consider submitting comments.\n- \ud83d\udfe0 **Export Control Emergency** - The President continued the national emergency underlying export control regulations, so no change but existing compliance obligations for controlled research and foreign engagements remain in force.\n\nInformational only: OMB's 2026 unified regulatory agenda and HHS's regulatory agenda both list upcoming rulemakings worth monitoring for future impacts.",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's NIH peer-review RFI is the 2nd NIH Request for Information in three days (following the Aug. 12 RFI on future clinical trial funding approaches), continuing a pattern of NIH soliciting input on major grantmaking/policy changes.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Executive Office of the President continued the national emergency underlying export control regulations, while OMB and HHS each published their forthcoming regulatory agendas under Executive Order 12866. NIH separately issued a Request for Information (NOT-OD-26-088) on proposed changes to reporting outcomes from its peer review process.",
+  "items": [
+   {
+    "title": "Continuation of the National Emergency With Respect to Export Control Regulations",
+    "url": "https://www.federalregister.gov/documents/2026/08/14/2026-16748/continuation-of-the-national-emergency-with-respect-to-export-control-regulations",
+    "level": "MODERATE",
+    "agency": "Executive Office of the President"
+   },
+   {
+    "title": "Request for Information (RFI) on Proposed Changes to Reporting Outcomes from NIH Peer Review",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-088.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information (RFI) on Proposed Changes to Reporting Outcomes from NIH Peer Review",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-088.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "2026 Agenda of Federal Regulations",
+    "url": "https://www.federalregister.gov/documents/2026/08/14/2026-16610/2026-agenda-of-federal-regulations",
+    "level": "INFO",
+    "agency": "Management and Budget Office"
+   },
+   {
+    "title": "Regulatory Agenda",
+    "url": "https://www.federalregister.gov/documents/2026/08/14/2026-16597/regulatory-agenda",
+    "level": "INFO",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": []
  }
 ]
