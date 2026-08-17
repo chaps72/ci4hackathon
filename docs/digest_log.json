@@ -471,5 +471,38 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-08-17",
+  "summary": "\ud83d\udfe1 1 moderate \u00b7 \ud83d\udcf0 3 press\n\nBottom line: The Pentagon's research-security audit is the immediate action item; NSF and NIH signal shifting funding conditions worth tracking.\n\n- \ud83d\udfe0 **Pentagon research-security audit** - The Department of War ordered 30 U.S. institutions to review academic, financial, and research ties to foreign entities of concern (including Chinese institutions and former Confucius Institutes) or risk losing future federal research funding eligibility (Military Times; official War.gov release).\n- **NSF $1.5B foundational research** - NSF released 12 new funding notices totaling over $1.5B for basic and use-inspired research after earlier 2026 grant holds, signaling reoriented priorities our faculty should target.\n- **NIH peer review scores** - NIH proposed removing peer review scores from grant applications, a potential change to how our submissions are evaluated.\n\nVerify whether we are among the 30 named institutions and stand up an audit response if so.",
+  "extra": "\ud83d\udcf0 From the research press\n- Pentagon scrutinizes foreign research ties at 30 US academic institutions \u2014 Military Times, 2026-08-17\n  https://www.militarytimes.com/news/your-military/2026/08/17/pentagon-scrutinizes-foreign-research-ties-at-30-us-academic-institutions/\n- Department of War Orders Research Security Audits at 30 Academic Institutions \u2014 U.S. Department of War (official release), 2026-08-17\n  https://www.war.gov/News/Releases/Release/Article/4575019/department-of-war-orders-research-security-audits-at-30-academic-institutions/\n- NSF announces $1.5B for foundational research to drive scientific breakthroughs for Americ \u2014 U.S. National Science Foundation, 2026-08-17\n  https://www.nsf.gov/news/nsf-announces-15b-foundational-research-drive-scientific\n\n\ud83d\udcc8 Trend watch\nToday's twin Pentagon/Department of War research-security audits at 30 institutions extend a recurring foreign-ties/national-security thread\u2014at least the 3rd such action in ~3 weeks (Chinese-university sanctions 7/29, Pentagon list 8/1, export-control emergency 8/14).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Pentagon, implementing FY2026 NDAA research-security provisions, ordered 30 academic institutions to audit foreign research ties or lose future federal funding eligibility, while NIH proposed removing peer review scores from grant applications. NSF announced over $1.5 billion in new funding opportunities reorienting its research priorities, following earlier 2026 grant slowdowns and holds.",
+  "items": [
+   {
+    "title": "NIH Proposes Removing Peer Review Scores From Grant Applications",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/08/17/nih-wants-remove-peer-review-scores-grant-applications",
+    "level": "MODERATE",
+    "agency": "Inside Higher Ed"
+   }
+  ],
+  "press": [
+   {
+    "title": "Pentagon scrutinizes foreign research ties at 30 US academic institutions",
+    "url": "https://www.militarytimes.com/news/your-military/2026/08/17/pentagon-scrutinizes-foreign-research-ties-at-30-us-academic-institutions/",
+    "level": "HIGH",
+    "agency": "Military Times"
+   },
+   {
+    "title": "Department of War Orders Research Security Audits at 30 Academic Institutions",
+    "url": "https://www.war.gov/News/Releases/Release/Article/4575019/department-of-war-orders-research-security-audits-at-30-academic-institutions/",
+    "level": "HIGH",
+    "agency": "U.S. Department of War (official release)"
+   },
+   {
+    "title": "NSF announces $1.5B for foundational research to drive scientific breakthroughs for American technological leadership",
+    "url": "https://www.nsf.gov/news/nsf-announces-15b-foundational-research-drive-scientific",
+    "level": "MODERATE",
+    "agency": "U.S. National Science Foundation"
+   }
+  ]
  }
 ]
