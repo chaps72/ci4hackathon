@@ -208,6 +208,26 @@
   "summary": "Beginning in late July 2026, the Pentagon expanded its blacklist to include China's top civilian universities, followed by US sanctions on leading Chinese universities and research institutes over national security concerns, prompting warnings that the list could threaten the US science edge. The scrutiny has since turned inward: on August 17, the Department of War ordered research security audits at 30 US academic institutions to examine their foreign research ties. The saga now sits at a domestic enforcement phase, meaning US universities face heightened compliance pressure and potential disruption to international research collaborations.",
   "title": "Pentagon blacklist of foreign universities"
  },
+ "pentagon-university-foreign-ties-audit": {
+  "events": [
+   {
+    "date": "2026-08-17",
+    "id": "news-3d5102d79c91",
+    "source": "News",
+    "title": "Pentagon probes 30 U.S. academic institutions for potential ties to adversaries",
+    "url": "https://defensescoop.com/2026/08/17/pentagon-probes-30-u-s-academic-institutions-for-potential-ties-to-adversaries/"
+   },
+   {
+    "date": "2026-08-18",
+    "id": "news-7b6e13a1bc6b",
+    "source": "News",
+    "title": "Pentagon orders audit of 30 universities' partnerships with foreign institutions",
+    "url": "https://abcnews.com/US/wireStory/pentagon-orders-audit-30-universities-partnerships-foreign-institutions-135741532"
+   }
+  ],
+  "summary": "The Pentagon has launched a probe of 30 U.S. academic institutions over potential ties to adversarial nations, formally ordering an audit of their partnerships with foreign institutions on August 18, 2026. The review is in its earliest stage, with the audit just initiated and no findings yet reported. Universities with foreign institutional partnerships should anticipate scrutiny and prepare to document their affiliations.",
+  "title": "Pentagon audit of universities' foreign institutional ties"
+ },
  "science-funding-overhaul": {
   "events": [
    {

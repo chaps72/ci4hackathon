@@ -504,5 +504,25 @@
     "agency": "U.S. National Science Foundation"
    }
   ]
+ },
+ {
+  "date": "2026-08-18",
+  "summary": "\ud83d\udcf0 2 press\n\n**Bottom line:** The Pentagon has ordered 30 universities to audit and potentially terminate foreign partnerships within two weeks or risk losing federal funding\u2014immediate action may be required if we are among the targeted schools.\n\n- \ud83d\udd34 **DoD foreign-ties audit** - The Department of Defense, under Under Secretary Emil Michael, directed 30 universities (reportedly including Harvard, MIT, and Johns Hopkins) to review collaborations with mostly Chinese, Russian, and Iranian institutions and terminate problematic arrangements within two weeks or risk federal funding, so we must immediately confirm whether we are named and inventory relevant partnerships.",
+  "extra": "\ud83d\udcf0 From the research press\n- Pentagon probes 30 U.S. academic institutions for potential ties to adversaries \u2014 DefenseScoop, 2026-08-17\n  https://defensescoop.com/2026/08/17/pentagon-probes-30-u-s-academic-institutions-for-potential-ties-to-adversaries/\n- Pentagon orders audit of 30 universities' partnerships with foreign institutions \u2014 Associated Press (via ABC News), 2026-08-18\n  https://abcnews.com/US/wireStory/pentagon-orders-audit-30-universities-partnerships-foreign-institutions-135741532\n\n\ud83d\udcc8 Trend watch\nToday's Pentagon audit of 30 universities' foreign ties extends a recurring national-security/foreign-research scrutiny theme, marking at least the 4th such item since late July (Chinese-university sanctions 7/29, Pentagon list 8/1, export-control emergency 8/14).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Department of Defense, under Under Secretary for Research and Engineering Emil Michael, directed 30 universities to audit and potentially terminate partnerships with mostly Chinese and military-linked foreign institutions within two weeks or risk losing federal funding. Officials framed the executive-branch directive as protecting taxpayer-funded defense research from theft and exploitation, naming targeted schools such as Harvard, MIT, and Johns Hopkins.",
+  "items": [],
+  "press": [
+   {
+    "title": "Pentagon probes 30 U.S. academic institutions for potential ties to adversaries",
+    "url": "https://defensescoop.com/2026/08/17/pentagon-probes-30-u-s-academic-institutions-for-potential-ties-to-adversaries/",
+    "level": "CRITICAL",
+    "agency": "DefenseScoop"
+   },
+   {
+    "title": "Pentagon orders audit of 30 universities' partnerships with foreign institutions",
+    "url": "https://abcnews.com/US/wireStory/pentagon-orders-audit-30-universities-partnerships-foreign-institutions-135741532",
+    "level": "CRITICAL",
+    "agency": "Associated Press (via ABC News)"
+   }
+  ]
  }
 ]
