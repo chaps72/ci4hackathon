@@ -127,6 +127,26 @@
   "summary": "On July 28, 2026, the U.S. Government issued a policy for stopping high-risk life sciences research. The policy currently stands as newly announced, and its implementation details and scope of application remain to be clarified. For the research office, this signals a need to review affected life sciences projects for compliance with the new federal requirements.",
   "title": "USG policy for stopping high-risk life sciences research"
  },
+ "nih-biosafety-policy": {
+  "events": [
+   {
+    "date": "2026-08-19",
+    "id": "nih-NOT-OD-26-112",
+    "source": "NIH Guide",
+    "title": "Request for Comment: Draft NIH Biosafety Policy for Research Involving Biohazards",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-112.html"
+   },
+   {
+    "date": "Wed, 19 Au",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-112.html",
+    "source": "NIH Guide",
+    "title": "Request for Comment: Draft NIH Biosafety Policy for Research Involving Biohazards",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-112.html"
+   }
+  ],
+  "summary": "On August 19, 2026, the NIH issued a request for public comment on a draft biosafety policy governing research involving biohazards. The policy is in its comment/consultation phase, meaning affected researchers have an opportunity to provide input before any rules are finalized.",
+  "title": "NIH draft biosafety policy for biohazard research"
+ },
  "nih-grant-terminations": {
   "events": [
    {
@@ -223,9 +243,16 @@
     "source": "News",
     "title": "Pentagon orders audit of 30 universities' partnerships with foreign institutions",
     "url": "https://abcnews.com/US/wireStory/pentagon-orders-audit-30-universities-partnerships-foreign-institutions-135741532"
+   },
+   {
+    "date": "2026-08-18",
+    "id": "news-7768a510c7b3",
+    "source": "News",
+    "title": "Pentagon orders 30 US universities to scrutinise ties with Chinese research partners",
+    "url": "https://www.scmp.com/news/us/article/3364337/pentagon-orders-30-us-universities-scrutinise-ties-chinese-research-partners"
    }
   ],
-  "summary": "The Pentagon has launched a probe of 30 U.S. academic institutions over potential ties to adversarial nations, formally ordering an audit of their partnerships with foreign institutions on August 18, 2026. The review is in its earliest stage, with the audit just initiated and no findings yet reported. Universities with foreign institutional partnerships should anticipate scrutiny and prepare to document their affiliations.",
+  "summary": "In mid-August 2026, the Pentagon launched a probe and ordered an audit of 30 U.S. academic institutions over their partnerships with foreign institutions, with particular scrutiny of ties to adversaries and Chinese research partners. The saga is at an early investigative stage, with named universities now facing federal review of their international collaborations. This signals heightened national-security oversight of foreign research partnerships that could affect institutional agreements.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "science-funding-overhaul": {
@@ -299,9 +326,16 @@
     "source": "News",
     "title": "Senate appropriators unveil stopgap funding bill that blocks Trump's attempt to change science funding",
     "url": "https://www.fiercehealthcare.com/regulatory/senate-appropriators-unveil-stopgap-funding-bill-blocks-trumps-attempt-change-science"
+   },
+   {
+    "date": "2026-08-18",
+    "id": "news-74d3a0619294",
+    "source": "News",
+    "title": "Michigan scientists concerned about proposed rule to politically control research funding",
+    "url": "https://www.michiganpublic.org/politics-government/2026-08-18/michigan-scientists-concerned-about-proposed-rule-to-politically-control-research-funding"
    }
   ],
-  "summary": "In late July 2026, the White House unveiled a major science funding overhaul that called for reducing university research funding, steering money outside academia, boosting AI investment, and reforming what it termed a 'calcified' U.S. science system. The plan quickly drew bipartisan criticism, with Senate Republicans joining Democrats to rebuke the proposal and push back against giving political appointees control over science funding. As of early August, Senate appropriators had unveiled a stopgap funding bill that blocks the administration's attempt to change science funding, leaving the overhaul stalled and facing significant legislative opposition.",
+  "summary": "The White House unveiled a science funding overhaul in late July 2026 that called for reducing university research funding, steering money outside academia, boosting AI, and reforming a system it called 'calcified.' The plan quickly drew bipartisan pushback, with Senate Republicans and other senators opposing political-appointee control over funding and appropriators advancing a stopgap bill to block the changes. It now faces significant Senate resistance and ongoing concern from scientists, leaving the proposed changes contested and uncertain.",
   "title": "White House science funding overhaul"
  }
 }

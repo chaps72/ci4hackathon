@@ -524,5 +524,38 @@
     "agency": "Associated Press (via ABC News)"
    }
   ]
+ },
+ {
+  "date": "2026-08-19",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udcf0 2 press\n\n**Bottom line:** Two federal actions could directly affect our funding pipeline and partnerships; one carries an imminent deadline. Act now.\n\n- \ud83d\udd34 **Pentagon China-ties review** - 30 universities (reportedly Harvard, MIT, Johns Hopkins) must review foreign research partnerships, including former Confucius Institute links, and report findings and mitigations\u2014including terminating problematic ties\u2014by August 31; confirm whether we're named. [South China Morning Post](https://www.scmp.com/news/us/article/3364337/pentagon-orders-30-us-universities-scrutinise-ties-chinese-research-partners)\n- \ud83d\udd34 **OMB grant-control rule** - A proposed rule would let political appointees override peer review on federal grant awards, threatening funding predictability; the Senate has moved to block it via continuing appropriations. [Michigan Public](https://www.michiganpublic.org/politics-government/2026-08-18/michigan-scientists-concerned-about-proposed-rule-to-politically-control-research-funding)\n- \ud83d\udfe0 **NIH biosafety draft** - NIH is seeking comment on a draft biosafety policy for research involving biohazards (NOT-OD-26-112); consider submitting institutional feedback. [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-112.html)",
+  "extra": "\ud83d\udcf0 From the research press\n- Pentagon orders 30 US universities to scrutinise ties with Chinese research partners \u2014 South China Morning Post, 2026-08-18\n  https://www.scmp.com/news/us/article/3364337/pentagon-orders-30-us-universities-scrutinise-ties-chinese-research-partners\n- Michigan scientists concerned about proposed rule to politically control research funding \u2014 Michigan Public, 2026-08-18\n  https://www.michiganpublic.org/politics-government/2026-08-18/michigan-scientists-concerned-about-proposed-rule-to-politically-control-research-funding\n\n\ud83d\udcc8 Trend watch\nToday's Pentagon-scrutiny item is at least the 6th report since Aug 17 on the Department of War's order for research-security audits of 30 universities' foreign/Chinese ties (part of a broader China-research-security thread also seen July 29 and Aug 1).\n\n\ud83c\udfdb\ufe0f Government affairs\nA proposed OMB rule would give political appointees final say over federal research grant awards in place of peer-review panels, and the Senate has moved to block it through a provision in its continuing appropriations legislation. Separately, the Pentagon has directed 30 universities to review and report on foreign research partnerships, including former Confucius Institute ties, with findings and mitigation measures due by August 31.",
+  "items": [
+   {
+    "title": "Request for Comment: Draft NIH Biosafety Policy for Research Involving Biohazards",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-112.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Comment: Draft NIH Biosafety Policy for Research Involving Biohazards",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-112.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Pentagon orders 30 US universities to scrutinise ties with Chinese research partners",
+    "url": "https://www.scmp.com/news/us/article/3364337/pentagon-orders-30-us-universities-scrutinise-ties-chinese-research-partners",
+    "level": "CRITICAL",
+    "agency": "South China Morning Post"
+   },
+   {
+    "title": "Michigan scientists concerned about proposed rule to politically control research funding",
+    "url": "https://www.michiganpublic.org/politics-government/2026-08-18/michigan-scientists-concerned-about-proposed-rule-to-politically-control-research-funding",
+    "level": "CRITICAL",
+    "agency": "Michigan Public"
+   }
+  ]
  }
 ]
