@@ -353,7 +353,10 @@ def _deadlines_section(items: list, max_items: int = 6) -> str:
         if is_comment:
             link = it.get("comment_url") or it.get("url") or ""
             bits.append(f"💬 comment{f': {link}' if link else ''}")
-        rows.append(f"- {(it.get('title') or '')[:80]} — " + " · ".join(bits))
+        t = (it.get('title') or '')[:80]
+        if it.get("url"):
+            t = f"[{t}]({it['url']})"
+        rows.append(f"- {t} — " + " · ".join(bits))
         if len(rows) >= max_items:
             break
     return "⏰ Deadlines & comment opportunities\n" + "\n".join(rows) if rows else ""
@@ -401,10 +404,13 @@ def _teams_sections(official: list, press: list) -> str:
     parts = []
     deadlines = []
     for it in official:
+        t = (it.get("title") or "")[:60]
+        if it.get("url"):
+            t = f"[{t}]({it['url']})"
         if it.get("comment_due"):
-            deadlines.append(f"- {(it.get('title') or '')[:60]} — comment due {it['comment_due']}")
+            deadlines.append(f"- {t} — comment due {it['comment_due']}")
         elif it.get("effective_on"):
-            deadlines.append(f"- {(it.get('title') or '')[:60]} — effective {it['effective_on']}")
+            deadlines.append(f"- {t} — effective {it['effective_on']}")
         if len(deadlines) >= 3:
             break
     if deadlines:
