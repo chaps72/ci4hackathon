@@ -557,5 +557,19 @@
     "agency": "Michigan Public"
    }
   ]
+ },
+ {
+  "date": "2026-08-20",
+  "summary": "\ud83d\udcf0 1 press\n\nNIH grant terminations pose real continuity risk to active clinical trials and their participants; assess institutional exposure now.\n\n\ud83d\udfe0 **NIH Grant Terminations** - A study found early-2025 NIH terminations disrupted ~3.5% of active clinical trials, affecting 74,000+ participants and $1.81B in funding, with NIMH and NIMHD hardest hit\u2014flagging potential exposure for our trials and participant safety obligations [AJMC](https://www.ajmc.com/view/nih-grant-terminations-disrupt-1-in-30-clinical-trials-impacting-over-74-000-participants).",
+  "extra": "\ud83d\udcf0 From the research press\n- NIH Grant Terminations Disrupt 1 in 30 Clinical Trials, Impacting Over 74,000 Participants \u2014 American Journal of Managed Care (AJMC), 2026-08-17\n  https://www.ajmc.com/view/nih-grant-terminations-disrupt-1-in-30-clinical-trials-impacting-over-74-000-participants\n\n\ud83d\udcc8 Trend watch\nToday's grant-termination coverage extends an ongoing NIH/AHRQ cancellation theme, marking at least the 4th grant-termination item in the log over the past three weeks (AHRQ cancellations 7/29\u20137/30, health disparities grants killed 8/5).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe single item reports on the downstream research impact of NIH grant terminations earlier in 2025 rather than on legislative, budget, or executive-branch actions, so it offers little direct government-affairs signal beyond noting that the terminations concentrated at the National Institute of Mental Health and the National Institute on Minority Health and Health Disparities.",
+  "items": [],
+  "press": [
+   {
+    "title": "NIH Grant Terminations Disrupt 1 in 30 Clinical Trials, Impacting Over 74,000 Participants",
+    "url": "https://www.ajmc.com/view/nih-grant-terminations-disrupt-1-in-30-clinical-trials-impacting-over-74-000-participants",
+    "level": "HIGH",
+    "agency": "American Journal of Managed Care (AJMC)"
+   }
+  ]
  }
 ]
