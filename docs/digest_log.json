@@ -571,5 +571,25 @@
     "agency": "American Journal of Managed Care (AJMC)"
    }
   ]
+ },
+ {
+  "date": "2026-08-24",
+  "summary": "\ud83d\udcf0 2 press\n\n**Bottom line:** A DoD security-audit mandate poses an immediate compliance and funding-eligibility risk, while NSF's sharp grant decline threatens the coming award pipeline.\n\n- \ud83d\udd34 **Pentagon Audits** - DoD ordered 30 universities to audit foreign-entity academic, financial, and research ties within two weeks, with non-compliance risking future federal funding eligibility\u2014confirm whether we're named and mobilize research-security review now [ClearanceJobs](https://news.clearancejobs.com/2026/08/21/30-universities-face-pentagon-research-security-audits-over-foreign-ties/).\n- \ud83d\udfe0 **NSF Grant Drop** - NSF is on track to make ~30% fewer new grants this fiscal year, the fewest in over four decades (5,684 as of Aug. 19), signaling tighter odds and the need to diversify sponsors and support resubmissions [Nature](https://www.nature.com/articles/d41586-026-02574-6).",
+  "extra": "\ud83d\udcf0 From the research press\n- 30 Universities Face Pentagon Research-Security Audits Over Foreign Ties \u2014 ClearanceJobs, 2026-08-21\n  https://news.clearancejobs.com/2026/08/21/30-universities-face-pentagon-research-security-audits-over-foreign-ties/\n- Exclusive: NSF set to issue lowest number of new grants in four decades \u2014 Nature, 2026-08-22\n  https://www.nature.com/articles/d41586-026-02574-6\n\n\ud83d\udcc8 Trend watch\nToday's Pentagon research-security audit item is the 6th report on the 30-university foreign-ties audit in roughly a week (Aug 17\u201321), continuing a sustained wave of federal scrutiny over international research partnerships.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Department of Defense has ordered 30 universities to audit foreign-entity relationships within two weeks, with non-compliant institutions risking loss of eligibility for future federal funding. Separately, the National Science Foundation is on track to issue roughly 30% fewer new grants this fiscal year\u2014the fewest in more than four decades\u2014with 5,684 awarded as of Aug. 19 and hundreds more pending at its Office of Award Management.",
+  "items": [],
+  "press": [
+   {
+    "title": "30 Universities Face Pentagon Research-Security Audits Over Foreign Ties",
+    "url": "https://news.clearancejobs.com/2026/08/21/30-universities-face-pentagon-research-security-audits-over-foreign-ties/",
+    "level": "CRITICAL",
+    "agency": "ClearanceJobs"
+   },
+   {
+    "title": "Exclusive: NSF set to issue lowest number of new grants in four decades",
+    "url": "https://www.nature.com/articles/d41586-026-02574-6",
+    "level": "HIGH",
+    "agency": "Nature"
+   }
+  ]
  }
 ]

@@ -194,6 +194,19 @@
   "summary": "On August 7, 2026, reporting revealed that NIH plans to block international researchers on visas from accessing a key funding avenue. As this is a newly announced plan, its full scope and implementation remain unclear, but it threatens to restrict funding access for visa-holding researchers at the university.",
   "title": "NIH block on international researchers accessing funding"
  },
+ "nsf-grant-decline": {
+  "events": [
+   {
+    "date": "2026-08-22",
+    "id": "news-7eeb453ea8c5",
+    "source": "News",
+    "title": "Exclusive: NSF set to issue lowest number of new grants in four decades",
+    "url": "https://www.nature.com/articles/d41586-026-02574-6"
+   }
+  ],
+  "summary": "As of August 22, 2026, reporting indicates the NSF is set to issue the lowest number of new research grants in four decades. This marks a sharp decline in new federal research funding. If confirmed, it could significantly constrain research budgets and new project starts across the university.",
+  "title": "NSF sharp decline in new research grants"
+ },
  "pentagon-university-blacklist": {
   "events": [
    {
@@ -257,9 +270,16 @@
     "source": "News",
     "title": "Pentagon orders 30 US universities to scrutinise ties with Chinese research partners",
     "url": "https://www.scmp.com/news/us/article/3364337/pentagon-orders-30-us-universities-scrutinise-ties-chinese-research-partners"
+   },
+   {
+    "date": "2026-08-21",
+    "id": "news-13dac090d7ac",
+    "source": "News",
+    "title": "30 Universities Face Pentagon Research-Security Audits Over Foreign Ties",
+    "url": "https://news.clearancejobs.com/2026/08/21/30-universities-face-pentagon-research-security-audits-over-foreign-ties/"
    }
   ],
-  "summary": "In mid-August 2026, the Pentagon launched a probe and ordered an audit of 30 U.S. academic institutions over their partnerships with foreign institutions, with particular scrutiny of ties to adversaries and Chinese research partners. The saga is at an early investigative stage, with named universities now facing federal review of their international collaborations. This signals heightened national-security oversight of foreign research partnerships that could affect institutional agreements.",
+  "summary": "In mid-August 2026, the Pentagon launched research-security audits of 30 U.S. academic institutions, ordering them to scrutinize their partnerships with foreign institutions and particularly their ties to Chinese research partners over concerns about links to adversaries. As of late August, the audits are underway across the named universities. This signals heightened federal scrutiny of international research collaborations and potential compliance and funding implications for affected institutions.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "science-funding-overhaul": {
