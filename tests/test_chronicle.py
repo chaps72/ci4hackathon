@@ -1,3 +1,5 @@
+import json
+
 """Tests for the historical-record chronicle: significance screen, merge
 logic (dedupe, new/existing storylines), and page rendering."""
 
@@ -107,3 +109,43 @@ def test_digest_log_update_appends_and_replaces_same_day(tmp_path, monkeypatch):
 
 def test_archive_index_links_digest_log():
     assert "digest-log.html" in emailer.build_archive_index(["2026-07-22"])
+
+
+# --------------------------------------------------------------------------
+# New-vs-ongoing tagging (🆕/🔁)
+
+def test_tag_recurrence_marks_existing_saga_and_new_saga(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "docs").mkdir()
+    json.dump({"ahrq-terminations": {"title": "AHRQ grant terminations",
+                                     "summary": "", "events": []}},
+              open(tmp_path / "docs" / "chronicle.json", "w"))
+    items = [
+        {"id": "n1", "type": "News", "level": "HIGH", "title": "More AHRQ cuts"},
+        {"id": "n2", "type": "News", "level": "HIGH", "title": "Brand new saga"},
+        {"id": "fr9", "type": "Notice", "level": "MODERATE",
+         "update_note": "Finalizes earlier rule.", "title": "Final rule"},
+    ]
+    monkeypatch.setattr(sd.summarize, "assign_storylines", lambda sig, existing: [
+        {"key": "ahrq-terminations", "title": "AHRQ grant terminations", "indexes": [0]},
+        {"key": "new-saga", "title": "A new saga", "indexes": [1]},
+    ])
+    sd._tag_recurrence(items)
+    assert items[0]["recurring"] is True and items[0]["saga"] == "AHRQ grant terminations"
+    assert "recurring" not in items[1] and items[1]["saga"] == "A new saga"
+    assert items[2]["recurring"] is True          # docket follow-up counts
+
+
+def test_recurrence_pills_render():
+    import html as h
+    ongoing = emailer._recurrence_pill({"recurring": True, "saga": "AHRQ"}, h.escape)
+    new = emailer._recurrence_pill({}, h.escape)
+    assert "🔁 Ongoing: AHRQ" in ongoing
+    assert "🆕 New" in new
+
+
+def test_html_page_shows_recurrence_pills():
+    items = [{"id": "a", "level": "HIGH", "title": "T", "recurring": True,
+              "saga": "AHRQ grant terminations"}]
+    out = emailer.build_html(items, "s", "T")
+    assert "🔁 Ongoing: AHRQ grant terminations" in out

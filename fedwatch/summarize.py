@@ -18,7 +18,9 @@ SUMMARY_STYLES = {
         "Write a TIGHT executive summary for university research leadership (VP for Research, "
         "deans) who will read it on their phone. Open with a 1-2 sentence bottom line. Then one "
         "bullet per consequential item, MOST URGENT FIRST, prefixing critical items with 🔴 and "
-        "high-priority items with 🟠: **bolded short name** - what happened and the so-what for "
+        "high-priority items with 🟠, and additionally tagging each bullet 🆕 (first coverage of "
+        "new matter, per its NEW marker) or 🔁 (development in an ongoing matter, per its "
+        "ONGOING marker): **bolded short name** - what happened and the so-what for "
         "the institution, in a single sentence each, ending with a markdown link to its "
         "source in the form [agency or outlet](url) from the item's Source line. If "
         "several items are routine/informational, "
@@ -40,8 +42,10 @@ SUMMARY_STYLES = {
 def _items_block(items: list) -> str:
     lines = []
     for it in items:
+        saga = f" (part of ongoing saga: {it['saga']})" if it.get("saga") and it.get("recurring") else ""
+        marker = "ONGOING" if it.get("recurring") else "NEW"
         lines.append(
-            f"- [{it.get('level', 'INFO')}] {it.get('date', '')} | {it.get('agency', '')} | "
+            f"- [{it.get('level', 'INFO')}] [{marker}]{saga} {it.get('date', '')} | {it.get('agency', '')} | "
             f"{it.get('title', '')}\n  Summary: {it.get('summary', '')}\n  Source: {it.get('url', '')}"
         )
     return "\n".join(lines)

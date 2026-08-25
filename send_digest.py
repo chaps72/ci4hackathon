@@ -192,23 +192,52 @@ def _merge_chronicle(chronicle: dict, assignments: list, items: list) -> list:
     return changed
 
 
-def _update_chronicle(items: list) -> None:
+def _load_chronicle() -> dict:
+    try:
+        with open(CHRONICLE_JSON) as f:
+            chronicle = json.load(f)
+        return chronicle if isinstance(chronicle, dict) else {}
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def _tag_recurrence(items: list):
+    """Mark each item as part of an ongoing saga (🔁) or new matter (🆕).
+
+    Recurring = a docket-based follow-up (update_note) OR assigned by the
+    storyline step to a chronicle storyline that already existed. Sets
+    item['recurring'] and item['saga'] in place; returns (sig, assigns) so
+    _update_chronicle can reuse the assignment without a second AI call."""
+    chronicle = _load_chronicle()
+    sig = _significant(items)
+    assigns = summarize.assign_storylines(
+        sig, {k: v.get("title", k) for k, v in chronicle.items()}) if sig else []
+    for a in assigns:
+        known = a["key"] in chronicle
+        for idx in a["indexes"]:
+            sig[idx]["saga"] = a.get("title") or a["key"]
+            if known:
+                sig[idx]["recurring"] = True
+    for it in items:
+        if it.get("update_note"):
+            it["recurring"] = True
+    return sig, assigns
+
+
+def _update_chronicle(items: list, precomputed=None) -> None:
     """Fold today's significant items into the living historical record
     (docs/chronicle.json + docs/chronicle.html, committed by the publish
     step). Never raises - the chronicle must not block a run."""
     try:
-        sig = _significant(items)
+        if precomputed is not None:
+            sig, assigns = precomputed
+        else:
+            sig = _significant(items)
+            assigns = summarize.assign_storylines(
+                sig, {k: v.get("title", k) for k, v in _load_chronicle().items()}) if sig else []
         if not sig:
             return
-        try:
-            with open(CHRONICLE_JSON) as f:
-                chronicle = json.load(f)
-            if not isinstance(chronicle, dict):
-                chronicle = {}
-        except (FileNotFoundError, ValueError):
-            chronicle = {}
-        assigns = summarize.assign_storylines(
-            sig, {k: v.get("title", k) for k, v in chronicle.items()})
+        chronicle = _load_chronicle()
         changed = _merge_chronicle(chronicle, assigns, sig)
         if not changed:
             return
@@ -376,7 +405,8 @@ def _press_section(press: list, max_items: int = 4) -> str:
     story summaries live on the HTML page. '' when the sweep found nothing."""
     rows = []
     for it in press[:max_items]:
-        line = f"- {(it.get('title') or '')[:90]} — {it.get('agency', '')}"
+        tag = "🔁" if it.get("recurring") else "🆕"
+        line = f"- {tag} {(it.get('title') or '')[:90]} — {it.get('agency', '')}"
         if it.get("date"):
             line += f", {it['date']}"
         if it.get("url"):
@@ -580,6 +610,8 @@ def main() -> int:
     # Flag items that update earlier coverage (corrections, shared FR docket)
     # before rendering, so both the page and the message can mark them.
     items = _mark_updates(items, history)
+    # New-vs-ongoing tags (🆕/🔁) from the storyline step, known before render.
+    sig_assigns = _tag_recurrence(items)
     official, press = _split_press(items)
     if press:
         print(f"Research press: {len(press)} story(ies) in this digest.")
@@ -615,7 +647,7 @@ def main() -> int:
     # already went out and skip. Only real runs persist seen-state.
     if not force:
         _update_digest_log(et_date, summary, extra_md, official, press)
-        _update_chronicle(items)
+        _update_chronicle(items, precomputed=sig_assigns)
         _persist_state(seen_file, seen, hist_file, history, items, sent_marker, et_date)
     else:
         print("Forced test run: not updating dedupe/seen-state.")

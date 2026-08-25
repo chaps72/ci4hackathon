@@ -32,6 +32,18 @@ def _safe_url(url: str) -> str:
     return url if url.startswith(("http://", "https://")) else ""
 
 
+def _recurrence_pill(it: dict, e) -> str:
+    """🆕 new matter vs 🔁 ongoing-saga pill for the HTML page."""
+    if it.get("recurring"):
+        saga = f': {e(it["saga"])}' if it.get("saga") else ""
+        return (f'<span style="display:inline-block;background:{EMORY_LIGHT_BLUE};color:#fff;'
+                f'font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;'
+                f'margin:3px 6px 3px 0;">🔁 Ongoing{saga}</span>')
+    return (f'<span style="display:inline-block;background:#2e7d32;color:#fff;'
+            f'font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;'
+            f'margin:3px 6px 3px 0;">🆕 New</span>')
+
+
 def _deadline_badges(it: dict, e) -> str:
     """Small colored pills for an action deadline and/or comment opportunity,
     drawn from the Federal Register structured fields. '' when neither applies."""
@@ -128,6 +140,7 @@ def build_html(items: list, summary_md: str = "", title: str = "Federal Research
                 '<tr><td style="padding:6px 0 10px 12px;border-left:3px solid '
                 f'{color};font:13px Arial,sans-serif;color:#2c3e50;">'
                 f'<div style="font-weight:bold;">{title_html}</div>'
+                + _recurrence_pill(it, e)
                 + (f'<div style="display:inline-block;background:{EMORY_GRAY};color:#fff;'
                    f'font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;'
                    f'margin:3px 0;">🔄 {e(it.get("update_note",""))}</div>' if it.get("update_note") else "")
