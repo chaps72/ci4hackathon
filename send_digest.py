@@ -405,7 +405,7 @@ def _press_section(press: list, max_items: int = 4) -> str:
     story summaries live on the HTML page. '' when the sweep found nothing."""
     rows = []
     for it in press[:max_items]:
-        tag = "🔁" if it.get("recurring") else "🆕"
+        tag = "**Ongoing:**" if it.get("recurring") else "**New:**"
         line = f"- {tag} {(it.get('title') or '')[:90]} — {it.get('agency', '')}"
         if it.get("date"):
             line += f", {it['date']}"
