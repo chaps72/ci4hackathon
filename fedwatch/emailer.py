@@ -104,7 +104,8 @@ def _press_rows(press: list, e) -> str:
             '<tr><td style="padding:6px 0 10px 12px;border-left:3px solid '
             f'{EMORY_GOLD};font:13px Arial,sans-serif;color:#2c3e50;background:#fffdf5;">'
             f'<div style="font-weight:bold;">{title_html}</div>'
-            f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
+            + _recurrence_pill(it, e)
+            + f'<div style="color:#7f8c8d;font-size:12px;">{e(it.get("agency", ""))} &middot; '
             f'{e(it.get("date", ""))} &middot; press coverage</div>'
             f'<div style="padding-top:3px;">{e((it.get("summary") or "")[:400])}</div>'
             + (f'<div style="padding-top:6px;background:#eef1f7;border-radius:4px;'
