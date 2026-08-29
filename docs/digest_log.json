@@ -619,5 +619,25 @@
     "agency": "Arnold & Porter (Enforcement Edge)"
    }
   ]
+ },
+ {
+  "date": "2026-08-28",
+  "summary": "\ud83d\udfe1 2 moderate\n\nBottom line: One new NIH item this cycle\u2014a request for input on a draft policy, no immediate action required.\n\n- **New:** **NIH Summary-Results Sharing RFI** \u2014 NIH seeks comment on a draft policy on sharing summary-level study results with clinical research participants (NOT-OD-26-113), which could add future obligations for clinical investigators [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-113.html).",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's NIH RFI on sharing summary study results is the 5th NIH Request for Information/Comment issued in roughly the past month (Aug 12, 14, 19, plus today's), signaling an accelerating wave of NIH policy consultations.\n\n\ud83c\udfdb\ufe0f Government affairs\nThese items contain little government-affairs signal, consisting only of an NIH Request for Information on a draft policy for sharing summary-level study results with clinical research participants (NOT-OD-26-113), with no appropriations, executive-branch, or budget developments.",
+  "items": [
+   {
+    "title": "Request for Information: Draft NIH Policy on Sharing Summary Level Study Results with Clinical Research Participants",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-113.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information: Draft NIH Policy on Sharing Summary Level Study Results with Clinical Research Participants",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-113.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]
