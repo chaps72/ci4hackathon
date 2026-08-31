@@ -10,6 +10,12 @@ concurrency:
   cancel-in-progress: false
 
 on:
+  # Primary trigger: a Routine pushes a timestamp to .trigger/fire just
+  # before 5pm ET; push-triggered runs start within seconds (no cron drift)
+  # and hold until exactly 5:00pm ET.
+  push:
+    branches: [main]
+    paths: [".trigger/**"]
   schedule:
     # BACKUPS ONLY. Primary delivery is a Routine-dispatched run just before
     # 5pm ET (workflow_dispatch with hold=true) because GitHub's scheduler

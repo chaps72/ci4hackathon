@@ -41,7 +41,7 @@ def _scheduled_run_guards(now_et=None) -> str:
     delivery until exactly 5:00pm ET (see _seconds_until_5pm_et). Manual runs
     (workflow_dispatch) bypass all guards.
     """
-    if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
+    if os.environ.get("GITHUB_EVENT_NAME", "") not in ("schedule", "push"):
         return ""
     from fedwatch.holidays import is_us_federal_holiday
 
@@ -576,7 +576,7 @@ def main() -> int:
     # DIGEST_ONLY ("slack"/"teams"/"email") limits delivery to one channel -
     # handy for testing a single destination without spamming the others.
     only = os.environ.get("DIGEST_ONLY", "").strip().lower()
-    if not force and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule" and sent_marker in seen:
+    if not force and os.environ.get("GITHUB_EVENT_NAME", "") in ("schedule", "push") and sent_marker in seen:
         print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
         return 0
 
@@ -584,7 +584,7 @@ def main() -> int:
     # dispatches that ask for it (DIGEST_HOLD - the Routine trigger fires a
     # few minutes early and holds to the second). The hold is capped and a
     # wildly-late scheduled firing is skipped rather than posting at midnight.
-    hold = (os.environ.get("GITHUB_EVENT_NAME", "") == "schedule"
+    hold = (os.environ.get("GITHUB_EVENT_NAME", "") in ("schedule", "push")
             or os.environ.get("DIGEST_HOLD", "").lower() in ("1", "true", "yes"))
     if hold:
         now_et = datetime.now(ZoneInfo("America/New_York"))
@@ -594,7 +594,7 @@ def main() -> int:
                   "5pm window - a zombie firing from GitHub's scheduler drift.")
             return 0
         if wait == 0 and now_et.hour >= LATEST_POST_HOUR_ET \
-                and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule":
+                and os.environ.get("GITHUB_EVENT_NAME", "") in ("schedule", "push"):
             print(f"SKIPPED: fired at {now_et:%H:%M} ET - too late to be useful; "
                   "not posting near midnight.")
             return 0
