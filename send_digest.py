@@ -54,12 +54,17 @@ def _scheduled_run_guards(now_et=None) -> str:
     return ""
 
 
+MAX_HOLD_SECONDS = 150 * 60   # never hold longer than 2.5h for the 5pm target
+LATEST_POST_HOUR_ET = 21      # a scheduled run firing after 9pm ET is too late
+
+
 def _seconds_until_5pm_et(now_et=None) -> int:
     """Seconds to hold before delivering, so the digest lands AT 5:00pm ET.
 
-    GitHub's cron is best-effort and usually late, so the first cron of the
-    day fires early and waits here; a firing already past 5pm returns 0 and
-    posts immediately (that's the backup-cron path).
+    Returns 0 when it is already 5pm or later (post immediately - the
+    backup path). The caller caps the hold: GitHub has fired crons many
+    hours late - even after midnight - and an uncapped hold then waits ~17h
+    for the NEXT day's 5pm, hits the 6h job kill, and jams the queue.
     """
     if now_et is None:
         now_et = datetime.now(ZoneInfo("America/New_York"))
@@ -575,11 +580,24 @@ def main() -> int:
         print(f"A digest already went out today ({et_date}); skipping duplicate cron firing.")
         return 0
 
-    # Hold until exactly 5:00pm ET (scheduled runs only). The first cron of
-    # the day fires early because GitHub's scheduler is usually late; waiting
-    # here is what makes delivery land AT 5pm instead of 5:20-6:30.
-    if os.environ.get("GITHUB_EVENT_NAME", "") == "schedule":
-        wait = _seconds_until_5pm_et()
+    # Hold until exactly 5:00pm ET. Applies to scheduled firings and to
+    # dispatches that ask for it (DIGEST_HOLD - the Routine trigger fires a
+    # few minutes early and holds to the second). The hold is capped and a
+    # wildly-late scheduled firing is skipped rather than posting at midnight.
+    hold = (os.environ.get("GITHUB_EVENT_NAME", "") == "schedule"
+            or os.environ.get("DIGEST_HOLD", "").lower() in ("1", "true", "yes"))
+    if hold:
+        now_et = datetime.now(ZoneInfo("America/New_York"))
+        wait = _seconds_until_5pm_et(now_et)
+        if wait > MAX_HOLD_SECONDS:
+            print(f"SKIPPED: fired at {now_et:%H:%M} ET, {wait // 60}m before the "
+                  "5pm window - a zombie firing from GitHub's scheduler drift.")
+            return 0
+        if wait == 0 and now_et.hour >= LATEST_POST_HOUR_ET \
+                and os.environ.get("GITHUB_EVENT_NAME", "") == "schedule":
+            print(f"SKIPPED: fired at {now_et:%H:%M} ET - too late to be useful; "
+                  "not posting near midnight.")
+            return 0
         if wait > 0:
             import time
             print(f"Holding delivery for {wait // 60}m {wait % 60}s until 5:00pm ET...")

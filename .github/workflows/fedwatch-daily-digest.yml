@@ -11,13 +11,13 @@ concurrency:
 
 on:
   schedule:
-    # Deliver AT 5pm ET: GitHub's cron is best-effort (often 20-70 min late,
-    # occasionally dropped), so the first cron fires early and the script
-    # holds delivery until exactly 5:00pm America/New_York. The later crons
-    # are backups that post immediately (already past 5pm) if an earlier
-    # firing never ran. Weekends/holidays are skipped and a once-per-day
-    # marker stops double-posting, so extra firings are harmless.
-    - cron: "30 20 * * 1-5"   # 4:30pm EDT / 3:30pm EST -> waits for 5pm
+    # BACKUPS ONLY. Primary delivery is a Routine-dispatched run just before
+    # 5pm ET (workflow_dispatch with hold=true) because GitHub's scheduler
+    # has drifted hours late on this repo. These crons catch the day if the
+    # Routine ever fails: pre-5pm firings hold (capped) until 5:00pm ET,
+    # post-5pm firings post immediately, wildly-late ones skip.
+    - cron: "23 20 * * 1-5"   # 4:23pm EDT / 3:23pm EST
+    - cron: "51 20 * * 1-5"   # 4:51pm EDT / 3:51pm EST
     - cron: "10 21 * * 1-5"   # 5:10pm EDT / 4:10pm EST
     - cron: "10 22 * * 1-5"   # 6:10pm EDT / 5:10pm EST
     - cron: "0 23 * * 1-5"    # 7:00pm EDT / 6:00pm EST
@@ -32,6 +32,10 @@ on:
         type: choice
         options: ["", "slack", "teams", "email"]
         default: ""
+      hold:
+        description: "Hold delivery until exactly 5:00pm ET (used by the Routine trigger)"
+        type: boolean
+        default: false
 
 jobs:
   digest:
@@ -65,6 +69,7 @@ jobs:
           FEDWATCH_FOCUS: nih
           DIGEST_FORCE: ${{ inputs.force }}
           DIGEST_ONLY: ${{ inputs.only }}
+          DIGEST_HOLD: ${{ inputs.hold }}
         run: python send_digest.py
 
       - name: Publish digest page
