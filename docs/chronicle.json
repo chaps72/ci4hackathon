@@ -147,6 +147,19 @@
   "summary": "On August 19, 2026, the NIH issued a request for public comment on a draft biosafety policy governing research involving biohazards. The policy is in its comment/consultation phase, meaning affected researchers have an opportunity to provide input before any rules are finalized.",
   "title": "NIH draft biosafety policy for biohazard research"
  },
+ "nih-grant-politicization": {
+  "events": [
+   {
+    "date": "2026-09-01",
+    "id": "statnews-https://www.statnews.com/2026/09/01/house-spending-bill-vote-grant-rule-trump-mfn-deals-dc-diagnois/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "STAT+: Will House delay Trump plan to politicize NIH grants?",
+    "url": "https://www.statnews.com/2026/09/01/house-spending-bill-vote-grant-rule-trump-mfn-deals-dc-diagnois/?utm_campaign=rss"
+   }
+  ],
+  "summary": "A Trump administration plan to politicize NIH grant awards is under scrutiny, with a STAT+ report on September 1, 2026 raising the question of whether the House will delay it. The plan's implementation timeline appears uncertain pending potential legislative action, though details beyond the House's possible role remain unspecified.",
+  "title": "NIH plan to politicize grant awards"
+ },
  "nih-grant-terminations": {
   "events": [
    {
@@ -180,6 +193,19 @@
   ],
   "summary": "Beginning in late July 2026, NIH resumed terminating grants disfavored by the Trump administration, with Director Bhattacharya specifically eliminating additional health disparities grants and new funding policies and spending delays sharply reducing the odds of winning awards. By mid-August, the terminations had disrupted 1 in 30 clinical trials, affecting over 74,000 participants. The saga signals both a shrinking, more politically constrained NIH funding landscape and direct disruption to ongoing research and study participants.",
   "title": "NIH grant terminations under Trump priorities"
+ },
+ "nih-grants-per-pi-cap": {
+  "events": [
+   {
+    "date": "2026-09-01",
+    "id": "statnews-https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "STAT+: NIH proposal to cap research grants draws mixed reception, agency says",
+    "url": "https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/?utm_campaign=rss"
+   }
+  ],
+  "summary": "As of September 1, 2026, NIH has floated a proposal to cap the number of research grants any single investigator can hold, which the agency reports has drawn a mixed reception. The proposal is at an early, pre-decision stage, and its ultimate scope and effect on researchers remain to be determined.",
+  "title": "NIH proposed cap on grants per investigator"
  },
  "nih-international-researcher-funding-block": {
   "events": [

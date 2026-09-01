@@ -653,5 +653,31 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-01",
+  "summary": "\ud83d\udd34 2 critical \u00b7 \ud83d\udfe1 1 moderate\n\n**Bottom line:** Two federal moves could reshape NIH grant eligibility and administration\u2014both warrant faculty and grants-office attention now.\n\n- \ud83d\udd34 **New: NIH Grant Politicization** \u2014 A federal spending bill contains a provision tied to Trump's plan to politicize NIH grant decisions, with a House vote that could delay it, potentially altering award criteria for our investigators. [STAT News](https://www.statnews.com/2026/09/01/house-spending-bill-vote-grant-rule-trump-mfn-deals-dc-diagnois/?utm_campaign=rss)\n- \ud83d\udd34 **New: NIH Grant Cap** \u2014 NIH's proposal to cap the number of grants any investigator can hold drew mixed feedback, and if adopted could limit concentrated funding among our most-funded PIs. [STAT News](https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/?utm_campaign=rss)\n- **New: NBDC/PATH Biospecimen Access** \u2014 Informational: funding opportunity PAR-27-051 (X01, no clinical trials) is open through 04/17/2029 for interested labs. [Grants.gov](https://www.grants.gov/search-results-detail/360554)",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [NIH Brain Development Cohorts (NBDC) and&nbsp;Population Assessment of Tobacco a](https://www.grants.gov/search-results-detail/360554) \u2014 \u23f0 due 2029-04-17\n\n\ud83d\udcc8 Trend watch\nToday's NIH grant-cap proposal and plan to politicize grant selection extend a sustained pattern of NIH restructuring grant-making, including at least 4 RFIs/proposed rules on funding and peer-review changes (peer-review reporting Aug 14, score removal Aug 17, clinical-trial funding Aug 12, summary-results sharing Aug 29) over the past three weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nA House spending bill contains a provision affecting a Trump plan to politicize NIH grants, with a vote reportedly pending. Separately, NIH says its proposal to cap the number of research grants per investigator has drawn a mixed reception.",
+  "items": [
+   {
+    "title": "STAT+: Will House delay Trump plan to politicize NIH grants?",
+    "url": "https://www.statnews.com/2026/09/01/house-spending-bill-vote-grant-rule-trump-mfn-deals-dc-diagnois/?utm_campaign=rss",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   },
+   {
+    "title": "STAT+: NIH proposal to cap research grants draws mixed reception, agency says",
+    "url": "https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/?utm_campaign=rss",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   },
+   {
+    "title": "NIH Brain Development Cohorts (NBDC) and&nbsp;Population Assessment of Tobacco and Health (PATH) Study&nbsp;Biospecimen Access (X01 Clinical Trial Not Allowed)",
+    "url": "https://www.grants.gov/search-results-detail/360554",
+    "level": "MODERATE",
+    "agency": "Unknown"
+   }
+  ],
+  "press": []
  }
 ]
