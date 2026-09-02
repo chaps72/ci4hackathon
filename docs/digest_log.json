@@ -679,5 +679,25 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-02",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udfe1 1 moderate\n\n**Bottom line:** Two accounting-related federal notices this week; only one is potentially relevant, and neither imposes broad new obligations on the university.\n\n- \ud83d\udfe0 **New: NOAA DARRP Rates** \u2014 NOAA published FY2021 indirect cost rates for natural resource damage assessment and restoration work, relevant only if your teams recover indirect costs on DARRP-funded restoration activities [Federal Register](https://www.federalregister.gov/documents/2026/09/02/2026-17931/notice-of-indirect-cost-rates).\n\nRoutine/informational: OMB issued a final rule rescinding Cost Accounting Standard 407 to conform with GAAP, largely a technical alignment with limited direct impact [Federal Register](https://www.federalregister.gov/documents/2026/09/01/2026-17903/conformance-of-cost-accounting-standards-to-generally-accepted-accounting-principles-for-cas-407-use).",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Conformance of Cost Accounting Standards to Generally Accepted Accounting Princi](https://www.federalregister.gov/documents/2026/09/01/2026-17903/conformance-of-cost-accounting-standards-to-generally-accepted-accounting-principles-for-cas-407-use) \u2014 \u23f0 effective 2026-10-01\n\n\ud83d\udcc8 Trend watch\nToday's two indirect-cost/cost-accounting actions (Commerce indirect cost rates, OMB CAS conformance) extend a running federal focus on research cost and financial rules seen in the log (e.g., OMB 2026 regulatory agenda and NIH grant-cap proposal debates on Aug 14\u2013Sep 1), the 3rd cost/indirect-cost-related development in roughly three weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe OMB Cost Accounting Standards Board issued a final rule rescinding CAS 407 to conform it with GAAP, transferring one definition within 48 CFR chapter 99. Separately, NOAA's DARRP announced updated indirect cost rates for FY 2021 governing recovery of indirect costs by its component organizations.",
+  "items": [
+   {
+    "title": "Notice of Indirect Cost Rates",
+    "url": "https://www.federalregister.gov/documents/2026/09/02/2026-17931/notice-of-indirect-cost-rates",
+    "level": "HIGH",
+    "agency": "Commerce Department"
+   },
+   {
+    "title": "Conformance of Cost Accounting Standards to Generally Accepted Accounting Principles for CAS 407 Use of Standard Costs for Direct Material and Direct Labor",
+    "url": "https://www.federalregister.gov/documents/2026/09/01/2026-17903/conformance-of-cost-accounting-standards-to-generally-accepted-accounting-principles-for-cas-407-use",
+    "level": "MODERATE",
+    "agency": "Management and Budget Office"
+   }
+  ],
+  "press": []
  }
 ]
