@@ -699,5 +699,26 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-03",
+  "summary": "\ud83d\udfe1 1 moderate \u00b7 \ud83d\udcf0 1 press\n\nBottom line: One critical development for our large labs\u2014NIH's grant-cap proposal is advancing\u2014plus a minor regulatory notice with limited direct impact.\n\n- \ud83d\udd34 **Ongoing: NIH grant cap** \u2014 NIH reports mixed public comment on its proposal to limit simultaneous grants per principal investigator, a change that could squeeze our large, multi-award labs if finalized [STAT News](https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/).\n\nInformational: HHS issued a Section 564 emergency use authorization declaration for military-need pain-management drugs, with no direct action required of the institution [HHS](https://www.federalregister.gov/documents/2026/09/03/2026-18008/emergency-use-authorization-declaration).",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Emergency Use Authorization Declaration](https://www.federalregister.gov/documents/2026/09/03/2026-18008/emergency-use-authorization-declaration) \u2014 \u23f0 effective 2026-07-15\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** NIH proposal to cap research grants draws mixed reception, agency says \u2014 STAT News, 2026-09-01\n  https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/\n\n\ud83d\udcc8 Trend watch\nToday's NIH grant-cap proposal marks at least the 3rd item in three days on politicizing/capping NIH grant funding (STAT's Sept 1 pieces on the \"Trump plan to politicize NIH grants\" and the cap's \"mixed reception\").\n\n\ud83c\udfdb\ufe0f Government affairs\nNIH's proposal to cap the number of simultaneous research project grants per principal investigator, floated in June amid intensified funding competition under the Trump administration, drew a mixed public-comment response as the agency weighs spreading awards across more researchers. Separately, HHS issued an Emergency Use Authorization declaration under FD&C Act section 564 supporting Department of War-identified drugs for managing acute pain in military casualties, with limited direct research-funding significance.",
+  "items": [
+   {
+    "title": "Emergency Use Authorization Declaration",
+    "url": "https://www.federalregister.gov/documents/2026/09/03/2026-18008/emergency-use-authorization-declaration",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": [
+   {
+    "title": "NIH proposal to cap research grants draws mixed reception, agency says",
+    "url": "https://www.statnews.com/2026/09/01/nih-grant-cap-proposal-researcher-feedback/",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   }
+  ]
  }
 ]
