@@ -227,6 +227,26 @@
   "summary": "On August 7, 2026, reporting revealed that NIH plans to block international researchers on visas from accessing a key funding avenue. As this is a newly announced plan, its full scope and implementation remain unclear, but it threatens to restrict funding access for visa-holding researchers at the university.",
   "title": "NIH block on international researchers accessing funding"
  },
+ "nih-peer-review-modifications": {
+  "events": [
+   {
+    "date": "2026-09-08",
+    "id": "nih-NOT-OD-26-114",
+    "source": "NIH Guide",
+    "title": "Continuation of Modifications to Peer Review Practices",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html"
+   },
+   {
+    "date": "Tue, 08 Se",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html",
+    "source": "NIH Guide",
+    "title": "Continuation of Modifications to Peer Review Practices",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html"
+   }
+  ],
+  "summary": "NIH has continued its modifications to peer review practices, as noted in updates dated September 8, 2026. Based on the available events, this represents an ongoing effort to change how peer review is conducted, though the specific nature and scope of the modifications are not detailed. The research office should monitor for further details as this process develops.",
+  "title": "NIH modifications to peer review practices"
+ },
  "nsf-grant-decline": {
   "events": [
    {

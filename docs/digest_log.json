@@ -734,5 +734,25 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-08",
+  "summary": "\ud83d\udfe0 2 high\n\nBottom line: One new NIH peer review update to note; no critical actions flagged.\n\n\ud83d\udfe0 **New: NIH Peer Review Modifications** \u2014 NIH continues modifications to its peer review practices under notice NOT-OD-26-114, potentially affecting how our grant applications are reviewed [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html).",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's NIH peer-review modification notice marks the 3rd NIH peer-review action in about four weeks (following the 8/14 RFI on peer-review reporting outcomes and the 8/17 proposal to remove review scores).\n\n\ud83c\udfdb\ufe0f Government affairs\nNIH has issued Guide notice NOT-OD-26-114 continuing modifications to its peer review practices. Beyond this agency policy action, the items contain little additional government-affairs signal on appropriations, executive orders, or OMB actions.",
+  "items": [
+   {
+    "title": "Continuation of Modifications to Peer Review Practices",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Continuation of Modifications to Peer Review Practices",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]
