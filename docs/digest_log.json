@@ -754,5 +754,25 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-11",
+  "summary": "\ud83d\udfe1 2 moderate\n\n**Bottom line:** One routine NIH eligibility update this period; no action required beyond noting the change if your team plans a C06 facilities application.\n\n- **New:** **NIH C06 Facilities Eligibility** \u2014 NIH revised the eligible organizations for PAR-26-106 (Development of Collaborative Research or Research-Resource Facilities, C06, Clinical Trial Not Allowed); confirm eligibility before applying [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-089.html).",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's NIH notice changing eligible organizations for a research-facilities NOFO continues a steady stream of NIH funding-opportunity eligibility/expiration changes\u2014at least the 4th such PAR/NOFO modification in roughly two months (early expirations of PAR-24-252, R25 Summer program, PAR-25-204).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe items contain little government-affairs signal, consisting only of an NIH Guide notice (NOT-OD-26-089) changing eligible organizations for a research-facilities funding opportunity (PAR-26-106), with no appropriations, executive-branch, or OMB action noted.",
+  "items": [
+   {
+    "title": "Notice of Change to Eligible Organizations for PAR-26-106 &quot;Development of Collaborative Research Facilities or Research-Resource Facilities (C06 Clinical Trial Not Allowed)&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-089.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change to Eligible Organizations for PAR-26-106 \"Development of Collaborative Research Facilities or Research-Resource Facilities (C06 Clinical Trial Not Allowed)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-089.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]
