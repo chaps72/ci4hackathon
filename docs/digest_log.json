@@ -802,5 +802,32 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-17",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udcf0 2 press\n\nTwo developments in ongoing federal funding fights could reshape how our researchers win and keep NIH and NSF grants.\n\n- \ud83d\udfe0 **Ongoing:** **NIH keyword screening suit** \u2014 an ACLU-backed class action alleges NIH unconstitutionally screens applications for disfavored terms (DEI, gender identity, climate) even after peer review, and seeks to halt it\u2014directly relevant to our pending and future submissions. [STAT News](https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/)\n- \ud83d\udfe0 **Ongoing:** **NSF 'golden age' memo** \u2014 a Sept. 10 NSF memo signals a retreat from funding individual investigator-driven grants and a rethink of graduate and postdoc training support, threatening our labs' training pipelines. [Science](https://www.science.org/content/article/nsf-memo-implementing-trump-s-golden-age-science-unsettles-researchers)",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** NSF memo implementing Trump's 'golden age' of science unsettles researchers \u2014 Science, 2026-09-14\n  https://www.science.org/content/article/nsf-memo-implementing-trump-s-golden-age-science-unsettles-researchers\n- **Ongoing:** New lawsuit argues NIH violated First Amendment rights of grant applicants \u2014 STAT News, 2026-09-16\n  https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/\n\n\ud83d\udcc8 Trend watch\nToday's twin lawsuits over NIH grant-applicant free-speech rights extend a growing thread of political-interference concerns at NIH, following the Sept. 1 STAT reports on Trump's plan to politicize/cap NIH grants and the peer-review modifications\u2014at least the 4th such item in about two weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nA newly issued NSF memo (September 10) implementing the administration's \"golden age\" of science signals a shift away from funding individual investigator-driven grants and revises support for graduate-student and postdoctoral training. Separately, an ACLU-backed class-action lawsuit challenges NIH's practice of screening peer-reviewed grant applications for disfavored terms related to DEI, gender identity, and climate change.",
+  "items": [
+   {
+    "title": "New lawsuit argues NIH violated First Amendment rights of grant applicants",
+    "url": "https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/?utm_campaign=rss",
+    "level": "HIGH",
+    "agency": "STAT News"
+   }
+  ],
+  "press": [
+   {
+    "title": "NSF memo implementing Trump's 'golden age' of science unsettles researchers",
+    "url": "https://www.science.org/content/article/nsf-memo-implementing-trump-s-golden-age-science-unsettles-researchers",
+    "level": "HIGH",
+    "agency": "Science"
+   },
+   {
+    "title": "New lawsuit argues NIH violated First Amendment rights of grant applicants",
+    "url": "https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/",
+    "level": "HIGH",
+    "agency": "STAT News"
+   }
+  ]
  }
 ]

@@ -69,9 +69,23 @@
     "source": "News",
     "title": "Inside the federal keyword lists that canceled billions in research funding",
     "url": "https://www.highereddive.com/news/inside-the-federal-keyword-lists-that-canceled-billions-in-research-funding/826203/"
+   },
+   {
+    "date": "2026-09-16",
+    "id": "news-c2f5985d901f",
+    "source": "News",
+    "title": "New lawsuit argues NIH violated First Amendment rights of grant applicants",
+    "url": "https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/"
+   },
+   {
+    "date": "2026-09-17",
+    "id": "statnews-https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "New lawsuit argues NIH violated First Amendment rights of grant applicants",
+    "url": "https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/?utm_campaign=rss"
    }
   ],
-  "summary": "The White House has admitted to using keyword-based lists to terminate billions of dollars' worth of California research grants, with subsequent reporting exposing the contents of these federal keyword lists. The revelations show that grant cancellations were driven by automated or list-based screening rather than case-by-case review, raising significant concerns for institutions whose funding may have been flagged by targeted terms.",
+  "summary": "Starting in July 2026, the White House acknowledged using keyword lists to cancel billions in research grants, including in California, prompting scrutiny of those federal keyword lists. By mid-September 2026, a new lawsuit was filed arguing that NIH violated the First Amendment rights of grant applicants, meaning the terminations are now facing legal challenge.",
   "title": "Keyword-based research grant terminations"
  },
  "harvard-funding-legal-fight": {
@@ -427,9 +441,16 @@
     "source": "News",
     "title": "Michigan scientists concerned about proposed rule to politically control research funding",
     "url": "https://www.michiganpublic.org/politics-government/2026-08-18/michigan-scientists-concerned-about-proposed-rule-to-politically-control-research-funding"
+   },
+   {
+    "date": "2026-09-14",
+    "id": "news-8d97fa4bdf64",
+    "source": "News",
+    "title": "NSF memo implementing Trump's 'golden age' of science unsettles researchers",
+    "url": "https://www.science.org/content/article/nsf-memo-implementing-trump-s-golden-age-science-unsettles-researchers"
    }
   ],
-  "summary": "The White House unveiled a science funding overhaul in late July 2026 that called for reducing university research funding, steering money outside academia, boosting AI, and reforming a system it called 'calcified.' The plan quickly drew bipartisan pushback, with Senate Republicans and other senators opposing political-appointee control over funding and appropriators advancing a stopgap bill to block the changes. It now faces significant Senate resistance and ongoing concern from scientists, leaving the proposed changes contested and uncertain.",
+  "summary": "In late July 2026, the White House unveiled an overhaul of the U.S. science funding system, calling for reduced university research funding, steering money outside academia, prioritizing AI, and giving political appointees more control. The plan drew bipartisan Senate opposition, including from Republicans, and Senate appropriators advanced a stopgap bill to block it, though an NSF memo implementing the changes emerged by mid-September. Researchers, including at Michigan, remain concerned about political control over funding, and the overhaul's fate is contested between the White House and Congress.",
   "title": "White House science funding overhaul"
  }
 }
