@@ -38,6 +38,7 @@ enum LabSceneBuilder {
 
         root.addChild(makeLighting())
         root.addChild(makeRoom())
+        root.addChild(makeLabFixtures())
 
         let bench = Entity()
         bench.position = benchGroupOffset
@@ -104,6 +105,99 @@ enum LabSceneBuilder {
         right.position = [size / 2, height / 2, 0]
         room.addChild(right)
         return room
+    }
+
+    // MARK: - Lab fixtures (perimeter equipment)
+
+    /// Furnishes the room like a real lab: perimeter counters with black epoxy
+    /// tops, wall cabinets, an incubator and a fridge, a door, a window, safety
+    /// signs, ceiling light panels, a stool, and shelves of reagent bottles.
+    /// All primitives, in the same style as the central bench.
+    private static func makeLabFixtures() -> Entity {
+        let f = Entity()
+
+        let cabinet = surface(0.84, 0.86, 0.89, roughness: 0.55)
+        let door    = surface(0.91, 0.92, 0.94, roughness: 0.45)
+        let epoxy   = surface(0.17, 0.18, 0.21, roughness: 0.40)   // black lab benchtop
+        let steel   = surface(0.82, 0.84, 0.87, roughness: 0.30, clearcoat: 0.6)
+        let handle  = surface(0.55, 0.57, 0.62, roughness: 0.22)
+        let frameM  = surface(0.66, 0.68, 0.72, roughness: 0.50)
+
+        func add(_ w: Float, _ h: Float, _ d: Float, _ m: any Material, _ p: SIMD3<Float>) {
+            let e = box(w, h, d, m); e.position = p; f.addChild(e)
+        }
+        func cyl(_ r: Float, _ h: Float, _ m: any Material, _ p: SIMD3<Float>) {
+            let e = ModelEntity(mesh: .generateCylinder(height: h, radius: r), materials: [m])
+            e.position = p; f.addChild(e)
+        }
+
+        let tint: [ReagentColor] = [
+            ReagentColor(r: 0.85, g: 0.30, b: 0.30), ReagentColor(r: 0.30, g: 0.70, b: 0.90),
+            ReagentColor(r: 0.40, g: 0.80, b: 0.45), ReagentColor(r: 0.95, g: 0.80, b: 0.30),
+            ReagentColor(r: 0.60, g: 0.45, b: 0.85)]
+
+        // ===== Back-wall counter run =====
+        add(3.4, 0.85, 0.60, cabinet, [-0.2, 0.425, -2.66])
+        add(3.5, 0.05, 0.66, epoxy,   [-0.2, 0.875, -2.66])
+        add(3.4, 0.72, 0.34, door,    [-0.2, 2.02, -2.80])          // upper cabinets
+        for x in stride(from: Float(-1.5), through: 1.1, by: 0.9) {
+            add(0.03, 0.10, 0.02, handle, [x + 0.2, 1.74, -2.62])   // upper handles
+            add(0.03, 0.10, 0.02, handle, [x + 0.2, 0.70, -2.35])   // base handles
+        }
+        // shelf + reagent bottles on the counter
+        add(2.2, 0.03, 0.22, door, [-0.2, 1.50, -2.74])
+        var bx: Float = -1.0
+        for c in tint {
+            cyl(0.030, 0.14, glassy(),  [bx, 0.97, -2.62])
+            cyl(0.026, 0.09, unlit(c),  [bx, 0.95, -2.62])
+            bx += 0.28
+        }
+        var sx: Float = -0.9
+        for c in tint.reversed() { cyl(0.024, 0.10, unlit(c), [sx, 1.57, -2.74]); sx += 0.42 }
+
+        // window on the back wall (clear of the cabinets, to the right)
+        add(1.20, 1.00, 0.04, frameM, [2.2, 2.00, -2.93])
+        add(1.06, 0.86, 0.02, unlit(0.72, 0.83, 0.95), [2.2, 2.00, -2.92])  // sky
+        add(0.02, 0.86, 0.03, frameM, [2.2, 2.00, -2.915])                  // mullion |
+        add(1.06, 0.02, 0.03, frameM, [2.2, 2.00, -2.915])                  // mullion —
+        // safety signs
+        add(0.34, 0.34, 0.02, unlit(0.95, 0.80, 0.20), [-1.9, 1.30, -2.93])
+        add(0.34, 0.34, 0.02, unlit(0.85, 0.25, 0.22), [-1.5, 1.30, -2.93])
+
+        // ===== Left-wall counter + door =====
+        add(0.60, 0.85, 2.60, cabinet, [-2.66, 0.425, -1.10])
+        add(0.66, 0.05, 2.70, epoxy,   [-2.66, 0.875, -1.10])
+        add(0.06, 2.10, 1.00, door,    [-2.94, 1.05, 1.60])          // door slab
+        add(0.03, 2.26, 1.16, frameM,  [-2.965, 1.13, 1.60])         // door frame
+        add(0.03, 0.50, 0.26, glassy(),[-2.90, 1.55, 1.60])          // vision panel
+        add(0.05, 0.28, 0.05, handle,  [-2.90, 1.00, 1.15])          // handle
+
+        // ===== Right wall: incubator + fridge + short counter =====
+        add(0.62, 1.50, 0.70, steel, [2.63, 0.75, -1.70])            // incubator body
+        add(0.03, 1.30, 0.60, door,  [2.31, 0.80, -1.70])            // door face
+        add(0.02, 0.70, 0.40, glassy(), [2.29, 0.95, -1.70])         // window
+        add(0.05, 0.50, 0.05, handle, [2.28, 0.80, -1.45])           // handle
+        add(0.03, 0.14, 0.22, unlit(0.10, 0.12, 0.14), [2.30, 1.34, -1.70]) // display bezel
+        add(0.02, 0.07, 0.14, unlit(0.30, 0.90, 0.55), [2.29, 1.34, -1.70]) // display glow
+
+        add(0.62, 1.85, 0.78, steel, [2.63, 0.925, -0.35])           // fridge body
+        add(0.03, 1.70, 0.68, door,  [2.31, 0.95, -0.35])            // fridge door
+        add(0.05, 0.60, 0.05, handle,[2.28, 1.05, -0.02])            // handle
+
+        add(0.60, 0.85, 1.80, cabinet, [2.66, 0.425, 1.40])          // front counter
+        add(0.66, 0.05, 1.90, epoxy,   [2.66, 0.875, 1.40])
+
+        // ===== Ceiling light panels =====
+        add(1.4, 0.04, 0.6, unlit(0.98, 0.98, 1.00), [-0.8, 2.97, -1.20])
+        add(1.4, 0.04, 0.6, unlit(0.98, 0.98, 1.00), [ 0.9, 2.97, -1.20])
+        add(1.4, 0.04, 0.6, unlit(0.98, 0.98, 1.00), [ 0.0, 2.97,  0.80])
+
+        // ===== Lab stool beside the bench =====
+        cyl(0.16, 0.04, surface(0.15, 0.16, 0.19, roughness: 0.5), [1.15, 0.62, -0.20])
+        cyl(0.028, 0.60, handle, [1.15, 0.31, -0.20])
+        cyl(0.19, 0.03, surface(0.30, 0.31, 0.34, roughness: 0.4), [1.15, 0.02, -0.20])
+
+        return f
     }
 
     // MARK: - Workbench
