@@ -210,9 +210,16 @@
     "source": "News",
     "title": "NIH Grant Terminations Disrupt 1 in 30 Clinical Trials, Impacting Over 74,000 Participants",
     "url": "https://www.ajmc.com/view/nih-grant-terminations-disrupt-1-in-30-clinical-trials-impacting-over-74-000-participants"
+   },
+   {
+    "date": "2026-09-15",
+    "id": "news-ede324221a7c",
+    "source": "News",
+    "title": "McCormick, Fetterman question termination of more than 150 health research grants",
+    "url": "https://radio.wpsu.org/2026-09-15/mccormick-fetterman-question-termination-of-more-than-150-health-research-grants"
    }
   ],
-  "summary": "Beginning in late July 2026, NIH resumed terminating grants disfavored by the Trump administration, with Director Bhattacharya specifically eliminating additional health disparities grants and new funding policies and spending delays sharply reducing the odds of winning awards. By mid-August, the terminations had disrupted 1 in 30 clinical trials, affecting over 74,000 participants. The saga signals both a shrinking, more politically constrained NIH funding landscape and direct disruption to ongoing research and study participants.",
+  "summary": "Since late July 2026, NIH has resumed terminating grants deemed misaligned with Trump administration priorities, with Director Bhattacharya specifically killing additional health disparities grants and new funding policies and spending delays sharply reducing grant success odds. The terminations have disrupted roughly 1 in 30 clinical trials and affected over 74,000 participants, prompting Senators McCormick and Fetterman to question the cancellation of more than 150 health research grants by mid-September. The saga signals ongoing funding instability and heightened scrutiny that directly threatens active research and trial continuity.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
@@ -280,6 +287,19 @@
   ],
   "summary": "As of August 22, 2026, reporting indicates the NSF is set to issue the lowest number of new research grants in four decades. This marks a sharp decline in new federal research funding. If confirmed, it could significantly constrain research budgets and new project starts across the university.",
   "title": "NSF sharp decline in new research grants"
+ },
+ "nsf-metascience-office": {
+  "events": [
+   {
+    "date": "2026-09-18",
+    "id": "news-07a666018c53",
+    "source": "News",
+    "title": "Researchers Skeptical of NSF Metascience Plan",
+    "url": "https://www.aip.org/fyi/researchers-skeptical-of-nsf-metascience-plan"
+   }
+  ],
+  "summary": "As of September 18, 2026, NSF has proposed a metascience office and associated grantmaking changes, but researchers have publicly expressed skepticism about the plan. The initiative is at an early, contested stage, and its implications for future NSF funding practices remain uncertain.",
+  "title": "NSF metascience office and grantmaking changes"
  },
  "pentagon-university-blacklist": {
   "events": [
