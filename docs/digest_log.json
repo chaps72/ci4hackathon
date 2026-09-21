@@ -874,5 +874,32 @@
     "agency": "AIP FYI (Physics Today)"
    }
   ]
+ },
+ {
+  "date": "2026-09-21",
+  "summary": "\ud83d\udfe1 2 moderate \u00b7 \ud83d\udcf0 1 press\n\nBottom line: NSF research funding is running well behind pace as the fiscal year closes, posing near-term cash-flow risk for grant-dependent labs; one minor NIH comment opportunity is open.\n\n- \ud83d\udfe0 **Ongoing: NSF grant shortfall** \u2014 With FY ending Sept. 30, NSF is over a billion dollars behind its usual grant pace while a judge presses IES to disburse funds, threatening delayed or reduced awards for our researchers. [Inside Higher Ed](https://www.insidehighered.com/news/government/science-research-policy/2026/09/21/nsf-over-billion-behind-grants-ies-says-will)\n\nRoutine/informational: NIH has issued a Request for Information on the feasibility of annual reporting of live vertebrate animal numbers (NOT-OD-27-001), relevant to animal-research units considering comment. [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-001.html)",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** NSF Over Billion Behind on Grants; IES Says Will Give Funds \u2014 Inside Higher Ed, 2026-09-21\n  https://www.insidehighered.com/news/government/science-research-policy/2026/09/21/nsf-over-billion-behind-grants-ies-says-will\n\n\ud83d\udcc8 Trend watch\nToday's NIH RFI on animal-number reporting continues NIH's steady stream of biosafety/policy RFIs and information requests\u2014at least the 6th such NIH RFI/comment request in roughly five weeks (Aug 12\u2013Sep 21).\n\n\ud83c\udfdb\ufe0f Government affairs\nAs the fiscal year ends September 30, NSF is running over a billion dollars behind its typical pace of university research grant awards, while a federal judge has ordered the Institute of Education Sciences to report on its research funding progress and IES has said it will disburse funds. The remaining item is an NIH request for information on annual reporting of live vertebrate animal numbers, which carries limited government-affairs signal.",
+  "items": [
+   {
+    "title": "Request for Information on Feasibility of Annual Reporting of Live Vertebrate Animal Numbers",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-001.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information on Feasibility of Annual Reporting of Live Vertebrate Animal Numbers",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-001.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "NSF Over Billion Behind on Grants; IES Says Will Give Funds",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/09/21/nsf-over-billion-behind-grants-ies-says-will",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]
