@@ -901,5 +901,32 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-09-22",
+  "summary": "\ud83d\udd34 1 critical \u00b7 \ud83d\udcf0 2 press\n\nBottom line: The only consequential development is an escalating White House effort to assert political control over NIH grant awards, which could directly affect how\u2014and whether\u2014your biomedical funding is approved.\n\n- \ud83d\udd34 **Ongoing: NIH grant politicization** \u2014 Reports say Trump asked OMB's Russell Vought to draft an order creating a commission of political appointees to sign off on (and potentially veto) NIH grants deemed misaligned with the administration, drawing bipartisan pushback from Senators Collins and Murray and Rep. DeLauro; monitor for institutional exposure on pending and future awards [STAT News](https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/), [Inside Higher Ed](https://www.insidehighered.com/news/quick-takes/2026/09/21/reports-trump-wants-more-control-over-nih-funding).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Members of Congress push back on plan to create a commission of political appointees to re \u2014 STAT News, 2026-09-21\n  https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/\n- **Ongoing:** Reports: Trump Wants More Control Over NIH Funding \u2014 Inside Higher Ed, 2026-09-21\n  https://www.insidehighered.com/news/quick-takes/2026/09/21/reports-trump-wants-more-control-over-nih-funding\n\n\ud83d\udcc8 Trend watch\nToday's pushback on politicizing NIH grant review extends a recurring theme of proposed political control over NIH funding\u2014the 3rd such item in about three weeks (Sept. 1 \"politicize NIH grants,\" Sept. 16 First Amendment lawsuit, Sept. 21).\n\n\ud83c\udfdb\ufe0f Government affairs\nPresident Trump has reportedly asked OMB Director Russell Vought to draft an executive order creating a commission of political appointees to review and potentially veto NIH grants deemed misaligned with the administration's agenda. Lawmakers from both parties, including Senators Susan Collins and Patty Murray and Representative Rosa DeLauro, have voiced strong opposition, warning the plan would politicize biomedical research grantmaking.",
+  "items": [
+   {
+    "title": "STAT+: Members of Congress push back on plan to create a commission of political appointees to review NIH grants",
+    "url": "https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/?utm_campaign=rss",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   }
+  ],
+  "press": [
+   {
+    "title": "Members of Congress push back on plan to create a commission of political appointees to review NIH grants",
+    "url": "https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   },
+   {
+    "title": "Reports: Trump Wants More Control Over NIH Funding",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/09/21/reports-trump-wants-more-control-over-nih-funding",
+    "level": "CRITICAL",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]

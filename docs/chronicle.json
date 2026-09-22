@@ -176,9 +176,30 @@
     "source": "STAT News",
     "title": "STAT+: Will House delay Trump plan to politicize NIH grants?",
     "url": "https://www.statnews.com/2026/09/01/house-spending-bill-vote-grant-rule-trump-mfn-deals-dc-diagnois/?utm_campaign=rss"
+   },
+   {
+    "date": "2026-09-21",
+    "id": "statnews-https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "STAT+: Members of Congress push back on plan to create a commission of political appointees to review NIH grants",
+    "url": "https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/?utm_campaign=rss"
+   },
+   {
+    "date": "2026-09-21",
+    "id": "news-8fa33a787bcf",
+    "source": "News",
+    "title": "Members of Congress push back on plan to create a commission of political appointees to review NIH grants",
+    "url": "https://www.statnews.com/2026/09/21/trump-plan-for-commission-to-review-nih-grants-push-back/"
+   },
+   {
+    "date": "2026-09-21",
+    "id": "news-99893d442800",
+    "source": "News",
+    "title": "Reports: Trump Wants More Control Over NIH Funding",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/09/21/reports-trump-wants-more-control-over-nih-funding"
    }
   ],
-  "summary": "A Trump administration plan to politicize NIH grant awards is under scrutiny, with a STAT+ report on September 1, 2026 raising the question of whether the House will delay it. The plan's implementation timeline appears uncertain pending potential legislative action, though details beyond the House's possible role remain unspecified.",
+  "summary": "A Trump administration plan would create a commission of political appointees to review NIH grant awards, giving the administration more control over NIH funding decisions. As of late September 2026, members of Congress are pushing back on the proposal, and there are questions about whether the House will delay it. If enacted, the plan could inject political review into the grant award process, with direct implications for how federally funded research is evaluated and approved.",
   "title": "NIH plan to politicize grant awards"
  },
  "nih-grant-terminations": {
