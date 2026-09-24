@@ -197,9 +197,23 @@
     "source": "News",
     "title": "Reports: Trump Wants More Control Over NIH Funding",
     "url": "https://www.insidehighered.com/news/quick-takes/2026/09/21/reports-trump-wants-more-control-over-nih-funding"
+   },
+   {
+    "date": "2026-09-23",
+    "id": "statnews-https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "White House plan to increase control of NIH grants appears \u2018dead\u2019",
+    "url": "https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/?utm_campaign=rss"
+   },
+   {
+    "date": "2026-09-23",
+    "id": "news-9d81327f4c73",
+    "source": "News",
+    "title": "White House move on NIH grants stalled by bipartisan pushback",
+    "url": "https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/"
    }
   ],
-  "summary": "A Trump administration plan would create a commission of political appointees to review NIH grant awards, giving the administration more control over NIH funding decisions. As of late September 2026, members of Congress are pushing back on the proposal, and there are questions about whether the House will delay it. If enacted, the plan could inject political review into the grant award process, with direct implications for how federally funded research is evaluated and approved.",
+  "summary": "In September 2026, reports emerged of a Trump administration plan to create a commission of political appointees to review NIH grants, prompting bipartisan pushback from members of Congress. By September 23, the plan appeared 'dead,' stalled by that opposition. The immediate threat of politically-appointed grant review has receded, though the underlying push for greater White House control over NIH funding remains a concern to watch.",
   "title": "NIH plan to politicize grant awards"
  },
  "nih-grant-terminations": {
@@ -238,9 +252,16 @@
     "source": "News",
     "title": "McCormick, Fetterman question termination of more than 150 health research grants",
     "url": "https://radio.wpsu.org/2026-09-15/mccormick-fetterman-question-termination-of-more-than-150-health-research-grants"
+   },
+   {
+    "date": "2026-09-24",
+    "id": "news-dc68253c4a75",
+    "source": "News",
+    "title": "These 6 charts show how NIH research funding has been reshaped under Trump",
+    "url": "https://www.kpbs.org/news/health/2026/09/24/these-6-charts-show-how-nih-research-funding-has-been-reshaped-under-trump"
    }
   ],
-  "summary": "Since late July 2026, NIH has resumed terminating grants deemed misaligned with Trump administration priorities, with Director Bhattacharya specifically killing additional health disparities grants and new funding policies and spending delays sharply reducing grant success odds. The terminations have disrupted roughly 1 in 30 clinical trials and affected over 74,000 participants, prompting Senators McCormick and Fetterman to question the cancellation of more than 150 health research grants by mid-September. The saga signals ongoing funding instability and heightened scrutiny that directly threatens active research and trial continuity.",
+  "summary": "Beginning in mid-2026, NIH under Director Bhattacharya resumed terminating grants disfavored by the Trump administration, including health disparities research and more than 150 health research grants, while a new funding policy and spending delays sharply reduced award odds. The terminations disrupted roughly 1 in 30 clinical trials affecting over 74,000 participants and drew congressional scrutiny from members including McCormick and Fetterman. As of late September 2026, analyses show NIH funding has been substantially reshaped under Trump priorities, signaling continued instability for affected research portfolios.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {

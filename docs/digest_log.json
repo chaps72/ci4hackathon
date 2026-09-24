@@ -928,5 +928,50 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-09-24",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udfe1 1 moderate \u00b7 \ud83d\udd35 2 info \u00b7 \ud83d\udcf0 2 press\n\n**Bottom line:** The White House push to politicize NIH grant-making appears dead, but Trump-era funding shifts continue to reshape the research landscape\u2014monitor exposure, no immediate action required.\n\n- \ud83d\udfe0 **Ongoing:** **NIH grant-control EO** \u2014 the executive order to greatly expand White House control over NIH awards is \"looking dead\" after bipartisan pushback led by Sen. Collins, easing a threat to peer-reviewed funding [STAT News](https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/).\n- \ud83d\udfe0 **Ongoing:** **NIH funding reshaped** \u2014 analysis shows billions delayed and rerouted, cutting some fields while boosting AI (+$468M) and IT (+$368M), signaling continued disruption for our researchers and patients [NPR](https://www.kpbs.org/news/health/2026/09/24/these-6-charts-show-how-nih-research-funding-has-been-reshaped-under-trump).\n- **New:** **REACH commercialization hubs** \u2014 limited-competition RFA-OD-27-009 opens with an 11/10/2026 deadline for eligible research-commercialization applicants [Grants.gov](https://www.grants.gov/search-results-detail/362965).\n\nRoutine: NIH issued an early-expiration notice for PAR-25-317 family-health program (NOT-MD-27-001) [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-MD-27-001.html).",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Limited Competition: NIH Research Evaluation and Commercialization Hubs (REACH) ](https://www.grants.gov/search-results-detail/362965) \u2014 \u23f0 due 2026-11-10\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** White House move on NIH grants stalled by bipartisan pushback \u2014 STAT News, 2026-09-23\n  https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/\n- **Ongoing:** These 6 charts show how NIH research funding has been reshaped under Trump \u2014 NPR (via KPBS/GPB), 2026-09-24\n  https://www.kpbs.org/news/health/2026/09/24/these-6-charts-show-how-nih-research-funding-has-been-reshaped-under-trump\n\n\ud83d\udcc8 Trend watch\nToday's coverage of the White House NIH grant-control plan stalling marks at least the 5th tracked item on the plan to politicize/increase control over NIH grants since Sept. 1 (following the Sept. 1, 9/21 x2, and 9/21 congressional-pushback reports).\n\n\ud83c\udfdb\ufe0f Government affairs\nA planned executive order that would have greatly increased White House control over NIH grants appears \"dead\" following bipartisan pushback led by Sen. Susan Collins. Separately, a data analysis shows NIH has delayed and rerouted billions in research funding under the Trump administration, cutting some areas while boosting AI/machine learning and networking/IT.",
+  "items": [
+   {
+    "title": "White House plan to increase control of NIH grants appears \u2018dead\u2019",
+    "url": "https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/?utm_campaign=rss",
+    "level": "HIGH",
+    "agency": "STAT News"
+   },
+   {
+    "title": "Limited Competition: NIH Research Evaluation and Commercialization Hubs (REACH) (SB0 Clinical Trial Optional)",
+    "url": "https://www.grants.gov/search-results-detail/362965",
+    "level": "MODERATE",
+    "agency": "Unknown"
+   },
+   {
+    "title": "Notice of Early Expiration of PAR-25-317 &quot;Risk and Protective Factors of Family Health and Family Level Interventions (R01 Clinical Trial Optional)&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-MD-27-001.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Early Expiration of PAR-25-317 \"Risk and Protective Factors of Family Health and Family Level Interventions (R01 Clinical Trial Optional)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-MD-27-001.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "White House move on NIH grants stalled by bipartisan pushback",
+    "url": "https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/",
+    "level": "HIGH",
+    "agency": "STAT News"
+   },
+   {
+    "title": "These 6 charts show how NIH research funding has been reshaped under Trump",
+    "url": "https://www.kpbs.org/news/health/2026/09/24/these-6-charts-show-how-nih-research-funding-has-been-reshaped-under-trump",
+    "level": "HIGH",
+    "agency": "NPR (via KPBS/GPB)"
+   }
+  ]
  }
 ]
