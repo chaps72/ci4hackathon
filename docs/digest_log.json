@@ -973,5 +973,26 @@
     "agency": "NPR (via KPBS/GPB)"
    }
   ]
+ },
+ {
+  "date": "2026-09-25",
+  "summary": "\ud83d\udfe1 1 moderate \u00b7 \ud83d\udcf0 1 press\n\n**Bottom line:** NIH funding pressures persist through subtler mechanisms even as broad freezes ease; one draft policy is open for comment.\n\n\ud83d\udfe0 **New: Grant Witness Tracking** \u2014 A former Harvard researcher's expanded tracker shows NIH grants are still being terminated, delayed, or reshaped based on alignment with administration priorities, so continued awards and scrutiny risk warrant proactive portfolio monitoring [The Boston Globe](https://www.bostonglobe.com/2026/09/25/metro/nih-grant-witness-lost-federal-funds/).\n\nFor awareness: NIH seeks public input on a draft policy for sharing summary-level study results with clinical research participants [HHS](https://www.federalregister.gov/documents/2026/09/25/2026-19706/draft-nih-policy-on-sharing-summary-level-study-results-with-clinical-research-participants).",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Draft NIH Policy on Sharing Summary Level Study Results With Clinical Research P](https://www.federalregister.gov/documents/2026/09/25/2026-19706/draft-nih-policy-on-sharing-summary-level-study-results-with-clinical-research-participants) \u2014 \u23f0 comment due 2026-10-26 \u00b7 \ud83d\udcac comment: https://www.federalregister.gov/documents/2026/09/25/2026-19706/draft-nih-policy-on-sharing-summary-level-study-results-with-clinical-research-participants\n\n\ud83d\udcf0 From the research press\n- **New:** Former Harvard researcher unveils massive federal funding disruptions \u2014 The Boston Globe, 2026-09-25\n  https://www.bostonglobe.com/2026/09/25/metro/nih-grant-witness-lost-federal-funds/\n\n\ud83d\udcc8 Trend watch\nToday's draft NIH policy on sharing summary-level study results with clinical research participants is the 2nd appearance of this specific policy in a month (following the Aug 27 RFI), signaling its advancement from comment to formal draft.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe executive branch continues to shape NIH funding through administration-priority alignment, with mechanisms shifting from mass terminations to grant delays and altered award processes even as university-wide freezes have largely ceased. Separately, NIH is soliciting public input on a draft policy for sharing summary-level study results with clinical research participants.",
+  "items": [
+   {
+    "title": "Draft NIH Policy on Sharing Summary Level Study Results With Clinical Research Participants",
+    "url": "https://www.federalregister.gov/documents/2026/09/25/2026-19706/draft-nih-policy-on-sharing-summary-level-study-results-with-clinical-research-participants",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": [
+   {
+    "title": "Former Harvard researcher unveils massive federal funding disruptions",
+    "url": "https://www.bostonglobe.com/2026/09/25/metro/nih-grant-witness-lost-federal-funds/",
+    "level": "HIGH",
+    "agency": "The Boston Globe"
+   }
+  ]
  }
 ]

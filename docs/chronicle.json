@@ -88,6 +88,19 @@
   "summary": "Starting in July 2026, the White House acknowledged using keyword lists to cancel billions in research grants, including in California, prompting scrutiny of those federal keyword lists. By mid-September 2026, a new lawsuit was filed arguing that NIH violated the First Amendment rights of grant applicants, meaning the terminations are now facing legal challenge.",
   "title": "Keyword-based research grant terminations"
  },
+ "grant-witness-funding-tracker": {
+  "events": [
+   {
+    "date": "2026-09-25",
+    "id": "news-e6665ecbc47e",
+    "source": "News",
+    "title": "Former Harvard researcher unveils massive federal funding disruptions",
+    "url": "https://www.bostonglobe.com/2026/09/25/metro/nih-grant-witness-lost-federal-funds/"
+   }
+  ],
+  "summary": "A former Harvard researcher unveiled Grant Witness, a tool documenting massive disruptions to federal research funding, on September 25, 2026. At this early stage, the initiative has surfaced the scale of these disruptions, positioning it as a resource for tracking how federal funding changes affect the research community.",
+  "title": "Grant Witness tracking of federal research funding disruptions"
+ },
  "harvard-funding-legal-fight": {
   "events": [
    {
