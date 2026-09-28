@@ -994,5 +994,31 @@
     "agency": "The Boston Globe"
    }
   ]
+ },
+ {
+  "date": "2026-09-28",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udfe1 1 moderate\n\nNIH is operating under a continuing resolution\u2014expect funding constraints and interim award terms while planning FY26 spending.\n\n- \ud83d\udfe0 **New:** **NIH Continuing Resolution** \u2014 NIH announced (NOT-OD-26-131) it is operating under a CR, so anticipate delayed or reduced awards and cautious commitments on new and continuing grants [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-131.html).\n\nAlso informational: NIH is launching a five-year, $174M R3PEATS program for research replicability and reproducibility, plus a tool to identify connected publications\u2014worth flagging to faculty [Inside Higher Ed](https://www.insidehighered.com/news/government/science-research-policy/2026/09/28/nih-launches-174m-replicability-reproducibility).",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's NIH metascience/reproducibility funding item extends a multi-week metascience push, marking at least the 4th related development since mid-August (Aug 14 peer-review reporting RFI, Sep 14 NSF metascience memo, Sep 18 NSF metascience skepticism).\n\n\ud83c\udfdb\ufe0f Government affairs\nNIH is operating under a continuing resolution per Guide notice NOT-OD-26-131 (September 28, 2026). Separately, NIH announced a five-year, $174M R3PEATS program for research replicability and reproducibility.",
+  "items": [
+   {
+    "title": "NIH Operates Under a Continuing Resolution",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-131.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "NIH Operates Under a Continuing Resolution",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-131.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "NIH Plans $174M for Research Replicability, Reproducibility",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/09/28/nih-launches-174m-replicability-reproducibility",
+    "level": "MODERATE",
+    "agency": "Inside Higher Ed"
+   }
+  ],
+  "press": []
  }
 ]
