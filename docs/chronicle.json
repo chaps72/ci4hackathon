@@ -534,5 +534,32 @@
   ],
   "summary": "In late July 2026, the White House unveiled an overhaul of the U.S. science funding system, calling for reduced university research funding, steering money outside academia, prioritizing AI, and giving political appointees more control. The plan drew bipartisan Senate opposition, including from Republicans, and Senate appropriators advanced a stopgap bill to block it, though an NSF memo implementing the changes emerged by mid-September. Researchers, including at Michigan, remain concerned about political control over funding, and the overhaul's fate is contested between the White House and Congress.",
   "title": "White House science funding overhaul"
+ },
+ "white-house-pocket-rescission": {
+  "events": [
+   {
+    "date": "2026-09-26",
+    "id": "news-3b71808ee2a4",
+    "source": "News",
+    "title": "White House moves to block $810 million in funding through pocket rescission",
+    "url": "https://www.cnbc.com/2026/09/26/white-house-810-million-pocket-rescission.html"
+   },
+   {
+    "date": "2026-09-28",
+    "id": "news-ca64a7e79849",
+    "source": "News",
+    "title": "White House cancels health, education funds approved by Congress",
+    "url": "https://rollcall.com/2026/09/28/white-house-cancels-health-education-funds-approved-by-congress/"
+   },
+   {
+    "date": "2026-09-29",
+    "id": "news-4aef846a9200",
+    "source": "News",
+    "title": "The $810 Million Pocket Rescissions Request: What It Would Cut and Why Its Timing Matters",
+    "url": "https://www.americanactionforum.org/insight/the-810-million-pocket-rescissions-request-what-it-would-cut-and-why-its-timing-matters/"
+   }
+  ],
+  "summary": "On September 26, 2026, the White House moved to block $810 million in congressionally approved funding through a pocket rescission, and by September 28 it had cancelled health and education funds Congress had approved. As of late September 2026, analysis of the request has focused on what specific programs would be cut and why the timing of the maneuver matters. This means funding that Congress authorized for health and education programs is now at risk of being withheld through this contested budgetary tactic.",
+  "title": "White House pocket rescission of congressionally approved funds"
  }
 }

@@ -1020,5 +1020,31 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-09-29",
+  "summary": "\ud83d\udcf0 3 press\n\nBottom line: The White House's $810M \"pocket rescission\" cancels congressionally approved funds\u2014including HHS/AHRQ research money\u2014just before FY2026 ends, putting related awards at risk.\n\n\ud83d\udd34 **New:** **Pocket rescission** \u2014 White House moved to block $810M via a controversial late-fiscal-year mechanism, nullifying $28M in HHS research funding alongside refugee and Education programs [CNBC](https://www.cnbc.com/2026/09/26/white-house-810-million-pocket-rescission.html).\n\n\ud83d\udd34 **Ongoing:** **AHRQ cut** \u2014 The Agency for Healthcare Research and Quality would lose $27.7M of its $345M FY2026 appropriation, with the timing effectively canceling the funds and hitting health-services research [American Action Forum](https://www.americanactionforum.org/insight/the-810-million-pocket-rescissions-request-what-it-would-cut-and-why-its-timing-matters/).\n\n\ud83d\udd34 **Ongoing:** **Bipartisan pushback** \u2014 Lawmakers criticized the Friday-night cancellation as unlawful, leaving the funds' status contested and uncertain [Roll Call](https://rollcall.com/2026/09/28/white-house-cancels-health-education-funds-approved-by-congress/).",
+  "extra": "\ud83d\udcf0 From the research press\n- **New:** White House moves to block $810 million in funding through pocket rescission \u2014 CNBC, 2026-09-26\n  https://www.cnbc.com/2026/09/26/white-house-810-million-pocket-rescission.html\n- **New:** White House cancels health, education funds approved by Congress \u2014 Roll Call, 2026-09-28\n  https://rollcall.com/2026/09/28/white-house-cancels-health-education-funds-approved-by-congress/\n- **New:** The $810 Million Pocket Rescissions Request: What It Would Cut and Why Its Timing Matters \u2014 American Action Forum, 2026-09-29\n  https://www.americanactionforum.org/insight/the-810-million-pocket-rescissions-request-what-it-would-cut-and-why-its-timing-matters/\n\n\ud83d\udcc8 Trend watch\nToday's three items mark an escalation in executive-branch efforts to withhold congressionally-approved funds, building on the log's recent thread of White House attempts to increase control over research funding (e.g., 4+ items on Sept. 21\u201324 covering the NIH grant-review commission and Trump seeking more control over NIH funding).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe White House has moved to cancel $810 million in congressionally approved funding through a late-fiscal-year \"pocket rescission,\" including $28 million in HHS research money and $27.7 million from AHRQ's FY2026 appropriation. The maneuver drew bipartisan criticism, with lawmakers calling it unlawful.",
+  "items": [],
+  "press": [
+   {
+    "title": "White House moves to block $810 million in funding through pocket rescission",
+    "url": "https://www.cnbc.com/2026/09/26/white-house-810-million-pocket-rescission.html",
+    "level": "CRITICAL",
+    "agency": "CNBC"
+   },
+   {
+    "title": "White House cancels health, education funds approved by Congress",
+    "url": "https://rollcall.com/2026/09/28/white-house-cancels-health-education-funds-approved-by-congress/",
+    "level": "CRITICAL",
+    "agency": "Roll Call"
+   },
+   {
+    "title": "The $810 Million Pocket Rescissions Request: What It Would Cut and Why Its Timing Matters",
+    "url": "https://www.americanactionforum.org/insight/the-810-million-pocket-rescissions-request-what-it-would-cut-and-why-its-timing-matters/",
+    "level": "CRITICAL",
+    "agency": "American Action Forum"
+   }
+  ]
  }
 ]
