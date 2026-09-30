@@ -1046,5 +1046,32 @@
     "agency": "American Action Forum"
    }
   ]
+ },
+ {
+  "date": "2026-09-30",
+  "summary": "\ud83d\udd34 1 critical \u00b7 \ud83d\udcf0 2 press\n\n**Bottom line:** The White House's $810M pocket rescission of congressionally appropriated funds is advancing as the fiscal year closes, threatening higher-ed and health research grants that may lapse before Congress can act.\n\n- \ud83d\udd34 **Ongoing:** **$810M Rescission Package** \u2014 The President's formal special message to Congress targets appropriated funds across Education, HHS, Commerce, and other agencies, putting broad research accounts at risk of lapse. [OMB](https://www.federalregister.gov/documents/2026/09/30/2026-19965/rescissions-proposals-pursuant-to-the-congressional-budget-and-impoundment-control-act-of-1974)\n- \ud83d\udd34 **Ongoing:** **Int'l Ed Cuts** \u2014 Rescinded international education and higher-ed grants may expire during the 45-day window as the fiscal year ends Sept. 30, potentially stranding institutional awards. [Inside Higher Ed](https://www.insidehighered.com/news/quick-takes/2026/09/28/white-house-rescinds-millions-international-ed-programs)\n- \ud83d\udd34 **Ongoing:** **AHRQ $28M Cut** \u2014 OMB moved to rescind $28M of AHRQ's $345M FY2026 appropriation, endangering health services research funding. [AcademyHealth](https://ahsituationreport.substack.com/p/white-house-rescinds-28-million-from)",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** White House Rescinds Millions for International Ed Programs \u2014 Inside Higher Ed, 2026-09-28\n  https://www.insidehighered.com/news/quick-takes/2026/09/28/white-house-rescinds-millions-international-ed-programs\n- **Ongoing:** White House Rescinds $28 Million from AHRQ as Fiscal Year Ends \u2014 AcademyHealth Situation Report, 2026-09-29\n  https://ahsituationreport.substack.com/p/white-house-rescinds-28-million-from\n\n\ud83d\udcc8 Trend watch\nToday's three rescission actions extend a rescission/pocket-rescission surge, marking at least the 4th such funding-clawback item in about a week (alongside the 9/26 CNBC $810M pocket rescission, 9/28 Roll Call cancellations, and 9/29 American Action Forum analysis).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe President transmitted an $810 million rescission package to Congress on September 25, 2026, which OMB submitted for Federal Register publication and which targets programs across Commerce, Education, HHS, Homeland Security, HUD, Justice, and International Assistance Programs, including $28 million from AHRQ's FY2026 appropriation. Because the timing coincides with the September 30 fiscal year-end, critics warn this pocket rescission may cause the withheld funds\u2014including international education grants\u2014to lapse before Congress can act within the 45-day window.",
+  "items": [
+   {
+    "title": "Rescissions Proposals Pursuant to the Congressional Budget and Impoundment Control Act of 1974",
+    "url": "https://www.federalregister.gov/documents/2026/09/30/2026-19965/rescissions-proposals-pursuant-to-the-congressional-budget-and-impoundment-control-act-of-1974",
+    "level": "CRITICAL",
+    "agency": "Management and Budget Office"
+   }
+  ],
+  "press": [
+   {
+    "title": "White House Rescinds Millions for International Ed Programs",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/09/28/white-house-rescinds-millions-international-ed-programs",
+    "level": "CRITICAL",
+    "agency": "Inside Higher Ed"
+   },
+   {
+    "title": "White House Rescinds $28 Million from AHRQ as Fiscal Year Ends",
+    "url": "https://ahsituationreport.substack.com/p/white-house-rescinds-28-million-from",
+    "level": "CRITICAL",
+    "agency": "AcademyHealth Situation Report"
+   }
+  ]
  }
 ]
