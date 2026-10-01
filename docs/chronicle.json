@@ -224,9 +224,16 @@
     "source": "News",
     "title": "White House move on NIH grants stalled by bipartisan pushback",
     "url": "https://www.statnews.com/2026/09/23/nih-grants-political-control-executive-order-bipartisan-pushback/"
+   },
+   {
+    "date": "2026-09-28",
+    "id": "news-5516947575bc",
+    "source": "News",
+    "title": "FYI Science Policy This Week: Trump scraps leaked plan for NIH grants takeover",
+    "url": "https://www.aip.org/newsletter/000001a0-d9fb-d5d2-a1f3-fbfff4930000"
    }
   ],
-  "summary": "In September 2026, reports emerged of a Trump administration plan to create a commission of political appointees to review NIH grants, prompting bipartisan pushback from members of Congress. By September 23, the plan appeared 'dead,' stalled by that opposition. The immediate threat of politically-appointed grant review has receded, though the underlying push for greater White House control over NIH funding remains a concern to watch.",
+  "summary": "In September 2026, reports emerged that the Trump White House sought greater control over NIH funding through a commission of political appointees to review grants, prompting bipartisan pushback from members of Congress. By late September, the plan had stalled and was described as 'dead,' with reports that Trump scrapped the leaked proposal. For now, the effort to politicize NIH grant awards appears blocked, though the underlying push for increased control remains a point of contention.",
   "title": "NIH plan to politicize grant awards"
  },
  "nih-grant-terminations": {
@@ -272,9 +279,16 @@
     "source": "News",
     "title": "These 6 charts show how NIH research funding has been reshaped under Trump",
     "url": "https://www.kpbs.org/news/health/2026/09/24/these-6-charts-show-how-nih-research-funding-has-been-reshaped-under-trump"
+   },
+   {
+    "date": "2026-09-28",
+    "id": "news-1d07b1b04db0",
+    "source": "News",
+    "title": "NIH Censors Crucial Research in Alzheimer's, Kidney Disease, and More, Researchers Share",
+    "url": "https://www.aclu.org/news/free-speech/nih-censors-crucial-research-in-alzheimers-kidney-disease-and-more-researchers-share"
    }
   ],
-  "summary": "Beginning in mid-2026, NIH under Director Bhattacharya resumed terminating grants disfavored by the Trump administration, including health disparities research and more than 150 health research grants, while a new funding policy and spending delays sharply reduced award odds. The terminations disrupted roughly 1 in 30 clinical trials affecting over 74,000 participants and drew congressional scrutiny from members including McCormick and Fetterman. As of late September 2026, analyses show NIH funding has been substantially reshaped under Trump priorities, signaling continued instability for affected research portfolios.",
+  "summary": "Since July 2026, NIH under Director Bhattacharya has been terminating grants that conflict with Trump administration priorities, repeatedly targeting health disparities research and reshaping funding patterns as the odds of winning new grants fall. The terminations have disrupted roughly 1 in 30 clinical trials affecting over 74,000 participants and prompted scrutiny from lawmakers like McCormick and Fetterman over more than 150 cancelled grants. As of late September, researchers report that critical work in Alzheimer's, kidney disease, and other areas is being censored, signaling broad and ongoing disruption to the research enterprise.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {

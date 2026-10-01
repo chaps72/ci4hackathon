@@ -1073,5 +1073,25 @@
     "agency": "AcademyHealth Situation Report"
    }
   ]
+ },
+ {
+  "date": "2026-10-01",
+  "summary": "\ud83d\udcf0 2 press\n\nBottom line: NIH grant terminations and attempted politicization of awards remain active threats to biomedical funding stability, though one takeover plan has stalled.\n\n- \ud83d\udd34 **Ongoing: NIH Grant Terminations** \u2014 Researchers in an ACLU-led lawsuit describe NIH cancelling active Alzheimer's, kidney disease, and other grants as alleged viewpoint-based censorship tied to diversity, gender, and misinformation topics, signaling continued risk to our funded awards in these areas [ACLU](https://www.aclu.org/news/free-speech/nih-censors-crucial-research-in-alzheimers-kidney-disease-and-more-researchers-share).\n- \ud83d\udd34 **Ongoing: NIH Grants Takeover** \u2014 A White House plan to give political appointees greater control over NIH grant funding collapsed amid Senate pushback led by Sen. Collins, easing near-term politicization concerns but confirming ongoing intent worth monitoring [American Institute of Physics (FYI)](https://www.aip.org/newsletter/000001a0-d9fb-d5d2-a1f3-fbfff4930000).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** NIH Censors Crucial Research in Alzheimer's, Kidney Disease, and More, Researchers Share \u2014 ACLU, 2026-09-28\n  https://www.aclu.org/news/free-speech/nih-censors-crucial-research-in-alzheimers-kidney-disease-and-more-researchers-share\n- **Ongoing:** FYI Science Policy This Week: Trump scraps leaked plan for NIH grants takeover \u2014 American Institute of Physics (FYI), 2026-09-28\n  https://www.aip.org/newsletter/000001a0-d9fb-d5d2-a1f3-fbfff4930000\n\n\ud83d\udcc8 Trend watch\nToday's reports on the scrapped NIH grants-takeover plan extend a sustained thread of White House efforts to tighten control over NIH funding, following at least 5 log items on that plan (Sep 21\u201323) and its bipartisan-driven stall.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe administration's proposal to give political appointees, including OMB Director Russell Vought and NIH Director Jay Bhattacharya, greater control over NIH grant funding was scrapped amid Senate pushback led by Sen. Susan Collins. Separately, NIH's termination of active biomedical grants in areas such as Alzheimer's and kidney disease remains contested through an ACLU-led lawsuit against NIH and HHS alleging viewpoint-based decisions.",
+  "items": [],
+  "press": [
+   {
+    "title": "NIH Censors Crucial Research in Alzheimer's, Kidney Disease, and More, Researchers Share",
+    "url": "https://www.aclu.org/news/free-speech/nih-censors-crucial-research-in-alzheimers-kidney-disease-and-more-researchers-share",
+    "level": "CRITICAL",
+    "agency": "ACLU"
+   },
+   {
+    "title": "FYI Science Policy This Week: Trump scraps leaked plan for NIH grants takeover",
+    "url": "https://www.aip.org/newsletter/000001a0-d9fb-d5d2-a1f3-fbfff4930000",
+    "level": "CRITICAL",
+    "agency": "American Institute of Physics (FYI)"
+   }
+  ]
  }
 ]
