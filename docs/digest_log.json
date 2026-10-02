@@ -1093,5 +1093,50 @@
     "agency": "American Institute of Physics (FYI)"
    }
   ]
+ },
+ {
+  "date": "2026-10-02",
+  "summary": "\ud83d\udfe1 1 moderate \u00b7 \ud83d\udcf0 5 press\n\nFederal research funding faces compounding pressure\u2014rescissions, shutdown-driven delays, and new security mandates\u2014with direct exposure to our dollars and partnerships.\n\n\ud83d\udd34 **Ongoing:** **Pentagon China-ties audit** \u2014 Pentagon orders 30 U.S. universities to audit foreign research partnerships, especially Chinese military-linked ties, or risk losing federal funding [AMAC Newsline](https://amac.us/newsline/new-pentagon-crackdown-targets-u-s-universities-ties-to-chinese-military).\n\n\ud83d\udd34 **Ongoing:** **Pocket rescission** \u2014 White House blocked ~$810M in appropriated funds, including HHS research dollars, without congressional approval, which Collins calls unlawful [CNBC](https://wwmt.com/news/nation-world/trump-administration-blocks-810-million-spending-pocket-rescissions-hhs-openthebooks).\n\n\ud83d\udfe0 **New:** **Shutdown grant delays** \u2014 NIH posted plans to reschedule peer-review panels, risking four-month-plus delays for applicants [Science](https://www.science.org/content/article/us-shutdown-fallout-continues-agencies-reschedule-grant-panels).\n\n\ud83d\udfe0 **Ongoing:** **AHRQ cut** \u2014 A proposed $27.7M AHRQ rescission within the $810M package threatens infection-prevention research support [Infection Control Today](https://www.infectioncontroltoday.com/view/proposed-ahrq-cut-raises-questions-infection-prevention-research-support).\n\nInformational: two STAT analyses note NIH spent its full ~$34B FY2026 budget but with delays, opacity, and continued cuts to race/health-disparities research [STAT News](https://www.statnews.com/2026/10/02/nih-grant-funding-fy2026-analysis/).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Trump administration blocks $810M in spending through pocket rescissions \u2014 CNBC / wire reporting, 2026-09-29\n  https://wwmt.com/news/nation-world/trump-administration-blocks-810-million-spending-pocket-rescissions-hhs-openthebooks\n- **Ongoing:** Pentagon Orders Universities to Cut Ties With Chinese Military \u2014 AMAC Newsline, 2026-09-30\n  https://amac.us/newsline/new-pentagon-crackdown-targets-u-s-universities-ties-to-chinese-military\n- **New:** U.S. Shutdown Fallout Continues as Agencies Reschedule Grant Panels \u2014 Science, 2026-09-29\n  https://www.science.org/content/article/us-shutdown-fallout-continues-agencies-reschedule-grant-panels\n- **Ongoing:** Proposed AHRQ Cut Raises Questions About Infection Prevention Research and Support \u2014 Infection Control Today, 2026-09-29\n  https://www.infectioncontroltoday.com/view/proposed-ahrq-cut-raises-questions-infection-prevention-research-support\n\n\ud83d\udcc8 Trend watch\nToday's $810M pocket-rescission block and AHRQ-cut items extend an escalating funding-clawback pattern, marking at least the 5th rescission/pocket-rescission item in roughly the past week (Sep 26\u2013Oct 2).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe White House moved to block roughly $810 million in appropriated funds\u2014including HHS research dollars at AHRQ\u2014through a \"pocket rescission\" without congressional approval, a maneuver Senator Collins called unlawful, while a government shutdown forced NIH to reschedule peer-review panels and risk delays of four months or more. Separately, the Pentagon ordered 30 universities to audit foreign research partnerships, particularly Chinese military-linked ties, or risk losing federal funding, and NIH spent its full roughly $34 billion FY2026 budget while continuing to cut health-disparities and race-related grants under the administration's DEI priorities.",
+  "items": [
+   {
+    "title": "STAT+: NIH awarded all its grant funding, but delayed and opaque decisions stymied researchers",
+    "url": "https://www.statnews.com/2026/10/02/nih-grant-funding-fy2026-analysis/?utm_campaign=rss",
+    "level": "MODERATE",
+    "agency": "STAT News"
+   }
+  ],
+  "press": [
+   {
+    "title": "Trump administration blocks $810M in spending through pocket rescissions",
+    "url": "https://wwmt.com/news/nation-world/trump-administration-blocks-810-million-spending-pocket-rescissions-hhs-openthebooks",
+    "level": "CRITICAL",
+    "agency": "CNBC / wire reporting"
+   },
+   {
+    "title": "Pentagon Orders Universities to Cut Ties With Chinese Military",
+    "url": "https://amac.us/newsline/new-pentagon-crackdown-targets-u-s-universities-ties-to-chinese-military",
+    "level": "CRITICAL",
+    "agency": "AMAC Newsline"
+   },
+   {
+    "title": "U.S. Shutdown Fallout Continues as Agencies Reschedule Grant Panels",
+    "url": "https://www.science.org/content/article/us-shutdown-fallout-continues-agencies-reschedule-grant-panels",
+    "level": "HIGH",
+    "agency": "Science"
+   },
+   {
+    "title": "Proposed AHRQ Cut Raises Questions About Infection Prevention Research and Support",
+    "url": "https://www.infectioncontroltoday.com/view/proposed-ahrq-cut-raises-questions-infection-prevention-research-support",
+    "level": "HIGH",
+    "agency": "Infection Control Today"
+   },
+   {
+    "title": "Analyzing FY 2026 NIH grants: budget spent, but uncertainty lingers",
+    "url": "https://www.statnews.com/2026/10/02/nih-grant-funding-fy2026-analysis/",
+    "level": "MODERATE",
+    "agency": "STAT News"
+   }
+  ]
  }
 ]

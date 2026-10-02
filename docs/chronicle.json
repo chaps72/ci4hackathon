@@ -54,6 +54,19 @@
   "summary": "Beginning July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, with cancellations initially reported at $109 million and subsequently escalating to over $131 million across 28 states. The freeze has reportedly halted patient safety research nationwide and raised broader fears about the future of U.S. health services research. For the research office, this represents a significant and growing threat to funding for healthcare quality and patient safety work spanning multiple states.",
   "title": "AHRQ grant terminations"
  },
+ "government-shutdown-grantmaking-disruption": {
+  "events": [
+   {
+    "date": "2026-09-29",
+    "id": "news-448647a3ea3b",
+    "source": "News",
+    "title": "U.S. Shutdown Fallout Continues as Agencies Reschedule Grant Panels",
+    "url": "https://www.science.org/content/article/us-shutdown-fallout-continues-agencies-reschedule-grant-panels"
+   }
+  ],
+  "summary": "As of late September 2026, the fallout from a U.S. government shutdown continued to disrupt federal grantmaking, with agencies rescheduling grant review panels. This indicates delays in the grant review and award process that could affect researchers awaiting funding decisions.",
+  "title": "Government shutdown disruption to federal grantmaking"
+ },
  "grant-termination-keywords": {
   "events": [
    {
@@ -286,9 +299,16 @@
     "source": "News",
     "title": "NIH Censors Crucial Research in Alzheimer's, Kidney Disease, and More, Researchers Share",
     "url": "https://www.aclu.org/news/free-speech/nih-censors-crucial-research-in-alzheimers-kidney-disease-and-more-researchers-share"
+   },
+   {
+    "date": "2026-10-02",
+    "id": "news-8c13fe30444a",
+    "source": "News",
+    "title": "Analyzing FY 2026 NIH grants: budget spent, but uncertainty lingers",
+    "url": "https://www.statnews.com/2026/10/02/nih-grant-funding-fy2026-analysis/"
    }
   ],
-  "summary": "Since July 2026, NIH under Director Bhattacharya has been terminating grants that conflict with Trump administration priorities, repeatedly targeting health disparities research and reshaping funding patterns as the odds of winning new grants fall. The terminations have disrupted roughly 1 in 30 clinical trials affecting over 74,000 participants and prompted scrutiny from lawmakers like McCormick and Fetterman over more than 150 cancelled grants. As of late September, researchers report that critical work in Alzheimer's, kidney disease, and other areas is being censored, signaling broad and ongoing disruption to the research enterprise.",
+  "summary": "Since mid-2026, NIH under Director Bhattacharya and the Trump administration has terminated numerous grants, including health disparities and other research, disrupting 1 in 30 clinical trials and affecting over 74,000 participants, while new funding policies and spending delays sharply lowered award odds. Senators McCormick and Fetterman have questioned the termination of more than 150 grants, and analyses show NIH funding has been substantially reshaped. As of early October 2026, the FY 2026 budget has been spent but significant uncertainty remains for researchers.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
@@ -454,9 +474,16 @@
     "source": "News",
     "title": "The Pentagon Gives 30 Universities Two Weeks to Audit and Report on Collaborations With Foreign Entities of Concern",
     "url": "https://www.mondaq.com/unitedstates/government-contracts-procurement-ppp/1834558/the-pentagon-gives-30-universities-two-weeks-to-audit-and-report-on-collaborations-with-foreign-entities-of-concern"
+   },
+   {
+    "date": "2026-09-30",
+    "id": "news-a07b4e4a5066",
+    "source": "News",
+    "title": "Pentagon Orders Universities to Cut Ties With Chinese Military",
+    "url": "https://amac.us/newsline/new-pentagon-crackdown-targets-u-s-universities-ties-to-chinese-military"
    }
   ],
-  "summary": "In mid-August 2026, the Pentagon launched a research-security probe of 30 U.S. academic institutions, ordering them to audit their partnerships with foreign entities of concern, with particular scrutiny on ties to Chinese research partners. As of August 24, the affected universities were given a two-week deadline to complete and report on their audits of collaborations with adversary-linked entities. This signals intensified federal oversight of academic international partnerships and may require universities to review and potentially restructure foreign research collaborations.",
+  "summary": "Beginning in August 2026, the Pentagon ordered 30 U.S. academic institutions to audit and report on their partnerships with foreign entities of concern, particularly Chinese research partners, giving them roughly two weeks to respond. By September 30, the Pentagon directed universities to cut ties with the Chinese military. This signals heightened federal scrutiny of university research-security and international collaborations.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "science-funding-overhaul": {
@@ -592,9 +619,23 @@
     "source": "Federal Register",
     "title": "Rescissions Proposals Pursuant to the Congressional Budget and Impoundment Control Act of 1974",
     "url": "https://www.federalregister.gov/documents/2026/09/30/2026-19965/rescissions-proposals-pursuant-to-the-congressional-budget-and-impoundment-control-act-of-1974"
+   },
+   {
+    "date": "2026-09-29",
+    "id": "news-96cfe85ec517",
+    "source": "News",
+    "title": "Trump administration blocks $810M in spending through pocket rescissions",
+    "url": "https://wwmt.com/news/nation-world/trump-administration-blocks-810-million-spending-pocket-rescissions-hhs-openthebooks"
+   },
+   {
+    "date": "2026-09-29",
+    "id": "news-a78ae0ab3503",
+    "source": "News",
+    "title": "Proposed AHRQ Cut Raises Questions About Infection Prevention Research and Support",
+    "url": "https://www.infectioncontroltoday.com/view/proposed-ahrq-cut-raises-questions-infection-prevention-research-support"
    }
   ],
-  "summary": "On September 26, 2026, the White House moved to block $810 million in congressionally approved funding through a pocket rescission, and by September 28-30 had canceled or rescinded funds spanning health, education, international education programs, and $28 million from AHRQ as the fiscal year ended. The action was formally submitted as a rescissions proposal under the Congressional Budget and Impoundment Control Act of 1974, with its end-of-fiscal-year timing noted as significant. For the research office, this signals potential losses to health and education funding streams and warrants close monitoring of which specific programs are affected.",
+  "summary": "In late September 2026, the White House moved to block $810 million in congressionally approved funds through a pocket rescission, canceling money for health, education, and international education programs, including $28 million from AHRQ as the fiscal year ended. The action, framed under the 1974 Congressional Budget and Impoundment Control Act, raises concerns about its timing and about cuts to areas such as infection prevention research. It represents a direct executive effort to withhold funds appropriated by Congress.",
   "title": "White House pocket rescission of congressionally approved funds"
  }
 }
