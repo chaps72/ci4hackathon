@@ -1138,5 +1138,56 @@
     "agency": "STAT News"
    }
   ]
+ },
+ {
+  "date": "2026-10-05",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udfe1 2 moderate \u00b7 \ud83d\udcf0 3 press\n\nFederal research funding is contracting sharply: NSF withheld congressionally mandated money and NIH awards hit a six-year low, so plan now for grant delays and shortfalls.\n\n- \ud83d\udd34 **Ongoing:** **NSF funds diverted** \u2014 NSF withheld ~$1.4B Congress intended for research (a fifth of its core budget), signaling tighter White House control and real risk to NSF-funded projects [The New York Times](https://www.nytimes.com/2026/10/02/us/politics/national-science-foundation-research-funds.html).\n- \ud83d\udfe0 **New:** **NIH K-award DMS** \u2014 NIH accelerated Data Management and Sharing plan changes for Career Development (K) awards, affecting early-career applicants [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-120.html).\n- **Ongoing:** **NSF year-end lapse** \u2014 NSF closed FY2026 with over $1B unobligated after a grantmaking slowdown [AIP FYI](https://www.aip.org/fyi/the-week-of-october-5-2026).\n- **Ongoing:** **NIH awards low** \u2014 NIH's 60,924 FY2026 awards mark a six-year low, ~11% below its five-year pace [The Scientist](https://www.the-scientist.com/federal-research-grant-awards-fall-to-a-six-year-low-75078).\n\nRoutine: NIH RFI on IDeA prior-approval timing, NOT-GM-26-012 [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-GM-26-012.html).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Agency Diverted $1.4 Billion in Science Funds Mandated by Congress \u2014 The New York Times, 2026-10-02\n  https://www.nytimes.com/2026/10/02/us/politics/national-science-foundation-research-funds.html\n- **Ongoing:** Federal Research Grant Awards Fall to a Six-Year Low \u2014 The Scientist, 2026-10-03\n  https://www.the-scientist.com/federal-research-grant-awards-fall-to-a-six-year-low-75078\n- **Ongoing:** NSF ends fiscal year with more than $1 billion unspent \u2014 AIP FYI (American Institute of Physics), 2026-10-05\n  https://www.aip.org/fyi/the-week-of-october-5-2026\n\n\ud83d\udcc8 Trend watch\nToday's three items on funds not reaching researchers (NIH's $1.4B diversion, six-year-low awards, NSF's $1B+ unspent) extend a sustained pattern of unspent/withheld appropriations\u2014at least the 5th such account since Sept 21 (NSF billion-behind, pocket rescissions, AHRQ/international-ed cuts, delayed NIH awards).\n\n\ud83c\udfdb\ufe0f Government affairs\nReporting indicates the National Science Foundation withheld roughly $1.4 billion in congressionally mandated research funds\u2014about one-fifth of its primary research budget\u2014and closed FY2026 with over $1 billion unobligated amid a grantmaking slowdown attributed to greater White House control over federal research grants. Separately, NIH grant awards fell to a six-year low (roughly 11 percent below its five-year average pace) while the agency issued routine policy notices accelerating Data Management and Sharing Plan changes for K awards and seeking input on IDeA program prior-approval timing.",
+  "items": [
+   {
+    "title": "Accelerated Implementation of Data Management and Sharing Plan Changes for NIH Career Development (K) Awards",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-120.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Accelerated Implementation of Data Management and Sharing Plan Changes for NIH Career Development (K) Awards",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-120.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information: Timing of Submission of Prior Approval Requests for IDeA Program Post-Award Projects",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-GM-26-012.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information: Timing of Submission of Prior Approval Requests for IDeA Program Post-Award Projects",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-GM-26-012.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Agency Diverted $1.4 Billion in Science Funds Mandated by Congress",
+    "url": "https://www.nytimes.com/2026/10/02/us/politics/national-science-foundation-research-funds.html",
+    "level": "CRITICAL",
+    "agency": "The New York Times"
+   },
+   {
+    "title": "Federal Research Grant Awards Fall to a Six-Year Low",
+    "url": "https://www.the-scientist.com/federal-research-grant-awards-fall-to-a-six-year-low-75078",
+    "level": "MODERATE",
+    "agency": "The Scientist"
+   },
+   {
+    "title": "NSF ends fiscal year with more than $1 billion unspent",
+    "url": "https://www.aip.org/fyi/the-week-of-october-5-2026",
+    "level": "MODERATE",
+    "agency": "AIP FYI (American Institute of Physics)"
+   }
+  ]
  }
 ]

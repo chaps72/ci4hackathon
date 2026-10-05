@@ -109,9 +109,16 @@
     "source": "News",
     "title": "Former Harvard researcher unveils massive federal funding disruptions",
     "url": "https://www.bostonglobe.com/2026/09/25/metro/nih-grant-witness-lost-federal-funds/"
+   },
+   {
+    "date": "2026-10-03",
+    "id": "news-55016affebfa",
+    "source": "News",
+    "title": "Federal Research Grant Awards Fall to a Six-Year Low",
+    "url": "https://www.the-scientist.com/federal-research-grant-awards-fall-to-a-six-year-low-75078"
    }
   ],
-  "summary": "A former Harvard researcher unveiled Grant Witness, a tool documenting massive disruptions to federal research funding, on September 25, 2026. At this early stage, the initiative has surfaced the scale of these disruptions, positioning it as a resource for tracking how federal funding changes affect the research community.",
+  "summary": "In late September 2026, a former Harvard researcher launched the Grant Witness effort to track federal research funding disruptions, and early October reporting documented that federal research grant awards had fallen to a six-year low. The initiative provides an independent data source confirming a broad decline in federal research support, which the research office can use to monitor and anticipate funding risks.",
   "title": "Grant Witness tracking of federal research funding disruptions"
  },
  "harvard-funding-legal-fight": {
@@ -379,9 +386,23 @@
     "source": "News",
     "title": "NSF Over Billion Behind on Grants; IES Says Will Give Funds",
     "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/09/21/nsf-over-billion-behind-grants-ies-says-will"
+   },
+   {
+    "date": "2026-10-02",
+    "id": "news-b9ef0d423303",
+    "source": "News",
+    "title": "Agency Diverted $1.4 Billion in Science Funds Mandated by Congress",
+    "url": "https://www.nytimes.com/2026/10/02/us/politics/national-science-foundation-research-funds.html"
+   },
+   {
+    "date": "2026-10-05",
+    "id": "news-168f7c7283bc",
+    "source": "News",
+    "title": "NSF ends fiscal year with more than $1 billion unspent",
+    "url": "https://www.aip.org/fyi/the-week-of-october-5-2026"
    }
   ],
-  "summary": "The NSF is on track to issue the lowest number of new research grants in four decades, and as of late September 2026 was reported to be over a billion dollars behind on grants, though the IES indicated it will provide funds. The saga reflects a sharp contraction in new federal research funding, with a partial signal of relief from IES. For the research office, this points to heightened uncertainty around new grant awards and the need to plan for constrained NSF support.",
+  "summary": "Reporting in August 2026 revealed the NSF was on track to issue its fewest new research grants in four decades, and subsequent coverage showed the agency fell over a billion dollars behind on grants and diverted $1.4 billion in science funds that Congress had mandated. By early October, the NSF closed the fiscal year with more than $1 billion unspent. This points to a significant contraction and disruption in NSF funding that could materially reduce new award opportunities for university researchers.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
