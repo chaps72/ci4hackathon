@@ -49,9 +49,16 @@
     "source": "News",
     "title": "AHRQ Grant Cancellations Escalate Fears Over Future of U.S. Health Services Research",
     "url": "https://www.hcinnovationgroup.com/policy-value-based-care/article/55394555/ahrq-grant-cancellations-escalate-fears-over-future-of-us-health-services-research"
+   },
+   {
+    "date": "2026-10-07",
+    "id": "news-f38278a062bb",
+    "source": "News",
+    "title": "GAO Finds AHRQ Funds Were Illegally Withheld",
+    "url": "https://ahsituationreport.substack.com/p/gao-finds-ahrq-funds-were-illegally"
    }
   ],
-  "summary": "Beginning July 20, 2026, reports emerged that AHRQ had terminated dozens of patient care research grants, with cancellations initially reported at $109 million and subsequently escalating to over $131 million across 28 states. The freeze has reportedly halted patient safety research nationwide and raised broader fears about the future of U.S. health services research. For the research office, this represents a significant and growing threat to funding for healthcare quality and patient safety work spanning multiple states.",
+  "summary": "In July 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported at $109 million and later escalating to $131 million across 28 states, halting health services research nationwide. On October 7, the GAO found that AHRQ funds had been illegally withheld. This raises serious concerns about the future of U.S. health services and patient safety research and reflects a broader pattern of contested federal funding withholdings.",
   "title": "AHRQ grant terminations"
  },
  "government-shutdown-grantmaking-disruption": {
@@ -407,9 +414,16 @@
     "source": "News",
     "title": "NSF ends fiscal year with more than $1 billion unspent",
     "url": "https://www.aip.org/fyi/the-week-of-october-5-2026"
+   },
+   {
+    "date": "2026-10-06",
+    "id": "news-9651f442f41e",
+    "source": "News",
+    "title": "'Complete devastation': How NSF gutted its social sciences research",
+    "url": "https://www.science.org/content/article/complete-devastation-how-nsf-gutted-its-social-sciences-research"
    }
   ],
-  "summary": "Reporting in August 2026 revealed the NSF was on track to issue its fewest new research grants in four decades, and subsequent coverage showed the agency fell over a billion dollars behind on grants and diverted $1.4 billion in science funds that Congress had mandated. By early October, the NSF closed the fiscal year with more than $1 billion unspent. This points to a significant contraction and disruption in NSF funding that could materially reduce new award opportunities for university researchers.",
+  "summary": "Beginning in August 2026, reports indicated NSF was poised to issue its lowest number of new grants in four decades, falling over a billion dollars behind on expected awards. By early October, NSF ended the fiscal year with more than $1 billion unspent, having diverted $1.4 billion in congressionally mandated science funds, with social sciences research described as facing 'complete devastation.' This represents a severe contraction in federal research support that directly threatens university grant pipelines.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
@@ -599,9 +613,16 @@
     "source": "News",
     "title": "NSF memo implementing Trump's 'golden age' of science unsettles researchers",
     "url": "https://www.science.org/content/article/nsf-memo-implementing-trump-s-golden-age-science-unsettles-researchers"
+   },
+   {
+    "date": "2026-10-06",
+    "id": "news-e75adec97003",
+    "source": "News",
+    "title": "November elections may bring little relief for scientists beleaguered by Trump",
+    "url": "https://www.science.org/content/article/november-elections-may-bring-little-relief-scientists-beleaguered-trump"
    }
   ],
-  "summary": "In late July 2026, the White House unveiled an overhaul of the U.S. science funding system, calling for reduced university research funding, steering money outside academia, prioritizing AI, and giving political appointees more control. The plan drew bipartisan Senate opposition, including from Republicans, and Senate appropriators advanced a stopgap bill to block it, though an NSF memo implementing the changes emerged by mid-September. Researchers, including at Michigan, remain concerned about political control over funding, and the overhaul's fate is contested between the White House and Congress.",
+  "summary": "In July 2026, the White House unveiled a science funding overhaul calling for reduced university research funding and steering research outside academia, prompting bipartisan concern over political appointees gaining control of funding decisions. Senate Republicans joined in rebuking the plan, and Senate appropriators advanced a stopgap bill to block it, though an NSF memo implementing the agenda continued to unsettle researchers through September. As of early October, the overhaul remains contested, with reporting suggesting November elections may bring little relief for affected scientists.",
   "title": "White House science funding overhaul"
  },
  "white-house-pocket-rescission": {
@@ -661,9 +682,16 @@
     "source": "News",
     "title": "Proposed AHRQ Cut Raises Questions About Infection Prevention Research and Support",
     "url": "https://www.infectioncontroltoday.com/view/proposed-ahrq-cut-raises-questions-infection-prevention-research-support"
+   },
+   {
+    "date": "2026-10-06",
+    "id": "news-ba1b4f437753",
+    "source": "News",
+    "title": "GAO Says OMB Violated Impoundment Law",
+    "url": "https://ahsituationreport.substack.com/p/gao-says-omb-violated-impoundment"
    }
   ],
-  "summary": "In late September 2026, the White House moved to block $810 million in congressionally approved funds through a pocket rescission, canceling money for health, education, and international education programs, including $28 million from AHRQ as the fiscal year ended. The action, framed under the 1974 Congressional Budget and Impoundment Control Act, raises concerns about its timing and about cuts to areas such as infection prevention research. It represents a direct executive effort to withhold funds appropriated by Congress.",
+  "summary": "In late September 2026, the White House moved to block $810 million in congressionally approved funds through pocket rescissions, cancelling monies for health, education, and international education programs, including $28 million from AHRQ at fiscal year's end. On October 6, the GAO found that OMB violated the Impoundment Control Act of 1974 in doing so. This signals a direct legal conflict over executive authority to withhold funds Congress appropriated, with implications for research funding stability.",
   "title": "White House pocket rescission of congressionally approved funds"
  }
 }

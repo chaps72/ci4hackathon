@@ -1203,5 +1203,44 @@
     "agency": "Reuters"
    }
   ]
+ },
+ {
+  "date": "2026-10-07",
+  "summary": "\ud83d\udfe1 1 moderate \u00b7 \ud83d\udcf0 4 press\n\n**Bottom line:** GAO has now ruled two separate federal funding withholdings illegal, even as NSF and AHRQ grantmaking collapses threaten university research across disciplines.\n\n\ud83d\udd34 **Ongoing:** **OMB impoundment** \u2014 GAO ruled OMB illegally withheld nearly $1B in appropriated funds beyond their availability, sharpening concerns over NIH grant protection. [AcademyHealth](https://ahsituationreport.substack.com/p/gao-says-omb-violated-impoundment)\n\n\ud83d\udfe0 **Ongoing:** **AHRQ funds** \u2014 GAO found HHS illegally impounded FY2025 AHRQ funding, validating a collapse in university health-services research. [AcademyHealth](https://ahsituationreport.substack.com/p/gao-finds-ahrq-funds-were-illegally)\n\n\ud83d\udfe0 **Ongoing:** **NSF social sciences** \u2014 NSF's SBE directorate issued ~90% fewer new grants, described as existential for sociology, linguistics, and archaeology at U.S. universities. [Science](https://www.science.org/content/article/complete-devastation-how-nsf-gutted-its-social-sciences-research)\n\n**New:** **Ibogaine RFI** \u2014 FDA opened a public docket on early-phase ibogaine trial design for OUD/PTSD, a comment opportunity for clinical researchers. [HHS](https://www.federalregister.gov/documents/2026/10/06/2026-20427/design-and-safety-considerations-for-clinical-trials-involving-ibogaine-drug-products-request-for)\n\nInformational: *Science* warns November elections may bring investigations but little funding reversal. [Science](https://www.science.org/content/article/november-elections-may-bring-little-relief-scientists-beleaguered-trump)",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Design and Safety Considerations for Clinical Trials Involving Ibogaine Drug Pro](https://www.federalregister.gov/documents/2026/10/06/2026-20427/design-and-safety-considerations-for-clinical-trials-involving-ibogaine-drug-products-request-for) \u2014 \u23f0 comment due 2026-11-20 \u00b7 \ud83d\udcac comment: http://www.regulations.gov/commenton/FDA-2026-N-10429-0001\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** GAO Says OMB Violated Impoundment Law \u2014 AcademyHealth (Situation Report), 2026-10-06\n  https://ahsituationreport.substack.com/p/gao-says-omb-violated-impoundment\n- **Ongoing:** 'Complete devastation': How NSF gutted its social sciences research \u2014 Science, 2026-10-06\n  https://www.science.org/content/article/complete-devastation-how-nsf-gutted-its-social-sciences-research\n- **Ongoing:** GAO Finds AHRQ Funds Were Illegally Withheld \u2014 AcademyHealth (Situation Report), 2026-10-07\n  https://ahsituationreport.substack.com/p/gao-finds-ahrq-funds-were-illegally\n- **Ongoing:** November elections may bring little relief for scientists beleaguered by Trump \u2014 Science, 2026-10-06\n  https://www.science.org/content/article/november-elections-may-bring-little-relief-scientists-beleaguered-trump\n\n\ud83d\udcc8 Trend watch\nToday's two GAO findings (OMB/AHRQ illegal withholding) extend a multi-week impoundment/rescission theme, marking at least the 6th funds-withholding item since the $810M pocket rescission moves began in late September.\n\n\ud83c\udfdb\ufe0f Government affairs\nGAO issued rulings finding that OMB's rescission of nearly $1 billion in appropriated funds and HHS's withholding of fiscal 2025 AHRQ funding both violated the Impoundment Control Act, while NSF has issued roughly 90% fewer new social science grants this fiscal year. Separately, FDA opened a public docket on clinical trial design for HHS-funded ibogaine development, and analysts suggest meaningful reversal of recent science-funding changes may remain unlikely even if congressional control shifts after November.",
+  "items": [
+   {
+    "title": "Design and Safety Considerations for Clinical Trials Involving Ibogaine Drug Products; Request for Information",
+    "url": "https://www.federalregister.gov/documents/2026/10/06/2026-20427/design-and-safety-considerations-for-clinical-trials-involving-ibogaine-drug-products-request-for",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": [
+   {
+    "title": "GAO Says OMB Violated Impoundment Law",
+    "url": "https://ahsituationreport.substack.com/p/gao-says-omb-violated-impoundment",
+    "level": "CRITICAL",
+    "agency": "AcademyHealth (Situation Report)"
+   },
+   {
+    "title": "'Complete devastation': How NSF gutted its social sciences research",
+    "url": "https://www.science.org/content/article/complete-devastation-how-nsf-gutted-its-social-sciences-research",
+    "level": "HIGH",
+    "agency": "Science"
+   },
+   {
+    "title": "GAO Finds AHRQ Funds Were Illegally Withheld",
+    "url": "https://ahsituationreport.substack.com/p/gao-finds-ahrq-funds-were-illegally",
+    "level": "HIGH",
+    "agency": "AcademyHealth (Situation Report)"
+   },
+   {
+    "title": "November elections may bring little relief for scientists beleaguered by Trump",
+    "url": "https://www.science.org/content/article/november-elections-may-bring-little-relief-scientists-beleaguered-trump",
+    "level": "INFO",
+    "agency": "Science"
+   }
+  ]
  }
 ]
