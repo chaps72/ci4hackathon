@@ -1242,5 +1242,32 @@
     "agency": "Science"
    }
   ]
+ },
+ {
+  "date": "2026-10-08",
+  "summary": "\ud83d\udfe1 2 moderate \u00b7 \ud83d\udcf0 1 press\n\nBottom line: A GAO ruling confirms HHS illegally withheld FY2025 research funds, reinforcing legal risk around impounded grants; otherwise, routine NIH activity this week.\n\n\ud83d\udd34 **Ongoing:** **AHRQ Funds Withheld** \u2014 GAO ruled HHS violated the Impoundment Control Act by failing to obligate $78M in FY2025 AHRQ appropriations after firing grant-managing staff, signaling continued instability and litigation risk for health-services research funding. [Inside Higher Ed](https://www.insidehighered.com/news/quick-takes/2026/10/07/gao-hhs-illegally-withheld-78m-health-care-research)\n\n**New:** NIH issued an RFI (NOT-OD-26-118) seeking input on reducing administrative burden in extramural research\u2014worth a response from sponsored programs staff. [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-118.html)",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** GAO: HHS Illegally Withheld $78M in Health-Care Improvement Agency Funds \u2014 Inside Higher Ed, 2026-10-07\n  https://www.insidehighered.com/news/quick-takes/2026/10/07/gao-hhs-illegally-withheld-78m-health-care-research\n\n\ud83d\udcc8 Trend watch\nToday's GAO finding that HHS illegally withheld $78M in AHRQ funds marks at least the 4th illegal-impoundment/rescission item in roughly two weeks (pocket rescissions ~Sep 26-29, OMB rescissions Sep 30, GAO/OMB impoundment finding Oct 6, plus the $1.4B diversion Oct 2).\n\n\ud83c\udfdb\ufe0f Government affairs\nGAO ruled that HHS violated the Impoundment Control Act by failing to obligate or spend over $78 million in FY2025 funds appropriated for the Agency for Healthcare Research and Quality after firing grant-managing staff, with AHRQ grant funding still in ongoing litigation. Separately, NIH issued a Request for Information (NOT-OD-26-118) seeking input on reducing administrative burden in extramural research.",
+  "items": [
+   {
+    "title": "Request for Information (RFI): Opportunities to Reduce Administrative Burden in NIH Extramural Research",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-118.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information (RFI): Opportunities to Reduce Administrative Burden in NIH Extramural Research",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-118.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "GAO: HHS Illegally Withheld $78M in Health-Care Improvement Agency Funds",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/07/gao-hhs-illegally-withheld-78m-health-care-research",
+    "level": "CRITICAL",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]

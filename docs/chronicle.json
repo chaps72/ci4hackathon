@@ -689,9 +689,16 @@
     "source": "News",
     "title": "GAO Says OMB Violated Impoundment Law",
     "url": "https://ahsituationreport.substack.com/p/gao-says-omb-violated-impoundment"
+   },
+   {
+    "date": "2026-10-07",
+    "id": "news-9ecbf6e57f5a",
+    "source": "News",
+    "title": "GAO: HHS Illegally Withheld $78M in Health-Care Improvement Agency Funds",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/10/07/gao-hhs-illegally-withheld-78m-health-care-research"
    }
   ],
-  "summary": "In late September 2026, the White House moved to block $810 million in congressionally approved funds through pocket rescissions, cancelling monies for health, education, and international education programs, including $28 million from AHRQ at fiscal year's end. On October 6, the GAO found that OMB violated the Impoundment Control Act of 1974 in doing so. This signals a direct legal conflict over executive authority to withhold funds Congress appropriated, with implications for research funding stability.",
+  "summary": "In late September 2026, the White House moved to block $810 million in congressionally approved funds through a pocket rescission, cancelling money for health, education, and international education programs, including $28 million from AHRQ. In early October, the GAO determined that OMB violated the Impoundment Control Act of 1974 and that HHS illegally withheld $78 million in health-care improvement agency funds. This raises questions for affected research areas\u2014such as infection prevention\u2014and signals a contested legal standoff over the executive branch's authority to withhold appropriated funding.",
   "title": "White House pocket rescission of congressionally approved funds"
  }
 }
