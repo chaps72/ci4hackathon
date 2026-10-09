@@ -1269,5 +1269,31 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-10-09",
+  "summary": "\ud83d\udcf0 3 press\n\n**Bottom line:** Federal health-research funding is being actively disrupted\u2014two critical developments could stall trials and grants now, amid a broader push to shift money away from universities.\n\n\ud83d\udd34 **New: NIH Trial Holds** \u2014 NIH directed four HIV and TB clinical trial networks to delay launching new, not-yet-enrolled studies that can't finish before funding expires Nov. 30, 2027, signaling a looming funding cliff for network-dependent research [STAT News](https://www.inkl.com/news/nih-tells-hiv-and-tuberculosis-trial-networks-to-delay-new-studies-as-funding-renewal-notices-stall-at-hhs).\n\n\ud83d\udd34 **Ongoing: AHRQ Impoundment** \u2014 GAO found HHS illegally withheld $78M+ in FY2025 AHRQ funds after layoffs gutted grantmaking, with a further $28M FY2026 clawback planned, threatening health-services grant pipelines [Bloomberg Government](https://news.bgov.com/health-law-and-business/trump-wrongfully-withheld-health-research-funds-watchdog-finds).\n\n\ud83d\udfe0 **Ongoing: Science Funding Shift** \u2014 The administration is steering federal science dollars from universities toward private firms, with scientists warning of weakened U.S. research leadership [Washington Post](https://www.washingtonpost.com/politics/2026/10/08/trump-tout-innovation-golden-age-amid-funding-cuts-researcher-exodus/).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Government Watchdog: Trump Administration Illegally Blocked Health Research Funding (AHRQ) \u2014 Bloomberg Government, 2026-10-07\n  https://news.bgov.com/health-law-and-business/trump-wrongfully-withheld-health-research-funds-watchdog-finds\n- **New:** NIH Tells HIV and Tuberculosis Trial Networks to Delay New Studies as Funding Renewal Noti \u2014 STAT News, 2026-10-08\n  https://www.inkl.com/news/nih-tells-hiv-and-tuberculosis-trial-networks-to-delay-new-studies-as-funding-renewal-notices-stall-at-hhs\n- **Ongoing:** Trump touts innovation 'golden age' amid funding cuts, researcher exodus \u2014 The Washington Post, 2026-10-08\n  https://www.washingtonpost.com/politics/2026/10/08/trump-tout-innovation-golden-age-amid-funding-cuts-researcher-exodus/\n\n\ud83d\udcc8 Trend watch\nToday's AHRQ funding-blockage finding marks the 3rd item in two weeks on illegally withheld/diverted congressionally mandated research funds (GAO/AHRQ on 10/6\u201310/7, $1.4B NIH diversion on 10/2, plus the $810M pocket rescission and $28M AHRQ rescission in late September).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe GAO found that HHS violated the Impoundment Control Act by withholding over $78 million in fiscal 2025 AHRQ funds amid a White House plan to claw back $28 million of AHRQ's fiscal 2026 appropriation, while NIH directed HIV and TB trial networks to delay new studies as funding-renewal notices stall at HHS. Separately, the administration is moving to shift federal science funding away from universities toward private firms, drawing pushback from lawmakers.",
+  "items": [],
+  "press": [
+   {
+    "title": "Government Watchdog: Trump Administration Illegally Blocked Health Research Funding (AHRQ)",
+    "url": "https://news.bgov.com/health-law-and-business/trump-wrongfully-withheld-health-research-funds-watchdog-finds",
+    "level": "CRITICAL",
+    "agency": "Bloomberg Government"
+   },
+   {
+    "title": "NIH Tells HIV and Tuberculosis Trial Networks to Delay New Studies as Funding Renewal Notices Stall at HHS",
+    "url": "https://www.inkl.com/news/nih-tells-hiv-and-tuberculosis-trial-networks-to-delay-new-studies-as-funding-renewal-notices-stall-at-hhs",
+    "level": "CRITICAL",
+    "agency": "STAT News"
+   },
+   {
+    "title": "Trump touts innovation 'golden age' amid funding cuts, researcher exodus",
+    "url": "https://www.washingtonpost.com/politics/2026/10/08/trump-tout-innovation-golden-age-amid-funding-cuts-researcher-exodus/",
+    "level": "HIGH",
+    "agency": "The Washington Post"
+   }
+  ]
  }
 ]

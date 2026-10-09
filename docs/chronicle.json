@@ -56,9 +56,16 @@
     "source": "News",
     "title": "GAO Finds AHRQ Funds Were Illegally Withheld",
     "url": "https://ahsituationreport.substack.com/p/gao-finds-ahrq-funds-were-illegally"
+   },
+   {
+    "date": "2026-10-07",
+    "id": "news-8e3f2814417e",
+    "source": "News",
+    "title": "Government Watchdog: Trump Administration Illegally Blocked Health Research Funding (AHRQ)",
+    "url": "https://news.bgov.com/health-law-and-business/trump-wrongfully-withheld-health-research-funds-watchdog-finds"
    }
   ],
-  "summary": "In July 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported at $109 million and later escalating to $131 million across 28 states, halting health services research nationwide. On October 7, the GAO found that AHRQ funds had been illegally withheld. This raises serious concerns about the future of U.S. health services and patient safety research and reflects a broader pattern of contested federal funding withholdings.",
+  "summary": "Beginning in July 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported to total at least $131 million across 28 states and halting patient safety research nationwide. In October 2026, the GAO found the administration had illegally withheld these funds. This confirms a legal violation in the funding blockage, though the research disruption has already occurred.",
   "title": "AHRQ grant terminations"
  },
  "government-shutdown-grantmaking-disruption": {
@@ -214,6 +221,19 @@
   ],
   "summary": "NIH issued a draft Biosafety Policy for Research Involving Biohazards and opened it for public comment on August 19, 2026, with the draft appearing again on September 14, 2026. The policy remains in the draft and comment-gathering stage rather than finalized. Our research office should review the draft and prepare feedback, as any finalized requirements could affect how biohazard research is conducted and overseen here.",
   "title": "NIH draft biosafety policy for biohazard research"
+ },
+ "nih-funding-renewal-delays": {
+  "events": [
+   {
+    "date": "2026-10-08",
+    "id": "news-f9267a38a34f",
+    "source": "News",
+    "title": "NIH Tells HIV and Tuberculosis Trial Networks to Delay New Studies as Funding Renewal Notices Stall at HHS",
+    "url": "https://www.inkl.com/news/nih-tells-hiv-and-tuberculosis-trial-networks-to-delay-new-studies-as-funding-renewal-notices-stall-at-hhs"
+   }
+  ],
+  "summary": "On October 8, 2026, NIH instructed its HIV and tuberculosis clinical trial networks to delay launching new studies because funding renewal notices had stalled at HHS. The situation is unresolved, with network studies on hold pending the delayed renewals, signaling risk to ongoing infectious disease research.",
+  "title": "NIH delays to clinical trial network funding renewals"
  },
  "nih-grant-politicization": {
   "events": [
@@ -620,9 +640,16 @@
     "source": "News",
     "title": "November elections may bring little relief for scientists beleaguered by Trump",
     "url": "https://www.science.org/content/article/november-elections-may-bring-little-relief-scientists-beleaguered-trump"
+   },
+   {
+    "date": "2026-10-08",
+    "id": "news-13567b62d6f8",
+    "source": "News",
+    "title": "Trump touts innovation 'golden age' amid funding cuts, researcher exodus",
+    "url": "https://www.washingtonpost.com/politics/2026/10/08/trump-tout-innovation-golden-age-amid-funding-cuts-researcher-exodus/"
    }
   ],
-  "summary": "In July 2026, the White House unveiled a science funding overhaul calling for reduced university research funding and steering research outside academia, prompting bipartisan concern over political appointees gaining control of funding decisions. Senate Republicans joined in rebuking the plan, and Senate appropriators advanced a stopgap bill to block it, though an NSF memo implementing the agenda continued to unsettle researchers through September. As of early October, the overhaul remains contested, with reporting suggesting November elections may bring little relief for affected scientists.",
+  "summary": "Starting in July 2026, the White House unveiled a science funding overhaul calling for reduced university research funding, steering money outside academia, boosting AI, and giving political appointees more control; critics and even Senate Republicans pushed back, and Senate appropriators advanced a stopgap bill blocking the changes. By September-October 2026, an NSF memo implementing the plan unsettled researchers amid funding cuts and a reported researcher exodus. The overhaul remains contested, facing bipartisan Senate opposition while implementation efforts continue.",
   "title": "White House science funding overhaul"
  },
  "white-house-pocket-rescission": {
