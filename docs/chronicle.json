@@ -110,9 +110,16 @@
     "source": "STAT News",
     "title": "New lawsuit argues NIH violated First Amendment rights of grant applicants",
     "url": "https://www.statnews.com/2026/09/16/lawsuit-argues-nih-violated-researcher-first-amendment-rights-aclu/?utm_campaign=rss"
+   },
+   {
+    "date": "2026-10-14",
+    "id": "news-24ae7ebc78dc",
+    "source": "News",
+    "title": "NIH banned-word list kills research over climate change, DEI, gender",
+    "url": "https://www.upi.com/Top_News/US/2026/10/14/nih-banned-keyword-list-censorship-first-amendment-lawsuit/7321791983669"
    }
   ],
-  "summary": "Starting in July 2026, the White House acknowledged using keyword lists to cancel billions in research grants, including in California, prompting scrutiny of those federal keyword lists. By mid-September 2026, a new lawsuit was filed arguing that NIH violated the First Amendment rights of grant applicants, meaning the terminations are now facing legal challenge.",
+  "summary": "Beginning July 22, 2026, the White House admitted it used keyword lists to cancel billions of dollars in research grants, including in California, with reporting detailing the federal lists involved. In September, lawsuits were filed arguing NIH violated the First Amendment rights of grant applicants. As of October 14, the NIH banned-word list continued to kill research tied to climate change, DEI, and gender, keeping the legal and policy conflict active.",
   "title": "Keyword-based research grant terminations"
  },
  "grant-witness-funding-tracker": {
@@ -400,9 +407,16 @@
     "source": "NIH Guide",
     "title": "Continuation of Modifications to Peer Review Practices",
     "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-114.html"
+   },
+   {
+    "date": "2026-10-13",
+    "id": "news-1c962913e146",
+    "source": "News",
+    "title": "Latest Trump administration proposal to change NIH research grant system draws scientists' ire",
+    "url": "https://www.scientificamerican.com/article/latest-trump-administration-proposal-to-change-nih-research-grant-system-draws-scientists-ire/"
    }
   ],
-  "summary": "NIH has continued its modifications to peer review practices, as noted in updates dated September 8, 2026. Based on the available events, this represents an ongoing effort to change how peer review is conducted, though the specific nature and scope of the modifications are not detailed. The research office should monitor for further details as this process develops.",
+  "summary": "On September 8, 2026, NIH issued a continuation of modifications to its peer review practices. By October 13, the administration's latest proposal to change the NIH research grant system drew ire from scientists. The changes remain contested as researchers push back on alterations to the grant review process.",
   "title": "NIH modifications to peer review practices"
  },
  "nsf-grant-decline": {
@@ -647,9 +661,16 @@
     "source": "News",
     "title": "Trump touts innovation 'golden age' amid funding cuts, researcher exodus",
     "url": "https://www.washingtonpost.com/politics/2026/10/08/trump-tout-innovation-golden-age-amid-funding-cuts-researcher-exodus/"
+   },
+   {
+    "date": "2026-10-12",
+    "id": "news-cc841b0b7fe0",
+    "source": "News",
+    "title": "Will US' shift away from university-based research catch on?",
+    "url": "https://www.timeshighereducation.com/news/will-us-shift-away-university-based-research-catch"
    }
   ],
-  "summary": "Starting in July 2026, the White House unveiled a science funding overhaul calling for reduced university research funding, steering money outside academia, boosting AI, and giving political appointees more control; critics and even Senate Republicans pushed back, and Senate appropriators advanced a stopgap bill blocking the changes. By September-October 2026, an NSF memo implementing the plan unsettled researchers amid funding cuts and a reported researcher exodus. The overhaul remains contested, facing bipartisan Senate opposition while implementation efforts continue.",
+  "summary": "On July 22, 2026, the White House unveiled an overhaul of US science funding, calling the current system 'calcified' and seeking to steer research dollars outside academia, cut university research funding, and emphasize AI as part of a declared 'golden age.' The plan drew bipartisan Senate pushback, including from Republicans, over giving political appointees control of funding, and Senate appropriators advanced a stopgap bill to block it; by September, an NSF implementation memo unsettled researchers. As of mid-October, the administration continued touting its innovation agenda amid funding cuts and researcher exodus, with little relief expected from November elections, raising questions about a lasting shift away from university-based research.",
   "title": "White House science funding overhaul"
  },
  "white-house-pocket-rescission": {

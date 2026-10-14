@@ -1295,5 +1295,38 @@
     "agency": "The Washington Post"
    }
   ]
+ },
+ {
+  "date": "2026-10-14",
+  "summary": "\ud83d\udfe1 1 moderate \u00b7 \ud83d\udcf0 3 press\n\nBottom line: Federal research policy continues shifting in ways that threaten university funding streams and grant-review integrity; two developments warrant leadership attention now.\n\n- \ud83d\udfe0 **Ongoing: NIH banned-word list** \u2014 NIH is rejecting grants touching 235 keywords (climate, DEI, gender), now facing a First Amendment lawsuit, putting our affected proposals at direct risk [UPI](https://www.upi.com/Top_News/US/2026/10/14/nih-banned-keyword-list-censorship-first-amendment-lawsuit/7321791983669).\n- \ud83d\udfe0 **Ongoing: NSF funding shift** \u2014 The administration is steering NSF toward national-priority organizations that often bypass universities, potentially eroding our core research funding [Times Higher Education](https://www.timeshighereducation.com/news/will-us-shift-away-university-based-research-catch).\n- **Ongoing: NIH peer-review opacity** \u2014 NIH may conceal peer-review scores, reducing transparency and raising politicization concerns for our applicants [Scientific American](https://www.scientificamerican.com/article/latest-trump-administration-proposal-to-change-nih-research-grant-system-draws-scientists-ire/).\n\nInformational: New Parent P01 funding opportunity (PA-27-061) is open through 05/25/2029 [Grants.gov](https://www.grants.gov/search-results-detail/361279).",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [NIH Research Program Projects (Parent P01 Clinical Trial Optional)](https://www.grants.gov/search-results-detail/361279) \u2014 \u23f0 due 2029-05-25\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** Will US' shift away from university-based research catch on? \u2014 Times Higher Education, 2026-10-12\n  https://www.timeshighereducation.com/news/will-us-shift-away-university-based-research-catch\n- **Ongoing:** NIH banned-word list kills research over climate change, DEI, gender \u2014 UPI, 2026-10-14\n  https://www.upi.com/Top_News/US/2026/10/14/nih-banned-keyword-list-censorship-first-amendment-lawsuit/7321791983669\n- **Ongoing:** Latest Trump administration proposal to change NIH research grant system draws scientists' \u2014 Scientific American, 2026-10-13\n  https://www.scientificamerican.com/article/latest-trump-administration-proposal-to-change-nih-research-grant-system-draws-scientists-ire/\n\n\ud83d\udcc8 Trend watch\nToday's coverage of the administration's proposal to overhaul the NIH grant system and NIH content censorship (banned-word list) extends a recurring theme of White House efforts to reshape/control NIH funding seen repeatedly in the log (e.g., ~6+ items on the NIH grant-takeover plan and censorship between Sept 21\u201328).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Trump administration is reshaping federal research funding through executive-branch action, directing the NSF to prioritize national-priority organizations in ways that often bypass universities. At NIH, agency policy shifts include a 235-term banned-keyword screen now subject to a First Amendment lawsuit and a proposal to conceal peer-review scores that researchers warn could politicize grant review.",
+  "items": [
+   {
+    "title": "NIH Research Program Projects (Parent P01 Clinical Trial Optional)",
+    "url": "https://www.grants.gov/search-results-detail/361279",
+    "level": "MODERATE",
+    "agency": "Unknown"
+   }
+  ],
+  "press": [
+   {
+    "title": "Will US' shift away from university-based research catch on?",
+    "url": "https://www.timeshighereducation.com/news/will-us-shift-away-university-based-research-catch",
+    "level": "HIGH",
+    "agency": "Times Higher Education"
+   },
+   {
+    "title": "NIH banned-word list kills research over climate change, DEI, gender",
+    "url": "https://www.upi.com/Top_News/US/2026/10/14/nih-banned-keyword-list-censorship-first-amendment-lawsuit/7321791983669",
+    "level": "HIGH",
+    "agency": "UPI"
+   },
+   {
+    "title": "Latest Trump administration proposal to change NIH research grant system draws scientists' ire",
+    "url": "https://www.scientificamerican.com/article/latest-trump-administration-proposal-to-change-nih-research-grant-system-draws-scientists-ire/",
+    "level": "MODERATE",
+    "agency": "Scientific American"
+   }
+  ]
  }
 ]
