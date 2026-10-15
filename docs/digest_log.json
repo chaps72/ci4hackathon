@@ -1328,5 +1328,44 @@
     "agency": "Scientific American"
    }
   ]
+ },
+ {
+  "date": "2026-10-15",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udcf0 3 press\n\nFederal research funding remains under pressure, with concrete cuts already disrupting university health research and a major reallocation looming; one actionable NIH comment opportunity is open.\n\n- \ud83d\udfe0 **Ongoing: AHRQ terminations** \u2014 The administration's dismantling of AHRQ canceled nearly all active grants, stalling university health-services and patient-safety studies, including addiction research left unanalyzed [Tradeoffs](https://tradeoffs.org/2026/10/15/reimagining-the-future-of-health-research-after-sweeping-cuts/).\n- \ud83d\udfe0 **Ongoing: R&D reallocation** \u2014 Science leaders warn the White House plan to shift ~$200B in annual R&D from universities toward industry threatens basic research [STAT News](https://www.statnews.com/2026/10/14/american-science-funding-university-industry-shift-stat-summit-boston-2026/).\n- \ud83d\udfe0 **New: NIH burden RFI** \u2014 NIH seeks input (NOT-OD-26-130) on reducing extramural administrative burden, an opening to shape requirements [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-130.html).\n\nAlso tracking: ASBMB-led advocacy against proposed NSF budget cuts and grantmaking changes [ASBMB Today](https://www.asbmb.org/asbmb-today/policy/101426/nsf-faces-funding-cuts-and-policy-changes).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** What's at stake as research funds shift from universities to industry \u2014 STAT News, 2026-10-14\n  https://www.statnews.com/2026/10/14/american-science-funding-university-industry-shift-stat-summit-boston-2026/\n- **Ongoing:** Reimagining the Future of Health Research After Sweeping Cuts \u2014 Tradeoffs, 2026-10-15\n  https://tradeoffs.org/2026/10/15/reimagining-the-future-of-health-research-after-sweeping-cuts/\n- **Ongoing:** NSF faces funding cuts and policy changes \u2014 ASBMB Today, 2026-10-14\n  https://www.asbmb.org/asbmb-today/policy/101426/nsf-faces-funding-cuts-and-policy-changes\n\n\ud83d\udcc8 Trend watch\nToday's NIH \"Reduce Administrative Burden\" RFI repeats the identical RFI from Oct 8, marking the 2nd posting of this same administrative-burden RFI in one week.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe executive branch continues reshaping federal research funding, with the White House moving to redirect roughly $200 billion in annual R&D from universities toward industry and individual scientists, and the administration's dismantling of AHRQ canceling nearly all active grants and halting new awards. NSF faces proposed budget cuts and grantmaking policy changes drawing coalition pushback, while NIH issued an RFI (NOT-OD-26-130) seeking input on reducing extramural administrative burden.",
+  "items": [
+   {
+    "title": "Request for Information (RFI): Opportunities to Reduce Administrative Burden in NIH Extramural Research",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-130.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Request for Information (RFI): Opportunities to Reduce Administrative Burden in NIH Extramural Research",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-130.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "What's at stake as research funds shift from universities to industry",
+    "url": "https://www.statnews.com/2026/10/14/american-science-funding-university-industry-shift-stat-summit-boston-2026/",
+    "level": "HIGH",
+    "agency": "STAT News"
+   },
+   {
+    "title": "Reimagining the Future of Health Research After Sweeping Cuts",
+    "url": "https://tradeoffs.org/2026/10/15/reimagining-the-future-of-health-research-after-sweeping-cuts/",
+    "level": "HIGH",
+    "agency": "Tradeoffs"
+   },
+   {
+    "title": "NSF faces funding cuts and policy changes",
+    "url": "https://www.asbmb.org/asbmb-today/policy/101426/nsf-faces-funding-cuts-and-policy-changes",
+    "level": "MODERATE",
+    "agency": "ASBMB Today"
+   }
+  ]
  }
 ]

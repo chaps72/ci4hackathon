@@ -63,9 +63,16 @@
     "source": "News",
     "title": "Government Watchdog: Trump Administration Illegally Blocked Health Research Funding (AHRQ)",
     "url": "https://news.bgov.com/health-law-and-business/trump-wrongfully-withheld-health-research-funds-watchdog-finds"
+   },
+   {
+    "date": "2026-10-15",
+    "id": "news-3a539fdee64c",
+    "source": "News",
+    "title": "Reimagining the Future of Health Research After Sweeping Cuts",
+    "url": "https://tradeoffs.org/2026/10/15/reimagining-the-future-of-health-research-after-sweeping-cuts/"
    }
   ],
-  "summary": "Beginning in July 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported to total at least $131 million across 28 states and halting patient safety research nationwide. In October 2026, the GAO found the administration had illegally withheld these funds. This confirms a legal violation in the funding blockage, though the research disruption has already occurred.",
+  "summary": "Beginning in July 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported to exceed $131 million across 28 states and effectively halting health services research nationwide. In October 2026, the GAO found the administration had illegally withheld these funds, validating researcher concerns. The situation leaves the future of U.S. health services research in question even as the watchdog ruling strengthens the case against the terminations.",
   "title": "AHRQ grant terminations"
  },
  "government-shutdown-grantmaking-disruption": {
@@ -201,6 +208,26 @@
   ],
   "summary": "On July 28, 2026, the U.S. Government issued a policy for stopping high-risk life sciences research. The policy currently stands as newly announced, and its implementation details and scope of application remain to be clarified. For the research office, this signals a need to review affected life sciences projects for compliance with the new federal requirements.",
   "title": "USG policy for stopping high-risk life sciences research"
+ },
+ "nih-administrative-burden-rfi": {
+  "events": [
+   {
+    "date": "2026-10-15",
+    "id": "nih-NOT-OD-26-130",
+    "source": "NIH Guide",
+    "title": "Request for Information (RFI): Opportunities to Reduce Administrative Burden in NIH Extramural Research",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-130.html"
+   },
+   {
+    "date": "Thu, 15 Oc",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-130.html",
+    "source": "NIH Guide",
+    "title": "Request for Information (RFI): Opportunities to Reduce Administrative Burden in NIH Extramural Research",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-130.html"
+   }
+  ],
+  "summary": "On October 15, 2026, NIH issued a Request for Information seeking input on opportunities to reduce administrative burden in extramural research. The RFI is currently open for public and institutional comment, offering the research community a channel to shape potential streamlining of NIH grant processes.",
+  "title": "NIH RFI on reducing administrative burden in extramural research"
  },
  "nih-biosafety-policy": {
   "events": [
@@ -468,9 +495,16 @@
     "source": "News",
     "title": "Researchers Skeptical of NSF Metascience Plan",
     "url": "https://www.aip.org/fyi/researchers-skeptical-of-nsf-metascience-plan"
+   },
+   {
+    "date": "2026-10-14",
+    "id": "news-13dc09035743",
+    "source": "News",
+    "title": "NSF faces funding cuts and policy changes",
+    "url": "https://www.asbmb.org/asbmb-today/policy/101426/nsf-faces-funding-cuts-and-policy-changes"
    }
   ],
-  "summary": "As of September 18, 2026, NSF has proposed a metascience office and associated grantmaking changes, but researchers have publicly expressed skepticism about the plan. The initiative is at an early, contested stage, and its implications for future NSF funding practices remain uncertain.",
+  "summary": "NSF has proposed a metascience office and related grantmaking changes, which researchers greeted with skepticism as of September 2026. By mid-October, NSF was also facing funding cuts alongside these policy changes, compounding uncertainty about the agency's direction and its approach to research funding.",
   "title": "NSF metascience office and grantmaking changes"
  },
  "pentagon-university-blacklist": {
@@ -668,9 +702,16 @@
     "source": "News",
     "title": "Will US' shift away from university-based research catch on?",
     "url": "https://www.timeshighereducation.com/news/will-us-shift-away-university-based-research-catch"
+   },
+   {
+    "date": "2026-10-14",
+    "id": "news-513524b5a0d7",
+    "source": "News",
+    "title": "What's at stake as research funds shift from universities to industry",
+    "url": "https://www.statnews.com/2026/10/14/american-science-funding-university-industry-shift-stat-summit-boston-2026/"
    }
   ],
-  "summary": "On July 22, 2026, the White House unveiled an overhaul of US science funding, calling the current system 'calcified' and seeking to steer research dollars outside academia, cut university research funding, and emphasize AI as part of a declared 'golden age.' The plan drew bipartisan Senate pushback, including from Republicans, over giving political appointees control of funding, and Senate appropriators advanced a stopgap bill to block it; by September, an NSF implementation memo unsettled researchers. As of mid-October, the administration continued touting its innovation agenda amid funding cuts and researcher exodus, with little relief expected from November elections, raising questions about a lasting shift away from university-based research.",
+  "summary": "In late July 2026, the White House unveiled a sweeping overhaul of U.S. science funding, calling the current system 'calcified' and proposing to reduce university research funding while steering money toward industry and AI. The plan drew bipartisan Senate pushback, with appropriators advancing a stopgap bill to block it and senators objecting to political control over funding, yet implementation has continued through NSF memos and administration messaging about a science 'golden age.' As of mid-October, the shift away from university-based research remains contested but is advancing, raising significant stakes for academic institutions facing funding cuts and researcher departures.",
   "title": "White House science funding overhaul"
  },
  "white-house-pocket-rescission": {
