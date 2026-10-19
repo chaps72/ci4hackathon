@@ -75,6 +75,19 @@
   "summary": "Beginning in July 2026, AHRQ terminated dozens of patient care and safety research grants, with cancellations reported to exceed $131 million across 28 states and effectively halting health services research nationwide. In October 2026, the GAO found the administration had illegally withheld these funds, validating researcher concerns. The situation leaves the future of U.S. health services research in question even as the watchdog ruling strengthens the case against the terminations.",
   "title": "AHRQ grant terminations"
  },
+ "chinese-american-scientist-investigations": {
+  "events": [
+   {
+    "date": "2026-10-16",
+    "id": "news-363c289f2d80",
+    "source": "News",
+    "title": "New details emerge in US investigations of Chinese-American scientists over China links",
+    "url": "https://www.scmp.com/news/us/science-technology/article/3371154/new-details-emerge-us-investigations-chinese-american-scientists-over-china-links"
+   }
+  ],
+  "summary": "As of October 16, 2026, new details emerged regarding ongoing U.S. investigations of Chinese-American scientists over their China links. The scope and outcomes of these investigations remain unclear based on available information.",
+  "title": "US investigations of Chinese-American scientists over China links"
+ },
  "government-shutdown-grantmaking-disruption": {
   "events": [
    {
@@ -144,9 +157,16 @@
     "source": "News",
     "title": "Federal Research Grant Awards Fall to a Six-Year Low",
     "url": "https://www.the-scientist.com/federal-research-grant-awards-fall-to-a-six-year-low-75078"
+   },
+   {
+    "date": "2026-10-19",
+    "id": "news-50ba4c7631e2",
+    "source": "News",
+    "title": "'Fiercely stubborn': the US scientists continuing their research amid funding cuts",
+    "url": "https://www.nature.com/articles/d41586-026-03315-5"
    }
   ],
-  "summary": "In late September 2026, a former Harvard researcher launched the Grant Witness effort to track federal research funding disruptions, and early October reporting documented that federal research grant awards had fallen to a six-year low. The initiative provides an independent data source confirming a broad decline in federal research support, which the research office can use to monitor and anticipate funding risks.",
+  "summary": "Beginning in September 2026, a former Harvard researcher's Grant Witness tracking effort documented massive federal research funding disruptions, with federal grant awards falling to a six-year low. As of October 19, coverage highlighted scientists described as 'fiercely stubborn' continuing their work despite the cuts. This provides a data-driven picture of the scale of funding declines facing researchers.",
   "title": "Grant Witness tracking of federal research funding disruptions"
  },
  "harvard-funding-legal-fight": {
@@ -446,6 +466,19 @@
   "summary": "On September 8, 2026, NIH issued a continuation of modifications to its peer review practices. By October 13, the administration's latest proposal to change the NIH research grant system drew ire from scientists. The changes remain contested as researchers push back on alterations to the grant review process.",
   "title": "NIH modifications to peer review practices"
  },
+ "nih-womens-health-initiative": {
+  "events": [
+   {
+    "date": "2026-10-19",
+    "id": "statnews-https://www.statnews.com/2026/10/19/executive-order-melania-trump-nih-division-on-womens-health/?utm_campaign=rss",
+    "source": "STAT News",
+    "title": "Trump orders creation of NIH division, task force on women\u2019s health",
+    "url": "https://www.statnews.com/2026/10/19/executive-order-melania-trump-nih-division-on-womens-health/?utm_campaign=rss"
+   }
+  ],
+  "summary": "On October 19, 2026, the Trump administration ordered the creation of a new NIH division and task force focused on women's health research. This initiative is in its earliest stage, and its scope and implementation remain to be seen.",
+  "title": "Trump administration NIH women's health research initiative"
+ },
  "nsf-grant-decline": {
   "events": [
    {
@@ -482,9 +515,16 @@
     "source": "News",
     "title": "'Complete devastation': How NSF gutted its social sciences research",
     "url": "https://www.science.org/content/article/complete-devastation-how-nsf-gutted-its-social-sciences-research"
+   },
+   {
+    "date": "2026-10-19",
+    "id": "news-09ce835ebaf6",
+    "source": "News",
+    "title": "NSF closes fiscal 2026 with over $1 billion left unspent",
+    "url": "https://cen.acs.org/policy/research-funding/nsf-witholds-one-billion-dollars/104/web/2026/10"
    }
   ],
-  "summary": "Beginning in August 2026, reports indicated NSF was poised to issue its lowest number of new grants in four decades, falling over a billion dollars behind on expected awards. By early October, NSF ended the fiscal year with more than $1 billion unspent, having diverted $1.4 billion in congressionally mandated science funds, with social sciences research described as facing 'complete devastation.' This represents a severe contraction in federal research support that directly threatens university grant pipelines.",
+  "summary": "Reporting beginning in August 2026 revealed the NSF was set to issue its lowest number of new grants in four decades, and the agency ultimately closed fiscal 2026 with over $1 billion unspent, including $1.4 billion in congressionally mandated science funds diverted. The social sciences research program was described as 'gutted,' indicating severe and uneven disruptions across research fields. This signals major funding shortfalls for institutions reliant on NSF support.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
@@ -598,9 +638,16 @@
     "source": "News",
     "title": "Pentagon Orders Universities to Cut Ties With Chinese Military",
     "url": "https://amac.us/newsline/new-pentagon-crackdown-targets-u-s-universities-ties-to-chinese-military"
+   },
+   {
+    "date": "2026-10-19",
+    "id": "news-ba18692a92fd",
+    "source": "News",
+    "title": "Academic institutions sever foreign research ties to comply with Pentagon order",
+    "url": "https://www.militarytimes.com/news/pentagon-congress/2026/10/19/academic-institutions-sever-foreign-research-ties-to-comply-with-pentagon-order/"
    }
   ],
-  "summary": "Beginning in August 2026, the Pentagon ordered 30 U.S. academic institutions to audit and report on their partnerships with foreign entities of concern, particularly Chinese research partners, giving them roughly two weeks to respond. By September 30, the Pentagon directed universities to cut ties with the Chinese military. This signals heightened federal scrutiny of university research-security and international collaborations.",
+  "summary": "In August 2026, the Pentagon ordered 30 U.S. universities to audit and report on their partnerships with foreign institutions of concern, giving them roughly two weeks, with particular focus on Chinese research and military ties. By late September the Pentagon directed universities to cut ties with the Chinese military, and by October 19 academic institutions were severing foreign research collaborations to comply. Affected universities face pressure to review and terminate international partnerships.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "science-funding-overhaul": {
@@ -720,6 +767,19 @@
   ],
   "summary": "In late July 2026, the White House unveiled a sweeping overhaul of U.S. science funding, calling the current system 'calcified' and proposing to reduce university research funding while steering money toward industry and AI. The plan drew bipartisan Senate pushback, with appropriators advancing a stopgap bill to block it and senators objecting to political control over funding, yet implementation has continued through NSF memos and administration messaging about a science 'golden age.' As of mid-October, the shift away from university-based research remains contested but is advancing, raising significant stakes for academic institutions facing funding cuts and researcher departures.",
   "title": "White House science funding overhaul"
+ },
+ "us-science-brain-drain": {
+  "events": [
+   {
+    "date": "2026-10-19",
+    "id": "news-c22ebdec91a8",
+    "source": "News",
+    "title": "Meet the researchers leaving the US because of Trump's funding cuts and politicization of science",
+    "url": "https://fortune.com/2026/10/19/scientists-leaving-us-trump-research-funding-cuts-brain-drain/"
+   }
+  ],
+  "summary": "On October 19, 2026, reporting profiled researchers leaving the United States in response to Trump administration funding cuts and the politicization of science. This points to an emerging talent outflow that could have implications for U.S. research capacity.",
+  "title": "US researchers leaving over funding cuts and politicization"
  },
  "white-house-pocket-rescission": {
   "events": [

@@ -1381,5 +1381,86 @@
     "agency": "The Tribune (ANI wire)"
    }
   ]
+ },
+ {
+  "date": "2026-10-19",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udfe1 4 moderate \u00b7 \ud83d\udd35 2 info \u00b7 \ud83d\udcf0 5 press\n\nFederal research funding and security pressures are intensifying\u2014expect constrained NSF dollars, tighter foreign-ties oversight, and growing talent-retention risk.\n\n- \ud83d\udfe0 **Ongoing:** **NSF unspent funds** \u2014 NSF closed FY2026 withholding over $1B to redirect toward Trump-aligned initiatives, tightening new-grant prospects [C&EN](https://cen.acs.org/policy/research-funding/nsf-witholds-one-billion-dollars/104/web/2026/10).\n- \ud83d\udfe0 **Ongoing:** **Pentagon foreign-ties audit** \u2014 DoD audited 30 universities' foreign-institution ties; noncompliance risks federal funding [Military Times](https://www.militarytimes.com/news/pentagon-congress/2026/10/19/academic-institutions-sever-foreign-research-ties-to-comply-with-pentagon-order/).\n- \ud83d\udfe0 **New:** **NIH women's health division** \u2014 Trump order creates a new NIH division and task force, signaling shifting funding priorities [STAT News](https://www.statnews.com/2026/10/19/executive-order-melania-trump-nih-division-on-womens-health/).\n- **New:** **China-ties investigations** \u2014 House committee released 700+ pages scrutinizing ~30 mostly Chinese-American researchers, foreshadowing stricter controls [SCMP](https://www.scmp.com/news/us/science-technology/article/3371154/new-details-emerge-us-investigations-chinese-american-scientists-over-china-links).\n- **New:** **Brain drain** \u2014 Cuts are pushing US scientists to posts abroad, raising retention concerns [Fortune](https://fortune.com/2026/10/19/scientists-leaving-us-trump-research-funding-cuts-brain-drain/).\n- **Ongoing:** **Funding-cut workarounds** \u2014 Affected researchers turn to lawsuits and private donors [Nature](https://www.nature.com/articles/d41586-026-03315-5).\n\nRoutine NIH Guide notices (NIBIB F99/K00, FIC international project, F99/K00 correction) are informational.",
+  "extra": "\ud83d\udd04 Updates to earlier items\n- Notice of Correction to Award Information and Application and Submission Informa \u2014 Correction to a previously published notice.\n- Notice of Correction to Award Information and Application and Submission Informa \u2014 Correction to a previously published notice.\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** NSF closes fiscal 2026 with over $1 billion left unspent \u2014 Chemical & Engineering News (C&EN), 2026-10-19\n  https://cen.acs.org/policy/research-funding/nsf-witholds-one-billion-dollars/104/web/2026/10\n- **Ongoing:** Academic institutions sever foreign research ties to comply with Pentagon order \u2014 Military Times, 2026-10-19\n  https://www.militarytimes.com/news/pentagon-congress/2026/10/19/academic-institutions-sever-foreign-research-ties-to-comply-with-pentagon-order/\n- **New:** New details emerge in US investigations of Chinese-American scientists over China links \u2014 South China Morning Post, 2026-10-16\n  https://www.scmp.com/news/us/science-technology/article/3371154/new-details-emerge-us-investigations-chinese-american-scientists-over-china-links\n- **Ongoing:** 'Fiercely stubborn': the US scientists continuing their research amid funding cuts \u2014 Nature, 2026-10-19\n  https://www.nature.com/articles/d41586-026-03315-5\n\n\ud83d\udcc8 Trend watch\nToday's items on researchers leaving the US and persisting amid cuts extend a sustained funding-cuts/researcher-exodus theme, with at least 7 such stories in the log over the past three weeks (e.g., Boston Globe 9/25, Nature/AP, Washington Post 10/8, Tradeoffs 10/15).\n\n\ud83c\udfdb\ufe0f Government affairs\nA new executive order directs creation of an NIH division and task force on women's health, while NSF closed fiscal 2026 withholding over $1 billion of its appropriations\u2014money it says will be redirected into Trump-aligned initiatives per an OMB apportionment. On the executive-branch enforcement side, the Defense Department announced results of research-security audits of 30 universities ordered to review foreign-institution ties or risk losing federal funding, and a House committee released investigative records amid calls for stricter controls on federally funded university research.",
+  "items": [
+   {
+    "title": "Trump orders creation of NIH division, task force on women\u2019s health",
+    "url": "https://www.statnews.com/2026/10/19/executive-order-melania-trump-nih-division-on-womens-health/?utm_campaign=rss",
+    "level": "HIGH",
+    "agency": "STAT News"
+   },
+   {
+    "title": "Notice of NIBIB Participation in PA-27-037: Predoctoral to Postdoctoral Transition Award (Parent F99/K00 - Clinical Trial Not Allowed)",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-EB-26-005.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of FIC Participation in PA-26-002 &quot;NIH Collaborative International Research Project (Parent PF5 Clinical Trial Optional)&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-TW-26-002.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NIBIB Participation in PA-27-037: Predoctoral to Postdoctoral Transition Award (Parent F99/K00 - Clinical Trial Not Allowed)",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-EB-26-005.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of FIC Participation in PA-26-002 \"NIH Collaborative International Research Project (Parent PF5 Clinical Trial Optional)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-TW-26-002.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Correction to Award Information and Application and Submission Information for PA-27-037 &quot;Predoctoral to Postdoctoral Transition Award (Parent F99/K00 - Clinical Trial Not Allowed)&quot",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-091.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Correction to Award Information and Application and Submission Information for PA-27-037 \"Predoctoral to Postdoctoral Transition Award (Parent F99/K00 - Clinical Trial Not Allowed)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-091.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "NSF closes fiscal 2026 with over $1 billion left unspent",
+    "url": "https://cen.acs.org/policy/research-funding/nsf-witholds-one-billion-dollars/104/web/2026/10",
+    "level": "HIGH",
+    "agency": "Chemical & Engineering News (C&EN)"
+   },
+   {
+    "title": "Academic institutions sever foreign research ties to comply with Pentagon order",
+    "url": "https://www.militarytimes.com/news/pentagon-congress/2026/10/19/academic-institutions-sever-foreign-research-ties-to-comply-with-pentagon-order/",
+    "level": "HIGH",
+    "agency": "Military Times"
+   },
+   {
+    "title": "New details emerge in US investigations of Chinese-American scientists over China links",
+    "url": "https://www.scmp.com/news/us/science-technology/article/3371154/new-details-emerge-us-investigations-chinese-american-scientists-over-china-links",
+    "level": "MODERATE",
+    "agency": "South China Morning Post"
+   },
+   {
+    "title": "'Fiercely stubborn': the US scientists continuing their research amid funding cuts",
+    "url": "https://www.nature.com/articles/d41586-026-03315-5",
+    "level": "MODERATE",
+    "agency": "Nature"
+   },
+   {
+    "title": "Meet the researchers leaving the US because of Trump's funding cuts and politicization of science",
+    "url": "https://fortune.com/2026/10/19/scientists-leaving-us-trump-research-funding-cuts-brain-drain/",
+    "level": "MODERATE",
+    "agency": "Associated Press"
+   }
+  ]
  }
 ]
