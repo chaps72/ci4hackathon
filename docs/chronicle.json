@@ -522,9 +522,23 @@
     "source": "News",
     "title": "NSF closes fiscal 2026 with over $1 billion left unspent",
     "url": "https://cen.acs.org/policy/research-funding/nsf-witholds-one-billion-dollars/104/web/2026/10"
+   },
+   {
+    "date": "2026-10-20",
+    "id": "news-ab15fdafd999",
+    "source": "News",
+    "title": "$1 billion goes unspent at NSF, DHS proposes new fees for international student work program, and more",
+    "url": "https://www.aps.org/apsnews/2026/10/1-billion-unspent-at-nsf"
+   },
+   {
+    "date": "2026-10-20",
+    "id": "news-803b79b84051",
+    "source": "News",
+    "title": "Scientists left in the dark by National Science Foundation grant application delays",
+    "url": "https://www.scientificamerican.com/article/scientists-left-in-the-dark-by-national-science-foundation-grant-application-delays/"
    }
   ],
-  "summary": "Reporting beginning in August 2026 revealed the NSF was set to issue its lowest number of new grants in four decades, and the agency ultimately closed fiscal 2026 with over $1 billion unspent, including $1.4 billion in congressionally mandated science funds diverted. The social sciences research program was described as 'gutted,' indicating severe and uneven disruptions across research fields. This signals major funding shortfalls for institutions reliant on NSF support.",
+  "summary": "Starting in August 2026, reporting revealed the NSF was on track to issue its lowest number of new grants in four decades, falling over a billion dollars behind and reportedly diverting $1.4 billion in congressionally mandated science funds. By mid-October, NSF closed fiscal 2026 with more than $1 billion unspent, including severe cuts described as 'complete devastation' to social sciences research, alongside widespread grant application delays leaving scientists uncertain. This points to a major contraction in federal research funding and persistent uncertainty for applicants awaiting NSF decisions.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
@@ -645,9 +659,16 @@
     "source": "News",
     "title": "Academic institutions sever foreign research ties to comply with Pentagon order",
     "url": "https://www.militarytimes.com/news/pentagon-congress/2026/10/19/academic-institutions-sever-foreign-research-ties-to-comply-with-pentagon-order/"
+   },
+   {
+    "date": "2026-10-19",
+    "id": "news-4586bc919bb2",
+    "source": "News",
+    "title": "Pentagon threatens universities that have ties to 'foreign entities of concern,' hints at additional audits",
+    "url": "https://defensescoop.com/2026/10/19/pentagon-research-security-audits-universities/"
    }
   ],
-  "summary": "In August 2026, the Pentagon ordered 30 U.S. universities to audit and report on their partnerships with foreign institutions of concern, giving them roughly two weeks, with particular focus on Chinese research and military ties. By late September the Pentagon directed universities to cut ties with the Chinese military, and by October 19 academic institutions were severing foreign research collaborations to comply. Affected universities face pressure to review and terminate international partnerships.",
+  "summary": "In mid-August 2026, the Pentagon ordered audits of 30 U.S. universities over their partnerships with foreign institutions, particularly Chinese research and military-linked partners, giving them roughly two weeks to report collaborations with 'foreign entities of concern.' By late September the Pentagon escalated to directing universities to cut ties with the Chinese military, and as of mid-October institutions have begun severing foreign research relationships to comply while the Pentagon threatens noncompliant schools and hints at additional audits. This signals intensifying federal research-security pressure that may require universities to review and potentially end foreign partnerships.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "science-funding-overhaul": {

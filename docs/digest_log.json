@@ -1462,5 +1462,50 @@
     "agency": "Associated Press"
    }
   ]
+ },
+ {
+  "date": "2026-10-20",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udfe1 2 moderate \u00b7 \ud83d\udcf0 3 press\n\nBottom line: Federal research-security enforcement and NSF funding disruptions pose the most immediate risks to funding continuity; monitor exposure now.\n\n- \ud83d\udd34 **Ongoing: Pentagon audits** \u2014 DoD released research-security audit results for 30 institutions and signaled more probes, with ties to Section 1286-listed foreign entities risking loss of federal funding eligibility [DefenseScoop](https://defensescoop.com/2026/10/19/pentagon-research-security-audits-universities/).\n- \ud83d\udfe0 **Ongoing: NSF unspent funds** \u2014 NSF withheld ~$1.4B in 2026 with ~$1.7B projected to carry into FY2027, signaling continued constraints on new awards [APS News](https://www.aps.org/apsnews/2026/10/1-billion-unspent-at-nsf).\n- \ud83d\udfe0 **Ongoing: NSF MRI delay** \u2014 The Major Research Instrumentation program (grants up to $4M) missed its October 15 opening for a second straight year, leaving applicants uncertain [Scientific American](https://www.scientificamerican.com/article/scientists-left-in-the-dark-by-national-science-foundation-grant-application-delays/).\n\nRoutine/informational: NOAA DARRP FY2021 indirect cost rates and NIDCR's addition to the Parent R03 program (NOT-DE-27-001).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Pentagon threatens universities that have ties to 'foreign entities of concern,' hints at  \u2014 DefenseScoop, 2026-10-19\n  https://defensescoop.com/2026/10/19/pentagon-research-security-audits-universities/\n- **Ongoing:** $1 billion goes unspent at NSF, DHS proposes new fees for international student work progr \u2014 APS News (American Physical Society), 2026-10-20\n  https://www.aps.org/apsnews/2026/10/1-billion-unspent-at-nsf\n- **Ongoing:** Scientists left in the dark by National Science Foundation grant application delays \u2014 Scientific American, 2026-10-20\n  https://www.scientificamerican.com/article/scientists-left-in-the-dark-by-national-science-foundation-grant-application-delays/\n\n\ud83d\udcc8 Trend watch\nToday's Pentagon \"foreign entities of concern\" threat continues a sustained foreign-research-ties crackdown\u2014at least the 5th such item (e.g., Pentagon orders to cut Chinese ties 9/30, lawmaker list expansion 10/15, Military Times compliance 10/19, Chinese-American scientist probes 10/16) in roughly three weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nAn OMB apportionment reportedly estimates $1.7 billion in NSF research funds carrying into fiscal 2027\u2014far above typical levels\u2014after the agency withheld roughly $1.4 billion in 2026, while associated program disruptions include NSF's Major Research Instrumentation grants missing their October 15 opening and a DHS proposal for new fees affecting an international student work program. Separately on the executive-branch side, the Defense Department announced results of research security audits of 30 institutions and signaled additional probes, with institutions tied to Section 1286-listed entities risking loss of federal research funding eligibility.",
+  "items": [
+   {
+    "title": "Notice of Indirect Cost Rates",
+    "url": "https://www.federalregister.gov/documents/2026/09/02/2026-17931/notice-of-indirect-cost-rates",
+    "level": "HIGH",
+    "agency": "Commerce Department"
+   },
+   {
+    "title": "Notice of NIDCR Participation in PA-25-302, NIH Small Research Grant Program (Parent R03 Clinical Trial Not Allowed)",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-DE-27-001.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NIDCR Participation in PA-25-302, NIH Small Research Grant Program (Parent R03 Clinical Trial Not Allowed)",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-DE-27-001.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Pentagon threatens universities that have ties to 'foreign entities of concern,' hints at additional audits",
+    "url": "https://defensescoop.com/2026/10/19/pentagon-research-security-audits-universities/",
+    "level": "HIGH",
+    "agency": "DefenseScoop"
+   },
+   {
+    "title": "$1 billion goes unspent at NSF, DHS proposes new fees for international student work program, and more",
+    "url": "https://www.aps.org/apsnews/2026/10/1-billion-unspent-at-nsf",
+    "level": "HIGH",
+    "agency": "APS News (American Physical Society)"
+   },
+   {
+    "title": "Scientists left in the dark by National Science Foundation grant application delays",
+    "url": "https://www.scientificamerican.com/article/scientists-left-in-the-dark-by-national-science-foundation-grant-application-delays/",
+    "level": "MODERATE",
+    "agency": "Scientific American"
+   }
+  ]
  }
 ]
