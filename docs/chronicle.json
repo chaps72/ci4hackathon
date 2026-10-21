@@ -229,6 +229,19 @@
   "summary": "On July 28, 2026, the U.S. Government issued a policy for stopping high-risk life sciences research. The policy currently stands as newly announced, and its implementation details and scope of application remain to be clarified. For the research office, this signals a need to review affected life sciences projects for compliance with the new federal requirements.",
   "title": "USG policy for stopping high-risk life sciences research"
  },
+ "international-education-funding-cuts": {
+  "events": [
+   {
+    "date": "2026-10-20",
+    "id": "news-66395becc766",
+    "source": "News",
+    "title": "Trump admin cuts $70 million in university funding over international education programs",
+    "url": "https://wjla.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon"
+   }
+  ],
+  "summary": "The Trump administration cut $70 million in university funding tied to international education and foreign-language programs. This represents an emerging threat to institutions reliant on this support, though the full scope and consequences remain unclear from the single reported event.",
+  "title": "Trump administration cuts to university international education and foreign-language funding"
+ },
  "nih-administrative-burden-rfi": {
   "events": [
    {
@@ -536,9 +549,16 @@
     "source": "News",
     "title": "Scientists left in the dark by National Science Foundation grant application delays",
     "url": "https://www.scientificamerican.com/article/scientists-left-in-the-dark-by-national-science-foundation-grant-application-delays/"
+   },
+   {
+    "date": "2026-10-20",
+    "id": "news-9fab6d71e3d3",
+    "source": "News",
+    "title": "Significant Amounts of Research Funding Withheld, Some Illegally, as Fiscal Year Ends",
+    "url": "https://cossa.org/significant-amounts-of-research-funding-withheld-some-illegally-as-fiscal-year-ends/"
    }
   ],
-  "summary": "Starting in August 2026, reporting revealed the NSF was on track to issue its lowest number of new grants in four decades, falling over a billion dollars behind and reportedly diverting $1.4 billion in congressionally mandated science funds. By mid-October, NSF closed fiscal 2026 with more than $1 billion unspent, including severe cuts described as 'complete devastation' to social sciences research, alongside widespread grant application delays leaving scientists uncertain. This points to a major contraction in federal research funding and persistent uncertainty for applicants awaiting NSF decisions.",
+  "summary": "NSF is on track to issue its lowest number of new research grants in four decades, having ended fiscal year 2026 with more than $1 billion unspent and reportedly diverting $1.4 billion in science funds mandated by Congress. Researchers face grant application delays and uncertainty, with social sciences research particularly hard-hit, and some funding withholding has been characterized as illegal. The practical effect is a significant contraction and unpredictability in federal research support that directly threatens university grant pipelines.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {

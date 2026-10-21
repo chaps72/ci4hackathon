@@ -1507,5 +1507,74 @@
     "agency": "Scientific American"
    }
   ]
+ },
+ {
+  "date": "2026-10-21",
+  "summary": "\ud83d\udfe1 4 moderate \u00b7 \ud83d\udd35 4 info \u00b7 \ud83d\udcf0 2 press\n\nFederal dollars are being withheld and clawed back, directly threatening active and pending awards\u2014flag affected PIs now.\n\n\ud83d\udd34 **Ongoing:** **NSF funding withheld** \u2014 NSF carried ~$1.4B (nearly 20%) of its FY2026 budget into FY2027, cutting Social/Behavioral/Economic Sciences 60%+, with some withholding reportedly illegal, choking new grants. [COSSA](https://cossa.org/significant-amounts-of-research-funding-withheld-some-illegally-as-fiscal-year-ends/)\n\n\ud83d\udd34 **New:** **International education cuts** \u2014 The administration is rescinding nearly $70M for university international-education and foreign-language programs via pocket rescission, citing mission drift, putting those awards at immediate risk. [Sinclair](https://wjla.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon)\n\nRoutine/informational: NIH Guide notices on NCI's R25 participation, the BRAIN CONNECTS U01 change, NHLBI's PA-25-305 withdrawal, and the PAR-25-032 R34 due-date change\u2014review if relevant to your program.",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Significant Amounts of Research Funding Withheld, Some Illegally, as Fiscal Year Ends \u2014 Consortium of Social Science Associations (COSSA), 2026-10-20\n  https://cossa.org/significant-amounts-of-research-funding-withheld-some-illegally-as-fiscal-year-ends/\n- **New:** Trump admin cuts $70 million in university funding over international education programs \u2014 Sinclair Broadcast Group (WJLA/KUTV), 2026-10-20\n  https://wjla.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon\n\n\ud83d\udcc8 Trend watch\nToday's COSSA and Sinclair items on withheld/cut university funding extend a sustained pattern of funding impoundment and withholding coverage\u2014at least the 7th such item since late September (e.g., pocket rescissions, AHRQ illegal withholding, $1.4B diverted, NSF $1B unspent, GAO impoundment findings).\n\n\ud83c\udfdb\ufe0f Government affairs\nUnder a continuing resolution, NSF reportedly withheld roughly $1.4 billion (nearly 20%) of its FY2026 budget to carry into FY2027\u2014with the Social, Behavioral, and Economic Sciences Directorate cut more than 60% below its regular budget\u2014some of it allegedly withheld illegally. Separately, the administration is cutting nearly $70 million in university international education and foreign-language funding via a pocket rescission, citing national-security mission concerns.",
+  "items": [
+   {
+    "title": "Notice of Change: Grants Administration Information added for NCI&#039;s Participation on PA-27-036, NIH Research Education Program - Research Experiences (Parent R25 - Clinical Trial Not Allowed)",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-CA-26-019.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change to Funding Opportunity: BRAIN Initiative Connectivity across Scales (BRAIN CONNECTS): Specialized Projects for Scalable Technologies (U01 Clinical Trial Not Allowed)",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-NS-27-002.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change: Grants Administration Information added for NCI's Participation on PA-27-036, NIH Research Education Program - Research Experiences (Parent R25 - Clinical Trial Not Allowed)",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-CA-26-019.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change to Funding Opportunity: BRAIN Initiative Connectivity across Scales (BRAIN CONNECTS): Specialized Projects for Scalable Technologies (U01 Clinical Trial Not Allowed)",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-NS-27-002.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NHLBI Withdrawal from Participation in PA-25-305 &quot;NIH Research Project Grant (Parent R01 Clinical Trial Required)&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-HL-27-001.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change in Application Due Date for PAR-25-032 &quot;NHLBI Clinical Trial Pilot Studies (R34 Clinical Trial Optional)&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-HL-27-003.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NHLBI Withdrawal from Participation in PA-25-305 \"NIH Research Project Grant (Parent R01 Clinical Trial Required)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-HL-27-001.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change in Application Due Date for PAR-25-032 \"NHLBI Clinical Trial Pilot Studies (R34 Clinical Trial Optional)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-HL-27-003.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Significant Amounts of Research Funding Withheld, Some Illegally, as Fiscal Year Ends",
+    "url": "https://cossa.org/significant-amounts-of-research-funding-withheld-some-illegally-as-fiscal-year-ends/",
+    "level": "CRITICAL",
+    "agency": "Consortium of Social Science Associations (COSSA)"
+   },
+   {
+    "title": "Trump admin cuts $70 million in university funding over international education programs",
+    "url": "https://wjla.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon",
+    "level": "CRITICAL",
+    "agency": "Sinclair Broadcast Group (WJLA/KUTV)"
+   }
+  ]
  }
 ]
