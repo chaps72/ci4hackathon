@@ -1576,5 +1576,50 @@
     "agency": "Sinclair Broadcast Group (WJLA/KUTV)"
    }
   ]
+ },
+ {
+  "date": "2026-10-22",
+  "summary": "\ud83d\udfe1 4 moderate \u00b7 \ud83d\udcf0 2 press\n\n**Bottom line:** Two developments merit attention\u2014a federal postdoc-visa investigation and NIH's proposed peer-review scoring change\u2014both could affect research staffing and funding competitiveness.\n\n- **New: Postdoc visa probe** \u2014 a newly announced federal investigation into postdoc visas, framed as curbing wage undercutting, could disrupt university research staffing that heavily relies on these visas [Nature](https://www.nature.com/articles/d41586-026-03345-z).\n- **Ongoing: NIH peer review** \u2014 NIH is weighing replacing numerical application scores with three broad categories, limiting what applicants and program officers see, while lawmakers scrutinize research security and DHS changes visas [AIP FYI](https://www.aip.org/fyi/the-week-of-october-19-2026).\n\nRoutine: NEI and NINR joined SEPA education award PAR-27-077 (R25) via notices NOT-EY-27-004 and NOT-NR-27-001 [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-EY-27-004.html).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Science Policy This Week: Oct 19, 2026 (NIH considers hiding peer review scores; lawmakers \u2014 AIP FYI (American Institute of Physics), 2026-10-19\n  https://www.aip.org/fyi/the-week-of-october-19-2026\n- **New:** US government probe into postdoc visas worries scientists \u2014 Nature, 2026-10-20\n  https://www.nature.com/articles/d41586-026-03345-z\n\n\ud83d\udcc8 Trend watch\nToday's items on NIH considering hiding peer-review scores and a postdoc-visa probe extend two running threads: peer-review changes (RFI Aug 14, \"Continuation of Modifications to Peer Review Practices\" Sep 8, Scientific American Oct 13) and foreign/research-security scrutiny of scientists and visas (4th such item in ~two weeks, including Oct 15, 16, and 19).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe main government-affairs signals are NIH weighing a change to peer-review scoring that would limit visible numerical scores, alongside congressional scrutiny of university research security, new DHS visa changes, and a federal investigation into postdoctoral researcher visas that could disrupt research staffing. The remaining items are routine NIH Guide notices of institute participation in the SEPA (R25) funding opportunity, carrying little government-affairs signal.",
+  "items": [
+   {
+    "title": "Notice of NEI Participation in PAR-27-077 NIH Science Education Partnership Award (SEPA) (R25 - Clinical Trial Not Allowed)",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-EY-27-004.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Participation of the National Institute of Nursing Research (NINR) in PAR-27-077, &quot;NIH Science Education Partnership Award (SEPA) (R25 - Clinical Trial Not Allowed)&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-NR-27-001.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of NEI Participation in PAR-27-077 NIH Science Education Partnership Award (SEPA) (R25 - Clinical Trial Not Allowed)",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-EY-27-004.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Participation of the National Institute of Nursing Research (NINR) in PAR-27-077, \"NIH Science Education Partnership Award (SEPA) (R25 - Clinical Trial Not Allowed)\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-NR-27-001.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Science Policy This Week: Oct 19, 2026 (NIH considers hiding peer review scores; lawmakers eyeing research security)",
+    "url": "https://www.aip.org/fyi/the-week-of-october-19-2026",
+    "level": "MODERATE",
+    "agency": "AIP FYI (American Institute of Physics)"
+   },
+   {
+    "title": "US government probe into postdoc visas worries scientists",
+    "url": "https://www.nature.com/articles/d41586-026-03345-z",
+    "level": "MODERATE",
+    "agency": "Nature"
+   }
+  ]
  }
 ]

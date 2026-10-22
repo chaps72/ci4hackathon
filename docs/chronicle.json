@@ -474,9 +474,16 @@
     "source": "News",
     "title": "Latest Trump administration proposal to change NIH research grant system draws scientists' ire",
     "url": "https://www.scientificamerican.com/article/latest-trump-administration-proposal-to-change-nih-research-grant-system-draws-scientists-ire/"
+   },
+   {
+    "date": "2026-10-19",
+    "id": "news-292b0255888b",
+    "source": "News",
+    "title": "Science Policy This Week: Oct 19, 2026 (NIH considers hiding peer review scores; lawmakers eyeing research security)",
+    "url": "https://www.aip.org/fyi/the-week-of-october-19-2026"
    }
   ],
-  "summary": "On September 8, 2026, NIH issued a continuation of modifications to its peer review practices. By October 13, the administration's latest proposal to change the NIH research grant system drew ire from scientists. The changes remain contested as researchers push back on alterations to the grant review process.",
+  "summary": "NIH has continued implementing modifications to its peer review practices through fall 2026, with the latest Trump administration proposal to change the research grant system drawing criticism from scientists in October. As of mid-October, NIH is reportedly considering hiding peer review scores, a change that has sparked concern among researchers. This signals ongoing uncertainty in how grant applications will be evaluated, which could affect how the office advises faculty on proposal strategy and expectations.",
   "title": "NIH modifications to peer review practices"
  },
  "nih-womens-health-initiative": {
@@ -690,6 +697,19 @@
   ],
   "summary": "In mid-August 2026, the Pentagon ordered audits of 30 U.S. universities over their partnerships with foreign institutions, particularly Chinese research and military-linked partners, giving them roughly two weeks to report collaborations with 'foreign entities of concern.' By late September the Pentagon escalated to directing universities to cut ties with the Chinese military, and as of mid-October institutions have begun severing foreign research relationships to comply while the Pentagon threatens noncompliant schools and hints at additional audits. This signals intensifying federal research-security pressure that may require universities to review and potentially end foreign partnerships.",
   "title": "Pentagon audit of universities' foreign institutional ties"
+ },
+ "postdoc-visa-investigation": {
+  "events": [
+   {
+    "date": "2026-10-20",
+    "id": "news-8c9a10ad176e",
+    "source": "News",
+    "title": "US government probe into postdoc visas worries scientists",
+    "url": "https://www.nature.com/articles/d41586-026-03345-z"
+   }
+  ],
+  "summary": "As of October 20, 2026, a US government probe into postdoctoral researcher visas has emerged and is causing concern within the scientific community. The investigation is at an early, developing stage with details still unclear, but it warrants monitoring given its potential implications for postdoc recruitment, retention, and institutional compliance.",
+  "title": "Federal investigation into postdoctoral researcher visas"
  },
  "science-funding-overhaul": {
   "events": [
