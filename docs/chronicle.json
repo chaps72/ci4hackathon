@@ -237,9 +237,16 @@
     "source": "News",
     "title": "Trump admin cuts $70 million in university funding over international education programs",
     "url": "https://wjla.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon"
+   },
+   {
+    "date": "2026-10-21",
+    "id": "news-59d93eea0e56",
+    "source": "News",
+    "title": "Trump admin cuts $70 million in university funding over international education programs",
+    "url": "https://cbs12.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon"
    }
   ],
-  "summary": "The Trump administration cut $70 million in university funding tied to international education and foreign-language programs. This represents an emerging threat to institutions reliant on this support, though the full scope and consequences remain unclear from the single reported event.",
+  "summary": "The Trump administration has cut $70 million in university funding tied to international education and foreign-language programs, as reported on October 20-21, 2026. The cuts currently stand as a confirmed reduction affecting these programs, signaling reduced federal support that research offices should factor into funding plans for international and language-focused initiatives.",
   "title": "Trump administration cuts to university international education and foreign-language funding"
  },
  "nih-administrative-burden-rfi": {
@@ -485,6 +492,26 @@
   ],
   "summary": "NIH has continued implementing modifications to its peer review practices through fall 2026, with the latest Trump administration proposal to change the research grant system drawing criticism from scientists in October. As of mid-October, NIH is reportedly considering hiding peer review scores, a change that has sparked concern among researchers. This signals ongoing uncertainty in how grant applications will be evaluated, which could affect how the office advises faculty on proposal strategy and expectations.",
   "title": "NIH modifications to peer review practices"
+ },
+ "nih-super-intelligence-policy": {
+  "events": [
+   {
+    "date": "2026-10-23",
+    "id": "nih-NOT-OD-27-011",
+    "source": "NIH Guide",
+    "title": "USG Policy for the use of Super Intelligence",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-011.html"
+   },
+   {
+    "date": "Fri, 23 Oc",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-011.html",
+    "source": "NIH Guide",
+    "title": "USG Policy for the use of Super Intelligence",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-011.html"
+   }
+  ],
+  "summary": "A U.S. government policy governing the use of Super Intelligence was issued on October 23, 2026, in connection with NIH. The policy is newly established, and its emergence suggests that research offices should anticipate new compliance expectations around the use of such technology in federally funded work.",
+  "title": "NIH policy for the use of Super Intelligence"
  },
  "nih-womens-health-initiative": {
   "events": [

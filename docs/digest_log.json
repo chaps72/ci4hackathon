@@ -1621,5 +1621,32 @@
     "agency": "Nature"
    }
   ]
+ },
+ {
+  "date": "2026-10-23",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udcf0 1 press\n\n**Bottom line:** Federal funding cuts to international education continue, and NIH has issued a new policy notice worth reviewing.\n\n- \ud83d\udd34 **Ongoing: International Education Cuts** \u2014 The administration cut roughly $70M in university funding tied to Cold War-era international education programs over national-security concerns, putting affected foreign-language and overseas projects at risk [Sinclair](https://cbs12.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon).\n- \ud83d\udfe0 **New: NIH Super Intelligence Policy** \u2014 NIH issued Guide notice NOT-OD-27-011 establishing a USG policy on the use of \"Super Intelligence,\" which grant teams should review for compliance implications [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-011.html).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Trump admin cuts $70 million in university funding over international education programs \u2014 Sinclair Broadcast Group (CBS12/affiliates), 2026-10-21\n  https://cbs12.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon\n\n\ud83d\udcc8 Trend watch\nToday's $70M cut over international education programs extends the Trump administration's escalating targeting of universities' foreign ties, the 4th such item in roughly two weeks (Pentagon foreign-entity threats/audits, institutions severing ties, postdoc visa probe, and the earlier Oct 20 Sinclair report of the same $70M cut).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Trump administration cut roughly $70 million in university funding tied to Cold War-era federal international education programs, citing national-security misalignment and flagging specific overseas projects. Separately, NIH issued Guide notice NOT-OD-27-011 establishing USG policy for the use of \"Super Intelligence.\"",
+  "items": [
+   {
+    "title": "USG Policy for the use of Super Intelligence",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-011.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "USG Policy for the use of Super Intelligence",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-011.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Trump admin cuts $70 million in university funding over international education programs",
+    "url": "https://cbs12.com/news/nation-world/trump-admin-cuts-70-million-in-university-funding-over-international-education-programs-campus-reform-esteban-elizondo-higher-ed-thailand-slovakia-national-security-federal-government-linda-mcmahon",
+    "level": "CRITICAL",
+    "agency": "Sinclair Broadcast Group (CBS12/affiliates)"
+   }
+  ]
  }
 ]
