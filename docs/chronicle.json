@@ -615,6 +615,19 @@
   "summary": "NSF has proposed a metascience office and related grantmaking changes, which researchers greeted with skepticism as of September 2026. By mid-October, NSF was also facing funding cuts alongside these policy changes, compounding uncertainty about the agency's direction and its approach to research funding.",
   "title": "NSF metascience office and grantmaking changes"
  },
+ "pentagon-confucius-institutes-threat": {
+  "events": [
+   {
+    "date": "2026-10-25",
+    "id": "news-ae765c1e3eba",
+    "source": "News",
+    "title": "Pentagon calls China's Confucius Institutes a national security threat",
+    "url": "https://www.washingtontimes.com/news/2026/oct/25/pentagon-calls-chinas-confucius-institutes-national-security-threat/"
+   }
+  ],
+  "summary": "On October 25, 2026, the Pentagon designated China's Confucius Institutes as a national security threat. This single development indicates growing federal concern over Chinese-affiliated academic programs, and research offices with any such ties should monitor for potential follow-on action or compliance requirements.",
+  "title": "Pentagon designation of Confucius Institutes as national security threat"
+ },
  "pentagon-university-blacklist": {
   "events": [
    {
@@ -720,9 +733,16 @@
     "source": "News",
     "title": "Pentagon threatens universities that have ties to 'foreign entities of concern,' hints at additional audits",
     "url": "https://defensescoop.com/2026/10/19/pentagon-research-security-audits-universities/"
+   },
+   {
+    "date": "2026-10-26",
+    "id": "news-050d14e274e5",
+    "source": "News",
+    "title": "DOD Declares Foreign Partnerships Audit a Success",
+    "url": "https://www.insidehighered.com/news/global/us-colleges-world/2026/10/26/dod-declares-foreign-partnerships-audit-success"
    }
   ],
-  "summary": "In mid-August 2026, the Pentagon ordered audits of 30 U.S. universities over their partnerships with foreign institutions, particularly Chinese research and military-linked partners, giving them roughly two weeks to report collaborations with 'foreign entities of concern.' By late September the Pentagon escalated to directing universities to cut ties with the Chinese military, and as of mid-October institutions have begun severing foreign research relationships to comply while the Pentagon threatens noncompliant schools and hints at additional audits. This signals intensifying federal research-security pressure that may require universities to review and potentially end foreign partnerships.",
+  "summary": "In August 2026, the Pentagon ordered 30 U.S. universities to audit and report on their partnerships with foreign entities of concern, particularly Chinese research and military-linked institutions, giving them a two-week window to comply. By late October, institutions began severing foreign research ties, the Pentagon escalated with demands to cut ties with the Chinese military and threats of additional audits, and on October 26 the DOD declared the audit a success. This signals heightened federal scrutiny of international research collaborations and the likelihood of further audits, meaning research offices should proactively review their own foreign partnerships.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "postdoc-visa-investigation": {

@@ -1648,5 +1648,25 @@
     "agency": "Sinclair Broadcast Group (CBS12/affiliates)"
    }
   ]
+ },
+ {
+  "date": "2026-10-26",
+  "summary": "\ud83d\udcf0 2 press\n\nBottom line: Pentagon research-security enforcement is escalating and could threaten federal funding eligibility for universities with foreign ties\u2014review partnerships now.\n\n\ud83d\udfe0 **Ongoing:** **DOD foreign-partnerships audit** \u2014 DOD's audits of 30 universities drove 80+ \"termination-related\" actions against Section 1286 entities of concern, with more institutions potentially facing audits or losing research-funding eligibility [Inside Higher Ed](https://www.insidehighered.com/news/global/us-colleges-world/2026/10/26/dod-declares-foreign-partnerships-audit-success).\n\n**New:** **Confucius Institutes designation** \u2014 The Pentagon is labeling China's Confucius Institutes a national security threat, extending its crackdown on university ties to foreign entities of concern [The Washington Times](https://www.washingtontimes.com/news/2026/oct/25/pentagon-calls-chinas-confucius-institutes-national-security-threat/).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** DOD Declares Foreign Partnerships Audit a Success \u2014 Inside Higher Ed, 2026-10-26\n  https://www.insidehighered.com/news/global/us-colleges-world/2026/10/26/dod-declares-foreign-partnerships-audit-success\n- **New:** Pentagon calls China's Confucius Institutes a national security threat \u2014 The Washington Times, 2026-10-25\n  https://www.washingtontimes.com/news/2026/oct/25/pentagon-calls-chinas-confucius-institutes-national-security-threat/\n\n\ud83d\udcc8 Trend watch\nToday's Pentagon actions on foreign partnerships and Confucius Institutes extend an escalating research-security/foreign-ties crackdown, the 5th such item in roughly two weeks (China research-security list Oct 15, Chinese-American scientist probes Oct 16, Pentagon foreign-entity audit threats Oct 19, universities severing foreign ties Oct 19).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Department of Defense declared its research-security audits of 30 universities a success, citing more than 80 \"termination-related\" actions tied to the Section 1286 list of foreign entities of concern and warning that additional universities could face audits or lose federal research funding eligibility. The Pentagon is also designating China's Confucius Institutes as national security threats as part of a broader crackdown on university ties to foreign entities of concern.",
+  "items": [],
+  "press": [
+   {
+    "title": "DOD Declares Foreign Partnerships Audit a Success",
+    "url": "https://www.insidehighered.com/news/global/us-colleges-world/2026/10/26/dod-declares-foreign-partnerships-audit-success",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   },
+   {
+    "title": "Pentagon calls China's Confucius Institutes a national security threat",
+    "url": "https://www.washingtontimes.com/news/2026/oct/25/pentagon-calls-chinas-confucius-institutes-national-security-threat/",
+    "level": "MODERATE",
+    "agency": "The Washington Times"
+   }
+  ]
  }
 ]
