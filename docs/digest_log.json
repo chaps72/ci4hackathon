@@ -1682,5 +1682,31 @@
     "agency": "The Washington Sun"
    }
   ]
+ },
+ {
+  "date": "2026-10-28",
+  "summary": "\ud83d\udcf0 3 press\n\n**Bottom line:** AHRQ grant funding remains frozen with most FY2026 dollars unaccounted for, and broader federal cuts are driving US scientists abroad\u2014expect continued disruption to patient-safety and federally funded research.\n\n- \ud83d\udfe0 **Ongoing: AHRQ Grant Freeze** \u2014 AHRQ has spent under $15M of its $345M FY2026 appropriation, issued no new awards in over a year, and halted at least 104 grants (many patient-safety), stalling active research pipelines [AJMC](https://www.ajmc.com/view/ahrq-grant-freeze-halts-patient-safety-research-nationwide).\n- \ud83d\udfe0 **Ongoing: AHRQ Accountability** \u2014 With few grant officers left, AHRQ has redirected millions without notifying Congress and roughly two-thirds of FY2026 grant dollars are publicly unaccounted for, deepening funding uncertainty [NOTUS/Washington Sun](https://www.washingtonsun.com/health/inside-trump-administration-health-care-research-office?redirected=notus_org).\n- \ud83d\udfe0 **Ongoing: Researcher Departures** \u2014 Foreign universities are recruiting US scientists amid grant overhauls and up to $174B in federal grants cut or frozen, raising faculty-retention risk [Associated Press](https://whec.com/ap-top-news/meet-the-researchers-leaving-the-us-because-of-trumps-funding-cuts-and-politicization-of-science).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Inside the Trump Administration's Dismantling of a Health Care Research Office \u2014 NOTUS / The Washington Sun, 2026-10-26\n  https://www.washingtonsun.com/health/inside-trump-administration-health-care-research-office?redirected=notus_org\n- **Ongoing:** AHRQ Grant Freeze Halts Patient Safety Research Nationwide \u2014 The American Journal of Managed Care (AJMC), 2026-10-26\n  https://www.ajmc.com/view/ahrq-grant-freeze-halts-patient-safety-research-nationwide\n- **Ongoing:** Meet the researchers leaving the US because of Trump's funding cuts and politicization of  \u2014 Associated Press, 2026-10-26\n  https://whec.com/ap-top-news/meet-the-researchers-leaving-the-us-because-of-trumps-funding-cuts-and-politicization-of-science\n\n\ud83d\udcc8 Trend watch\nAHRQ-specific disruption: today's grant-freeze and research-office-dismantling items extend a recurring AHRQ thread that includes two GAO illegal-withholding findings (Oct 6\u20137) within the past three weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nDespite Congress appropriating $345 million to AHRQ for FY2026, the agency has spent under $15 million on grants, halted at least 104 awards via a July 15 letter, issued no new award in over a year, and redirected millions without notifying Congress, leaving roughly two-thirds of its FY2026 grant dollars publicly unaccounted for. More broadly, the administration's overhaul of the federal grant-giving process and exertion of political influence over funding coincide with an estimated up to $174 billion in federal grants cut or frozen since the term began.",
+  "items": [],
+  "press": [
+   {
+    "title": "Inside the Trump Administration's Dismantling of a Health Care Research Office",
+    "url": "https://www.washingtonsun.com/health/inside-trump-administration-health-care-research-office?redirected=notus_org",
+    "level": "HIGH",
+    "agency": "NOTUS / The Washington Sun"
+   },
+   {
+    "title": "AHRQ Grant Freeze Halts Patient Safety Research Nationwide",
+    "url": "https://www.ajmc.com/view/ahrq-grant-freeze-halts-patient-safety-research-nationwide",
+    "level": "HIGH",
+    "agency": "The American Journal of Managed Care (AJMC)"
+   },
+   {
+    "title": "Meet the researchers leaving the US because of Trump's funding cuts and politicization of science",
+    "url": "https://whec.com/ap-top-news/meet-the-researchers-leaving-the-us-because-of-trumps-funding-cuts-and-politicization-of-science",
+    "level": "HIGH",
+    "agency": "Associated Press"
+   }
+  ]
  }
 ]
