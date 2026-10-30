@@ -442,9 +442,16 @@
     "source": "News",
     "title": "Analyzing FY 2026 NIH grants: budget spent, but uncertainty lingers",
     "url": "https://www.statnews.com/2026/10/02/nih-grant-funding-fy2026-analysis/"
+   },
+   {
+    "date": "2026-10-30",
+    "id": "news-58c149f066f8",
+    "source": "News",
+    "title": "NIH awarded more new grants in fiscal 2026, even as total awards fell",
+    "url": "https://www.rdworldonline.com/nih-new-grants-fiscal-2026-total-awards/"
    }
   ],
-  "summary": "Since mid-2026, NIH under Director Bhattacharya and the Trump administration has terminated numerous grants, including health disparities and other research, disrupting 1 in 30 clinical trials and affecting over 74,000 participants, while new funding policies and spending delays sharply lowered award odds. Senators McCormick and Fetterman have questioned the termination of more than 150 grants, and analyses show NIH funding has been substantially reshaped. As of early October 2026, the FY 2026 budget has been spent but significant uncertainty remains for researchers.",
+  "summary": "Since July 2026, NIH under Director Bhattacharya has terminated grants misaligned with Trump administration priorities, including over 150 health research and health disparities grants, disrupting 1 in 30 clinical trials affecting more than 74,000 participants, with reports of censored research in Alzheimer's and kidney disease. While odds of winning grants have plummeted and funding has been reshaped, NIH awarded more new grants in fiscal 2026 even as total awards fell, leaving researchers facing heightened termination risk and funding uncertainty amid ongoing congressional questioning.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
@@ -611,9 +618,16 @@
     "source": "News",
     "title": "Significant Amounts of Research Funding Withheld, Some Illegally, as Fiscal Year Ends",
     "url": "https://cossa.org/significant-amounts-of-research-funding-withheld-some-illegally-as-fiscal-year-ends/"
+   },
+   {
+    "date": "2026-10-30",
+    "id": "news-7fac18769498",
+    "source": "News",
+    "title": "Top Science Democrat probes cuts to research spending at National Science Foundation",
+    "url": "https://thehill.com/policy/energy-environment/6182800-science-national-science-foundation-nsf-lofgren/"
    }
   ],
-  "summary": "NSF is on track to issue its lowest number of new research grants in four decades, having ended fiscal year 2026 with more than $1 billion unspent and reportedly diverting $1.4 billion in science funds mandated by Congress. Researchers face grant application delays and uncertainty, with social sciences research particularly hard-hit, and some funding withholding has been characterized as illegal. The practical effect is a significant contraction and unpredictability in federal research support that directly threatens university grant pipelines.",
+  "summary": "NSF is on track to issue its lowest number of new grants in four decades, closing fiscal 2026 with over $1 billion unspent, including $1.4 billion in congressionally mandated science funds reportedly diverted, with social sciences research described as facing 'complete devastation.' Grant application delays have left scientists in the dark, some funding was withheld illegally, and a top Science Democrat opened a probe on October 30, meaning researchers face serious uncertainty around NSF funding timelines and availability.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
@@ -644,9 +658,16 @@
     "source": "News",
     "title": "Pentagon calls China's Confucius Institutes a national security threat",
     "url": "https://www.washingtontimes.com/news/2026/oct/25/pentagon-calls-chinas-confucius-institutes-national-security-threat/"
+   },
+   {
+    "date": "2026-10-29",
+    "id": "news-2f246754adb9",
+    "source": "News",
+    "title": "US tightens China restrictions on visas, genomics firms and campus centres",
+    "url": "https://www.nationalheraldindia.com/international/us-tightens-china-restrictions-on-visas-genomics-firms-and-campus-centres"
    }
   ],
-  "summary": "On October 25, 2026, the Pentagon designated China's Confucius Institutes as a national security threat. This single development indicates growing federal concern over Chinese-affiliated academic programs, and research offices with any such ties should monitor for potential follow-on action or compliance requirements.",
+  "summary": "On October 25, 2026, the Pentagon designated China's Confucius Institutes as a national security threat, and by October 29 the US had tightened China-related restrictions spanning visas, genomics firms, and campus centres. This signals intensifying federal scrutiny of China-linked academic and research partnerships, which may require universities to review any such affiliations and assess compliance risks.",
   "title": "Pentagon designation of Confucius Institutes as national security threat"
  },
  "pentagon-university-blacklist": {

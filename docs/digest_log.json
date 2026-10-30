@@ -1722,5 +1722,31 @@
     "agency": "The Washington Sun"
    }
   ]
+ },
+ {
+  "date": "2026-10-30",
+  "summary": "\ud83d\udcf0 3 press\n\nBottom line: No critical actions required this week, but NSF spending irregularities and tightening China restrictions warrant attention; NIH new-grant data is informational.\n\n- **Ongoing: NSF Unspent Funds** \u2014 House Science ranking member Lofgren is demanding answers after reports NSF left ~20% of appropriated funds unspent, signaling continued uncertainty and risk to new grant flows for our researchers [The Hill](https://thehill.com/policy/energy-environment/6182800-science-national-science-foundation-nsf-lofgren/).\n- **Ongoing: China Restrictions** \u2014 The administration moved on three fronts in one week, including the Pentagon designating campus-based Confucius Institutes a national security threat and blacklisting Chinese genomics firms, raising compliance exposure for any China-linked centers or partnerships [National Herald](https://www.nationalheraldindia.com/international/us-tightens-china-restrictions-on-visas-genomics-firms-and-campus-centres).\n\nInformational: NIH made 13,686 new extramural awards in FY2026 (up 21%), though total awards fell on fewer payments to existing multiyear projects [R&D World](https://www.rdworldonline.com/nih-new-grants-fiscal-2026-total-awards/).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** US tightens China restrictions on visas, genomics firms and campus centres \u2014 National Herald, 2026-10-29\n  https://www.nationalheraldindia.com/international/us-tightens-china-restrictions-on-visas-genomics-firms-and-campus-centres\n- **Ongoing:** Top Science Democrat probes cuts to research spending at National Science Foundation \u2014 The Hill, 2026-10-30\n  https://thehill.com/policy/energy-environment/6182800-science-national-science-foundation-nsf-lofgren/\n- **Ongoing:** NIH awarded more new grants in fiscal 2026, even as total awards fell \u2014 R&D World, 2026-10-30\n  https://www.rdworldonline.com/nih-new-grants-fiscal-2026-total-awards/\n\n\ud83d\udcc8 Trend watch\nToday's China-focused item (visa/genomics/campus restrictions) extends a sustained research-security escalation targeting China ties, with roughly 7 related items in the past two weeks (e.g., Pentagon foreign-partnership audits Oct 16\u201326, Confucius Institute threat, probes of Chinese-American scientists and postdoc visas).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe House Science Committee's ranking member, Zoe Lofgren, sent a letter probing reports that NSF left roughly 20 percent of its appropriated funds unspent, alleging a violation of Congress's power of the purse. Separately, the Pentagon designated university-based Confucius Institutes a national security threat, while NIH data showed new (Type 1) extramural awards rose 21 percent in fiscal 2026 even as total awards declined.",
+  "items": [],
+  "press": [
+   {
+    "title": "US tightens China restrictions on visas, genomics firms and campus centres",
+    "url": "https://www.nationalheraldindia.com/international/us-tightens-china-restrictions-on-visas-genomics-firms-and-campus-centres",
+    "level": "MODERATE",
+    "agency": "National Herald"
+   },
+   {
+    "title": "Top Science Democrat probes cuts to research spending at National Science Foundation",
+    "url": "https://thehill.com/policy/energy-environment/6182800-science-national-science-foundation-nsf-lofgren/",
+    "level": "MODERATE",
+    "agency": "The Hill"
+   },
+   {
+    "title": "NIH awarded more new grants in fiscal 2026, even as total awards fell",
+    "url": "https://www.rdworldonline.com/nih-new-grants-fiscal-2026-total-awards/",
+    "level": "INFO",
+    "agency": "R&D World"
+   }
+  ]
  }
 ]
