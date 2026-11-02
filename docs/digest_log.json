@@ -1748,5 +1748,25 @@
     "agency": "R&D World"
    }
   ]
+ },
+ {
+  "date": "2026-11-02",
+  "summary": "\ud83d\udfe1 2 moderate\n\nBottom line: One moderate NIH policy update is in draft; no critical or high-priority actions are pending.\n\n- **New:** **NIH Data & Safety Monitoring** \u2014 NIH issued a draft policy update to its Data and Safety Monitoring requirements (NOT-OD-27-006), which may affect oversight obligations for clinical studies once finalized [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-006.html).",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's draft data-and-safety-monitoring policy is the 5th NIH research-data/safety policy action (DMS plan updates, biosafety, biohazards, high-risk life sciences) since late July, continuing a months-long pattern of NIH tightening data-sharing and safety oversight requirements.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe items contain little government-affairs signal, consisting only of an NIH draft policy update on data and safety monitoring (Notice NOT-OD-27-006) with no bearing on appropriations, executive orders, OMB actions, or agency leadership direction.",
+  "items": [
+   {
+    "title": "Draft Policy Update to the NIH Policy for Data and Safety Monitoring",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-006.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Draft Policy Update to the NIH Policy for Data and Safety Monitoring",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-006.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]
