@@ -1768,5 +1768,44 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-11-03",
+  "summary": "\ud83d\udfe0 1 high \u00b7 \ud83d\udcf0 4 press\n\nBottom line: Federal research funding is tightening fast\u2014imminent OMB guidance, DEI-driven terminations, and collapsing NSF awards all put active grants and partnerships at risk.\n\n- \ud83d\udd34 **Ongoing: OMB Grant Rule** \u2014 Sweeping federal funding-guidance changes take effect December 1 to purge \"woke\"/\"anti-American\" research, impose a \"gold standard,\" and curb conference awards, potentially chilling our proposals. [Cornell Daily Sun](https://www.cornellsun.com/article/2026/11/science-grant-rule-changes-may-have-a-chilling-effect-on-university-research)\n- \ud83d\udd34 **Ongoing: DEI Cuts** \u2014 ~$3.7B in research funds targeted and 38 universities proposed for suspension over DEI hiring, disrupting hundreds of clinical trials and partnerships. [Just the News](https://justthenews.com/nation/states/center-square/feds-target-37b-research-funds-part-dei-crackdown)\n- \ud83d\udfe0 **Ongoing: NSF Pullback** \u2014 NSF won't, for now, align grantmaking with the OMB rule giving political appointees direct authority, offering temporary relief. [AIP](https://www.aip.org/newsletter/000001a1-8df7-d7ab-a1e3-cdff988f0000)\n- \ud83d\udfe0 **Ongoing: NSF Social Sciences** \u2014 FY2026 saw zero new economics/archaeology grants and under 100 social-science awards (vs. ~850 average), threatening those fields. [Nature](https://www.nature.com/articles/d41586-026-03540-y)\n- \ud83d\udfe0 **New: HHS Section 504** \u2014 HHS revises disability regulations to exclude gender dysphoria not from physical impairment, affecting funded-program compliance. [HHS](https://www.federalregister.gov/documents/2026/11/03/2026-22380/nondiscrimination-on-the-basis-of-disability-in-programs-or-activities-receiving-federal-financial)",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Nondiscrimination on the Basis of Disability in Programs or Activities Receiving](https://www.federalregister.gov/documents/2026/11/03/2026-22380/nondiscrimination-on-the-basis-of-disability-in-programs-or-activities-receiving-federal-financial) \u2014 \u23f0 effective 2027-01-04\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** Feds target $3.7B in research funds as part of DEI crackdown \u2014 Just the News / The Center Square, 2026-10-31\n  https://justthenews.com/nation/states/center-square/feds-target-37b-research-funds-part-dei-crackdown\n- **Ongoing:** Science Grant Rule Changes May Have a 'Chilling' Effect on University Research \u2014 The Cornell Daily Sun, 2026-11-03\n  https://www.cornellsun.com/article/2026/11/science-grant-rule-changes-may-have-a-chilling-effect-on-university-research\n- **Ongoing:** NSF walks back grant-policy changes based on OMB proposal \u2014 American Institute of Physics (FYI Science Policy News), 2026-11-02\n  https://www.aip.org/newsletter/000001a1-8df7-d7ab-a1e3-cdff988f0000\n- **Ongoing:** US social sciences face existential crisis after NSF cuts \u2014 Nature, 2026-11-03\n  https://www.nature.com/articles/d41586-026-03540-y\n\n\ud83d\udcc8 Trend watch\nToday's NSF grant-policy items (OMB-driven changes, social-science cuts, chilling effect) extend a running NSF-disruption thread from the log\u2014at least 6 NSF-related items since Oct 14 (ASBMB policy changes, $1B unspent, application delays, Democratic probe, among others).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe White House OMB has proposed sweeping research-funding guidance taking effect December 1 to eliminate \"woke\" research and impose a \"gold standard\" while giving political appointees authority over grantmaking, though NSF has for now declined to align its grant decisions with the proposed rule after reviewing over 3,000 comments. Separately, HHS issued a rule revising its section 504 disability regulation on gender dysphoria, while the administration targets roughly $3.7 billion in research funds amid a DEI crackdown and NSF's new social-science awards have sharply declined in FY2026.",
+  "items": [
+   {
+    "title": "Nondiscrimination on the Basis of Disability in Programs or Activities Receiving Federal Financial Assistance",
+    "url": "https://www.federalregister.gov/documents/2026/11/03/2026-22380/nondiscrimination-on-the-basis-of-disability-in-programs-or-activities-receiving-federal-financial",
+    "level": "HIGH",
+    "agency": "Health and Human Services Department"
+   }
+  ],
+  "press": [
+   {
+    "title": "Feds target $3.7B in research funds as part of DEI crackdown",
+    "url": "https://justthenews.com/nation/states/center-square/feds-target-37b-research-funds-part-dei-crackdown",
+    "level": "CRITICAL",
+    "agency": "Just the News / The Center Square"
+   },
+   {
+    "title": "Science Grant Rule Changes May Have a 'Chilling' Effect on University Research",
+    "url": "https://www.cornellsun.com/article/2026/11/science-grant-rule-changes-may-have-a-chilling-effect-on-university-research",
+    "level": "CRITICAL",
+    "agency": "The Cornell Daily Sun"
+   },
+   {
+    "title": "NSF walks back grant-policy changes based on OMB proposal",
+    "url": "https://www.aip.org/newsletter/000001a1-8df7-d7ab-a1e3-cdff988f0000",
+    "level": "HIGH",
+    "agency": "American Institute of Physics (FYI Science Policy News)"
+   },
+   {
+    "title": "US social sciences face existential crisis after NSF cuts",
+    "url": "https://www.nature.com/articles/d41586-026-03540-y",
+    "level": "HIGH",
+    "agency": "Nature"
+   }
+  ]
  }
 ]

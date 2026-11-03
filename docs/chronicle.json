@@ -158,9 +158,16 @@
     "source": "News",
     "title": "NIH banned-word list kills research over climate change, DEI, gender",
     "url": "https://www.upi.com/Top_News/US/2026/10/14/nih-banned-keyword-list-censorship-first-amendment-lawsuit/7321791983669"
+   },
+   {
+    "date": "2026-10-31",
+    "id": "news-3a2df184802b",
+    "source": "News",
+    "title": "Feds target $3.7B in research funds as part of DEI crackdown",
+    "url": "https://justthenews.com/nation/states/center-square/feds-target-37b-research-funds-part-dei-crackdown"
    }
   ],
-  "summary": "Beginning July 22, 2026, the White House admitted it used keyword lists to cancel billions of dollars in research grants, including in California, with reporting detailing the federal lists involved. In September, lawsuits were filed arguing NIH violated the First Amendment rights of grant applicants. As of October 14, the NIH banned-word list continued to kill research tied to climate change, DEI, and gender, keeping the legal and policy conflict active.",
+  "summary": "In July 2026 the White House acknowledged using keyword lists to cancel billions of dollars in research grants, particularly in California, targeting topics like climate change, DEI, and gender. Lawsuits filed in September argue NIH's keyword-driven terminations violated grant applicants' First Amendment rights, and by October 31 the government was targeting $3.7B in research funds amid a broader DEI crackdown. The saga remains active in litigation, putting significant funding and applicant speech protections at stake.",
   "title": "Keyword-based research grant terminations"
  },
  "grant-witness-funding-tracker": {
@@ -209,6 +216,19 @@
   ],
   "summary": "Harvard is pursuing a court challenge against the Trump administration's block on its research funding, and in July 2026 roughly three dozen peer institutions backed its legal fight. As of October 2026, a US appeals court is weighing the administration's funding block, leaving the matter unresolved. The outcome could set a significant precedent for federal research funding and higher education institutions broadly.",
   "title": "Harvard research funding freeze and legal challenge"
+ },
+ "hhs-section-504-disability-rule": {
+  "events": [
+   {
+    "date": "2026-11-03",
+    "id": "fr-2026-22380",
+    "source": "Federal Register",
+    "title": "Nondiscrimination on the Basis of Disability in Programs or Activities Receiving Federal Financial Assistance",
+    "url": "https://www.federalregister.gov/documents/2026/11/03/2026-22380/nondiscrimination-on-the-basis-of-disability-in-programs-or-activities-receiving-federal-financial"
+   }
+  ],
+  "summary": "On November 3, 2026, HHS issued a rule revision concerning nondiscrimination on the basis of disability in programs or activities receiving federal financial assistance under Section 504. This is the only logged development, so its implications for federally funded university programs remain to be assessed.",
+  "title": "HHS Section 504 disability nondiscrimination rule revision"
  },
  "hhs-title-vi-rollback": {
   "events": [
@@ -625,9 +645,16 @@
     "source": "News",
     "title": "Top Science Democrat probes cuts to research spending at National Science Foundation",
     "url": "https://thehill.com/policy/energy-environment/6182800-science-national-science-foundation-nsf-lofgren/"
+   },
+   {
+    "date": "2026-11-03",
+    "id": "news-d5de410e3fb3",
+    "source": "News",
+    "title": "US social sciences face existential crisis after NSF cuts",
+    "url": "https://www.nature.com/articles/d41586-026-03540-y"
    }
   ],
-  "summary": "NSF is on track to issue its lowest number of new grants in four decades, closing fiscal 2026 with over $1 billion unspent, including $1.4 billion in congressionally mandated science funds reportedly diverted, with social sciences research described as facing 'complete devastation.' Grant application delays have left scientists in the dark, some funding was withheld illegally, and a top Science Democrat opened a probe on October 30, meaning researchers face serious uncertainty around NSF funding timelines and availability.",
+  "summary": "Starting August 2026, NSF was reported to be on track to issue its lowest number of new grants in four decades, and it ended fiscal 2026 with over $1 billion unspent, including $1.4 billion in congressionally mandated funds diverted or withheld\u2014some reportedly illegally. The cuts severely gutted social sciences research, prompting a probe by a top Science Democrat and warnings of an 'existential crisis.' The situation leaves researchers facing application delays and uncertainty, with legal and oversight scrutiny ongoing.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
@@ -913,9 +940,23 @@
     "source": "News",
     "title": "What's at stake as research funds shift from universities to industry",
     "url": "https://www.statnews.com/2026/10/14/american-science-funding-university-industry-shift-stat-summit-boston-2026/"
+   },
+   {
+    "date": "2026-11-03",
+    "id": "news-ddaec4f7202e",
+    "source": "News",
+    "title": "Science Grant Rule Changes May Have a 'Chilling' Effect on University Research",
+    "url": "https://www.cornellsun.com/article/2026/11/science-grant-rule-changes-may-have-a-chilling-effect-on-university-research"
+   },
+   {
+    "date": "2026-11-02",
+    "id": "news-e51f838060a7",
+    "source": "News",
+    "title": "NSF walks back grant-policy changes based on OMB proposal",
+    "url": "https://www.aip.org/newsletter/000001a1-8df7-d7ab-a1e3-cdff988f0000"
    }
   ],
-  "summary": "In late July 2026, the White House unveiled a sweeping overhaul of U.S. science funding, calling the current system 'calcified' and proposing to reduce university research funding while steering money toward industry and AI. The plan drew bipartisan Senate pushback, with appropriators advancing a stopgap bill to block it and senators objecting to political control over funding, yet implementation has continued through NSF memos and administration messaging about a science 'golden age.' As of mid-October, the shift away from university-based research remains contested but is advancing, raising significant stakes for academic institutions facing funding cuts and researcher departures.",
+  "summary": "Beginning July 2026, the White House unveiled a sweeping science funding overhaul that called for reducing university research funding, steering money toward industry and AI, and giving political appointees more control over grants. The plan drew bipartisan Senate opposition, including a stopgap bill blocking the changes, and by November 2 NSF walked back grant-policy changes tied to the OMB proposal. The overhaul faces continued political resistance but has already raised fears of a 'chilling' effect and researcher exodus.",
   "title": "White House science funding overhaul"
  },
  "us-science-brain-drain": {
