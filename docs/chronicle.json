@@ -1,4 +1,24 @@
 {
+ "2026-midterms-science-impact": {
+  "events": [
+   {
+    "date": "2026-11-03",
+    "id": "news-c49f2e768b33",
+    "source": "News",
+    "title": "The 2026 midterms are today\u2014here's what scientists say is at stake",
+    "url": "https://www.scientificamerican.com/article/the-2026-midterms-are-today-heres-what-scientists-say-is-at-stake/"
+   },
+   {
+    "date": "2026-11-04",
+    "id": "news-32b5cffec123",
+    "source": "News",
+    "title": "'Historic change': what the 2026 US mid-term election results mean for science",
+    "url": "https://www.nature.com/articles/d41586-026-03579-x"
+   }
+  ],
+  "summary": "The 2026 US midterm elections were held on November 3, with scientists weighing in beforehand on what the results could mean for science policy. The following day, the outcome was characterized as a 'historic change' with significant implications for science. The full scope of how these results will reshape science policy remains to be seen based on the reported shift.",
+  "title": "2026 US midterm elections and their impact on science policy"
+ },
  "ahrq-grant-terminations": {
   "events": [
    {

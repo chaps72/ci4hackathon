@@ -1807,5 +1807,25 @@
     "agency": "Nature"
    }
   ]
+ },
+ {
+  "date": "2026-11-04",
+  "summary": "\ud83d\udcf0 2 press\n\nFederal research funding and oversight are shifting after the 2026 midterms, with award priorities volatile and peer-review integrity in play.\n\n- **New:** **Grant priority shift** \u2014 since 2025 the administration has redirected funding toward AI, tech, and nuclear while cutting climate, health, and social science and proposing NASA/NIH cuts, though a newly passed spending bill temporarily blocks political appointees from overriding scientist reviewers, so expect continued instability in award priorities and review processes [Scientific American](https://www.scientificamerican.com/article/the-2026-midterms-are-today-heres-what-scientists-say-is-at-stake/).\n\nInformational: Democrats won both chambers in the midterms, with incoming leaders signaling plans to push back on disruptions to NSF and NASA\u2014worth watching for shifts in oversight and funding [Nature](https://www.nature.com/articles/d41586-026-03579-x).",
+  "extra": "\ud83d\udcf0 From the research press\n- **New:** The 2026 midterms are today\u2014here's what scientists say is at stake \u2014 Scientific American, 2026-11-03\n  https://www.scientificamerican.com/article/the-2026-midterms-are-today-heres-what-scientists-say-is-at-stake/\n- **New:** 'Historic change': what the 2026 US mid-term election results mean for science \u2014 Nature, 2026-11-04\n  https://www.nature.com/articles/d41586-026-03579-x\n\n\ud83c\udfdb\ufe0f Government affairs\nSince 2025 the administration has redirected federal grant funding toward AI, technology, and nuclear energy while cutting climate, health, and social science research and proposing major cuts to agencies including NASA and NIH, though a recently passed spending bill temporarily blocks a plan allowing political appointees to override scientist grant reviewers. Following the 2026 midterms, Democrats won both chambers of Congress, with incoming leaders signaling plans to hold the administration accountable for disruptions to agencies including NSF and NASA.",
+  "items": [],
+  "press": [
+   {
+    "title": "The 2026 midterms are today\u2014here's what scientists say is at stake",
+    "url": "https://www.scientificamerican.com/article/the-2026-midterms-are-today-heres-what-scientists-say-is-at-stake/",
+    "level": "MODERATE",
+    "agency": "Scientific American"
+   },
+   {
+    "title": "'Historic change': what the 2026 US mid-term election results mean for science",
+    "url": "https://www.nature.com/articles/d41586-026-03579-x",
+    "level": "INFO",
+    "agency": "Nature"
+   }
+  ]
  }
 ]
