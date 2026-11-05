@@ -514,6 +514,19 @@
   "summary": "NIH has proposed capping the number of research grants any single investigator can hold, a proposal that the agency itself acknowledges has drawn a mixed reception since it surfaced on September 1, 2026. The proposal remains at an early stage with no final policy adopted. If enacted, it could affect how heavily-funded investigators structure their grant portfolios, warranting monitoring by the research office.",
   "title": "NIH proposed cap on grants per investigator"
  },
+ "nih-indirect-cost-cap": {
+  "events": [
+   {
+    "date": "2026-11-05",
+    "id": "news-a7fe340e029c",
+    "source": "News",
+    "title": "Universities face uncertain indirect cost recovery landscape",
+    "url": "https://www.cfodive.com/news/universities-face-uncertain-indirect-cost-recovery-landscape/873859/"
+   }
+  ],
+  "summary": "As of November 5, 2026, universities face an uncertain landscape for indirect cost recovery amid a federal cap. The storyline is just emerging, but it signals potential reductions in reimbursement for facilities and administrative costs that could strain research budgets.",
+  "title": "Federal cap on university indirect cost recovery"
+ },
  "nih-international-researcher-funding-block": {
   "events": [
    {
@@ -672,9 +685,16 @@
     "source": "News",
     "title": "US social sciences face existential crisis after NSF cuts",
     "url": "https://www.nature.com/articles/d41586-026-03540-y"
+   },
+   {
+    "date": "2026-11-04",
+    "id": "news-f0f4c0edaa73",
+    "source": "News",
+    "title": "CSU System Researchers Sue Trump Administration Over Grant Cancellations",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/11/04/csu-researchers-sue-trump-over-grant-cancellations"
    }
   ],
-  "summary": "Starting August 2026, NSF was reported to be on track to issue its lowest number of new grants in four decades, and it ended fiscal 2026 with over $1 billion unspent, including $1.4 billion in congressionally mandated funds diverted or withheld\u2014some reportedly illegally. The cuts severely gutted social sciences research, prompting a probe by a top Science Democrat and warnings of an 'existential crisis.' The situation leaves researchers facing application delays and uncertainty, with legal and oversight scrutiny ongoing.",
+  "summary": "Beginning in August 2026, NSF was reported to be on track for its lowest number of new grants in four decades, and by fiscal year's end it had left over $1 billion unspent, diverted $1.4 billion in congressionally mandated funds, and gutted its social sciences portfolio. The situation has drawn a congressional probe from the top Science Democrat and, as of November 4, a lawsuit by CSU System researchers over grant cancellations. For the office, this signals severe delays, withheld (and in some cases allegedly illegal) funding, and an existential threat to social sciences research dependent on NSF.",
   "title": "NSF sharp decline in new research grants"
  },
  "nsf-metascience-office": {
@@ -978,6 +998,19 @@
   ],
   "summary": "Beginning July 2026, the White House unveiled a sweeping science funding overhaul that called for reducing university research funding, steering money toward industry and AI, and giving political appointees more control over grants. The plan drew bipartisan Senate opposition, including a stopgap bill blocking the changes, and by November 2 NSF walked back grant-policy changes tied to the OMB proposal. The overhaul faces continued political resistance but has already raised fears of a 'chilling' effect and researcher exodus.",
   "title": "White House science funding overhaul"
+ },
+ "trump-science-censorship-patterns": {
+  "events": [
+   {
+    "date": "2026-11-03",
+    "id": "news-64b25d65cc0c",
+    "source": "News",
+    "title": "Report Details 'Patterns' of Trump's Censorship of Science",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/11/03/report-details-patterns-trumps-censorship"
+   }
+  ],
+  "summary": "A November 3, 2026 report documented systematic 'patterns' of the Trump administration censoring and conditioning federal science funding. At this early stage the storyline rests on this single analysis, which frames censorship as a deliberate practice rather than isolated incidents, suggesting researchers should anticipate content-based constraints on federally funded work.",
+  "title": "Analyses of Trump administration censorship and conditioning of science funding"
  },
  "us-science-brain-drain": {
   "events": [

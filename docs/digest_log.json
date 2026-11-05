@@ -1827,5 +1827,31 @@
     "agency": "Nature"
    }
   ]
+ },
+ {
+  "date": "2026-11-05",
+  "summary": "\ud83d\udcf0 3 press\n\n**Bottom line:** Federal funding pressure is intensifying across indirect-cost rates, grant terminations, and research-conditioning\u2014budget and compliance exposure is rising on multiple fronts.\n\n\ud83d\udfe0 **New: Indirect cost cap** \u2014 Four federal agencies have tried to cap research indirect-cost reimbursement at 15% while rate negotiations stall, threatening institutions with negotiated rates often above 50%; model the budget hit and prepare for further shifts [CFO Dive](https://www.cfodive.com/news/universities-face-uncertain-indirect-cost-recovery-landscape/873859/).\n\n\ud83d\udfe0 **Ongoing: CSU v. NSF** \u2014 Three CSU professors filed a proposed class action over NSF terminating merit-reviewed grants flagged for keywords like \"equity\" and \"climate justice,\" signaling litigation risk and precedent for similarly targeted awards [Inside Higher Ed](https://www.insidehighered.com/news/quick-takes/2026/11/04/csu-researchers-sue-trump-over-grant-cancellations).\n\n\ud83d\udfe0 **New: Science censorship report** \u2014 An analysis of 244 articles found funding \"conditioning\"\u2014freezing grants until campus policy changes\u2014was the most-cited tactic constraining public health research, framing a broader pattern worth monitoring [Inside Higher Ed](https://www.insidehighered.com/news/government/science-research-policy/2026/11/03/report-details-patterns-trumps-censorship).",
+  "extra": "\ud83d\udcf0 From the research press\n- **New:** Report Details 'Patterns' of Trump's Censorship of Science \u2014 Inside Higher Ed, 2026-11-03\n  https://www.insidehighered.com/news/government/science-research-policy/2026/11/03/report-details-patterns-trumps-censorship\n- **Ongoing:** CSU System Researchers Sue Trump Administration Over Grant Cancellations \u2014 Inside Higher Ed, 2026-11-04\n  https://www.insidehighered.com/news/quick-takes/2026/11/04/csu-researchers-sue-trump-over-grant-cancellations\n- **New:** Universities face uncertain indirect cost recovery landscape \u2014 CFO Dive, 2026-11-05\n  https://www.cfodive.com/news/universities-face-uncertain-indirect-cost-recovery-landscape/873859/\n\n\ud83d\udcc8 Trend watch\nToday's grant-cancellation suit and censorship report extend an ongoing litigation/funding-cut theme, with at least 5 log items in the past three weeks documenting researchers suing or fleeing over Trump funding cuts and politicization of science (e.g., AP Oct 19 & 26, Nature Oct 19, COSSA Oct 20, Just the News Oct 31).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Trump administration continues to reshape federal research funding through executive-branch actions\u2014conditioning grants on policy changes, terminating NSF awards flagged for keywords under a methodology drawn from Sen. Cruz's report, and attempting across four agencies to cap indirect cost recovery at 15% against negotiated rates often above 50%. The NSF terminations now face a proposed class-action lawsuit on First and Fifth Amendment grounds, while stalled rate negotiations leave institutions advised to prepare for further policy shifts.",
+  "items": [],
+  "press": [
+   {
+    "title": "Report Details 'Patterns' of Trump's Censorship of Science",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/11/03/report-details-patterns-trumps-censorship",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   },
+   {
+    "title": "CSU System Researchers Sue Trump Administration Over Grant Cancellations",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/11/04/csu-researchers-sue-trump-over-grant-cancellations",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   },
+   {
+    "title": "Universities face uncertain indirect cost recovery landscape",
+    "url": "https://www.cfodive.com/news/universities-face-uncertain-indirect-cost-recovery-landscape/873859/",
+    "level": "HIGH",
+    "agency": "CFO Dive"
+   }
+  ]
  }
 ]
