@@ -1853,5 +1853,32 @@
     "agency": "CFO Dive"
    }
   ]
+ },
+ {
+  "date": "2026-11-06",
+  "summary": "\ud83d\udd35 2 info \u00b7 \ud83d\udcf0 1 press\n\nBottom line: Post-election shifts in Congress could reshape science funding and oversight, but no immediate action items; one routine NIH notice to note.\n\n- **Ongoing:** **Post-Election Congressional Shake-Up** \u2014 2026 midterms may shift control of science spending and oversight, with pending grant rules tied to future funding and Democrats planning probes into grant terminations and agency leadership, so track for downstream funding and compliance impacts [AIP FYI](https://www.aip.org/fyi/science-policy-faces-a-post-election-shake-up-in-congress).\n\nRoutine/informational: NIH notice NOT-OD-26-092 on National Death Index linkage access for NIH-supported investigators [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-092.html).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Science Policy Faces a Post-Election Shake-Up in Congress \u2014 American Institute of Physics (AIP FYI), 2026-11-06\n  https://www.aip.org/fyi/science-policy-faces-a-post-election-shake-up-in-congress\n\n\ud83c\udfdb\ufe0f Government affairs\nFollowing the 2026 midterms, control of science spending and oversight of the administration's handling of federal research is poised to shift, with the fate of pending grant rules tied to future funding legislation. Democrats plan to investigate grant terminations and agency leadership decisions.",
+  "items": [
+   {
+    "title": "National Death Index Linkage Access for NIH-Supported Investigators",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-092.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "National Death Index Linkage Access for NIH-Supported Investigators",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-26-092.html",
+    "level": "INFO",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Science Policy Faces a Post-Election Shake-Up in Congress",
+    "url": "https://www.aip.org/fyi/science-policy-faces-a-post-election-shake-up-in-congress",
+    "level": "MODERATE",
+    "agency": "American Institute of Physics (AIP FYI)"
+   }
+  ]
  }
 ]
