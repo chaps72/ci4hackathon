@@ -21,9 +21,16 @@
     "source": "News",
     "title": "Science Policy Faces a Post-Election Shake-Up in Congress",
     "url": "https://www.aip.org/fyi/science-policy-faces-a-post-election-shake-up-in-congress"
+   },
+   {
+    "date": "2026-11-06",
+    "id": "news-656a64c76b71",
+    "source": "News",
+    "title": "Woke 2.0? Scientists in 120th Congress push to restore DEI grants",
+    "url": "https://www.statnews.com/2026/11/06/abdul-el-sayed-jasmine-clark-defend-health-equity-from-cuts/"
    }
   ],
-  "summary": "Ahead of the November 3 midterms, scientists weighed in on what was at stake for research policy, and results reported on November 4 were characterized as a 'historic change' with significant implications for science. As of November 6, coverage indicates Congress is facing a post-election shake-up in science policy. The outcome signals potentially substantial shifts in the legislative landscape affecting research that the office should monitor closely.",
+  "summary": "Scientists flagged significant stakes ahead of the November 3 midterms, and the results were characterized as a 'historic change' with major implications for science policy. In the post-election shake-up, members of the incoming 120th Congress are pushing to restore DEI grants, indicating a shifting legislative landscape that could reshape science funding and policy priorities.",
   "title": "2026 US midterm elections and their impact on science policy"
  },
  "ahrq-grant-terminations": {
@@ -719,10 +726,37 @@
     "source": "News",
     "title": "NSF faces funding cuts and policy changes",
     "url": "https://www.asbmb.org/asbmb-today/policy/101426/nsf-faces-funding-cuts-and-policy-changes"
+   },
+   {
+    "date": "2026-11-08",
+    "id": "news-6d0e2337170e",
+    "source": "News",
+    "title": "NSF Drops OMB-Based Grant Policy Changes After 3,000+ Comments",
+    "url": "https://casrai.org/news/nsf-drops-omb-based-grant-policy-changes"
    }
   ],
-  "summary": "NSF has proposed a metascience office and related grantmaking changes, which researchers greeted with skepticism as of September 2026. By mid-October, NSF was also facing funding cuts alongside these policy changes, compounding uncertainty about the agency's direction and its approach to research funding.",
+  "summary": "NSF proposed a new metascience office and OMB-based grantmaking policy changes that researchers met with skepticism in September, followed by broader funding cuts and policy shifts in October. After receiving more than 3,000 public comments, NSF dropped the OMB-based grant policy changes in November. The reversal signals that organized community feedback can influence NSF policy decisions, though broader funding and metascience questions remain unsettled.",
   "title": "NSF metascience office and grantmaking changes"
+ },
+ "nsf-social-science-directorate-defunding": {
+  "events": [
+   {
+    "date": "2026-11-09",
+    "id": "news-63ccbeee31e1",
+    "source": "News",
+    "title": "Researchers sue to block NSF from demolishing social science directorate",
+    "url": "https://www.science.org/content/article/researchers-sue-block-nsf-demolishing-social-science-directorate"
+   },
+   {
+    "date": "2026-11-09",
+    "id": "news-c4088e11e154",
+    "source": "News",
+    "title": "National Science Foundation Sued Over Plan To Defund Unit",
+    "url": "https://www.law360.com/governmentcontracts/articles/2547966"
+   }
+  ],
+  "summary": "Following NSF's plan to defund its social and behavioral science directorate, researchers filed suit on November 9 to block the move. The case is now in litigation, leaving the directorate's fate uncertain and signaling that affected scientists are turning to the courts to contest NSF's restructuring.",
+  "title": "NSF plan to defund social/behavioral science directorate"
  },
  "pentagon-confucius-institutes-threat": {
   "events": [
