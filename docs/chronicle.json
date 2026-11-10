@@ -226,9 +226,16 @@
     "source": "News",
     "title": "'Fiercely stubborn': the US scientists continuing their research amid funding cuts",
     "url": "https://www.nature.com/articles/d41586-026-03315-5"
+   },
+   {
+    "date": "2026-11-10",
+    "id": "news-e02664bc8fa3",
+    "source": "News",
+    "title": "University of Alaska reports $86.2M in frozen federal grants restored",
+    "url": "https://alaskapublic.org/news/education/2026-11-10/university-of-alaska-reports-86-2m-in-frozen-federal-grants-restored"
    }
   ],
-  "summary": "Beginning in September 2026, a former Harvard researcher's Grant Witness tracking effort documented massive federal research funding disruptions, with federal grant awards falling to a six-year low. As of October 19, coverage highlighted scientists described as 'fiercely stubborn' continuing their work despite the cuts. This provides a data-driven picture of the scale of funding declines facing researchers.",
+  "summary": "Beginning in late September 2026, a former Harvard researcher's Grant Witness effort documented widespread federal research funding disruptions, with federal grant awards reported at a six-year low by early October and scientists described as continuing their work despite cuts. As of November 10, 2026, there are some signs of recovery, including the University of Alaska reporting $86.2M in frozen federal grants restored. The tracker offers a tool for monitoring funding volatility and potential restorations relevant to the university's own federal awards.",
   "title": "Grant Witness tracking of federal research funding disruptions"
  },
  "harvard-funding-legal-fight": {
@@ -753,9 +760,23 @@
     "source": "News",
     "title": "National Science Foundation Sued Over Plan To Defund Unit",
     "url": "https://www.law360.com/governmentcontracts/articles/2547966"
+   },
+   {
+    "date": "2026-11-09",
+    "id": "news-49d15685639c",
+    "source": "News",
+    "title": "Scientists sue National Science Foundation over dismantling of social sciences",
+    "url": "https://www.bostonglobe.com/2026/11/09/metro/social-science-trump-woke-national-science-foundation/"
+   },
+   {
+    "date": "2026-11-10",
+    "id": "news-814369afabb2",
+    "source": "News",
+    "title": "Researchers and faculty sue NSF over axing of its social science unit",
+    "url": "https://www.highereddive.com/news/researchers-and-faculty-sue-nsf-over-axing-of-its-social-science-unit/874186/"
    }
   ],
-  "summary": "Following NSF's plan to defund its social and behavioral science directorate, researchers filed suit on November 9 to block the move. The case is now in litigation, leaving the directorate's fate uncertain and signaling that affected scientists are turning to the courts to contest NSF's restructuring.",
+  "summary": "In early November 2026, researchers, faculty, and scientists filed lawsuits against the NSF to block its plan to defund and dismantle its social and behavioral science directorate. The litigation is newly underway as of mid-November, with the dispute now centered on whether the NSF can legally eliminate the unit. The outcome could directly affect the viability of social and behavioral science funding streams at the university.",
   "title": "NSF plan to defund social/behavioral science directorate"
  },
  "pentagon-confucius-institutes-threat": {
