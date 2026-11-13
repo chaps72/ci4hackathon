@@ -1957,5 +1957,38 @@
     "agency": "Alaska Public Media"
    }
   ]
+ },
+ {
+  "date": "2026-11-13",
+  "summary": "\ud83d\udfe0 2 high \u00b7 \ud83d\udcf0 2 press\n\nBottom line: Two high-priority federal developments\u2014a new NIH biosecurity screening policy and litigation over NSF's planned social-science directorate closure\u2014warrant attention; NSF leadership remains in flux.\n\n\ud83d\udfe0 **New: NIH Nucleic Acid Screening** \u2014 NIH issued its National Policy for Nucleic Acid Synthesis Screening (NOT-OD-27-007), likely creating new compliance obligations for labs procuring synthetic nucleic acids [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-007.html).\n\n\ud83d\udfe0 **Ongoing: NSF SBE Lawsuit** \u2014 Researchers and scholarly societies sued NSF to block the FY2027 closure of its Social, Behavioral, and Economic Sciences directorate, alleging APA violations, leaving future social-science funding uncertain for our faculty [CASRAI](https://casrai.org/news/nsf-sbe-directorate-closure-lawsuit-2026).\n\nFor awareness: NSF faces a deepening leadership vacuum as acting director Brian Stone departs year-end with no Senate-confirmed director in place, increasing White House influence over the agency [Physics Today](https://physicstoday.aip.org/news/fyi-science-policy-news-dec26).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Researchers and Societies Sue NSF Over Planned Closure of Its Social Science Directorate \u2014 CASRAI, 2026-12-10\n  https://casrai.org/news/nsf-sbe-directorate-closure-lawsuit-2026\n- **New:** FYI science policy news: Leadership turns over at NSF \u2014 Physics Today (AIP FYI), 2026-12-09\n  https://physicstoday.aip.org/news/fyi-science-policy-news-dec26\n\n\ud83d\udcc8 Trend watch\nToday's NSF social-science directorate lawsuit and leadership-turnover items extend an escalating NSF-upheaval theme, marking at least the 4th NSF-restructuring/litigation item since early November (NSF lawsuits on Nov 9 \u00d73 plus OMB grant-policy reversals Nov 2\u20138).\n\n\ud83c\udfdb\ufe0f Government affairs\nNSF faces litigation under the Administrative Procedure Act over its planned fiscal 2027 closure of the Social, Behavioral, and Economic Sciences directorate, with plaintiffs alleging it bypassed proper channels to eliminate the largest federal funder of social science. A deepening leadership vacuum\u2014acting director Brian Stone's year-end departure and a stalled Senate confirmation for nominee Jim O'Neill\u2014has reportedly left the agency more subject to White House direction.",
+  "items": [
+   {
+    "title": "National Policy for Nucleic Acid Synthesis Screening",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-007.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "National Policy for Nucleic Acid Synthesis Screening",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-007.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Researchers and Societies Sue NSF Over Planned Closure of Its Social Science Directorate",
+    "url": "https://casrai.org/news/nsf-sbe-directorate-closure-lawsuit-2026",
+    "level": "HIGH",
+    "agency": "CASRAI"
+   },
+   {
+    "title": "FYI science policy news: Leadership turns over at NSF",
+    "url": "https://physicstoday.aip.org/news/fyi-science-policy-news-dec26",
+    "level": "INFO",
+    "agency": "Physics Today (AIP FYI)"
+   }
+  ]
  }
 ]

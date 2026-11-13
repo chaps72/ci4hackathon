@@ -718,6 +718,19 @@
   "summary": "Beginning in August 2026, NSF was reported to be on track for its lowest number of new grants in four decades, and by fiscal year's end it had left over $1 billion unspent, diverted $1.4 billion in congressionally mandated funds, and gutted its social sciences portfolio. The situation has drawn a congressional probe from the top Science Democrat and, as of November 4, a lawsuit by CSU System researchers over grant cancellations. For the office, this signals severe delays, withheld (and in some cases allegedly illegal) funding, and an existential threat to social sciences research dependent on NSF.",
   "title": "NSF sharp decline in new research grants"
  },
+ "nsf-leadership-turnover": {
+  "events": [
+   {
+    "date": "2026-12-09",
+    "id": "news-4e44851eb001",
+    "source": "News",
+    "title": "FYI science policy news: Leadership turns over at NSF",
+    "url": "https://physicstoday.aip.org/news/fyi-science-policy-news-dec26"
+   }
+  ],
+  "summary": "Science policy reporting on December 9, 2026 noted a turnover in leadership at NSF. The change signals a shift at the top of the agency, which may carry implications for its direction and ongoing disputes.",
+  "title": "NSF leadership turnover"
+ },
  "nsf-metascience-office": {
   "events": [
    {
@@ -774,10 +787,37 @@
     "source": "News",
     "title": "Researchers and faculty sue NSF over axing of its social science unit",
     "url": "https://www.highereddive.com/news/researchers-and-faculty-sue-nsf-over-axing-of-its-social-science-unit/874186/"
+   },
+   {
+    "date": "2026-12-10",
+    "id": "news-a0455f81de76",
+    "source": "News",
+    "title": "Researchers and Societies Sue NSF Over Planned Closure of Its Social Science Directorate",
+    "url": "https://casrai.org/news/nsf-sbe-directorate-closure-lawsuit-2026"
    }
   ],
-  "summary": "In early November 2026, researchers, faculty, and scientists filed lawsuits against the NSF to block its plan to defund and dismantle its social and behavioral science directorate. The litigation is newly underway as of mid-November, with the dispute now centered on whether the NSF can legally eliminate the unit. The outcome could directly affect the viability of social and behavioral science funding streams at the university.",
+  "summary": "Following NSF's plan to defund and close its social/behavioral science directorate, researchers, faculty, and scholarly societies filed suit in early November 2026 to block the move, with additional legal action reported through December 10, 2026. The dispute is now in litigation, leaving the directorate's future\u2014and funding for social and behavioral research\u2014uncertain pending the court's outcome.",
   "title": "NSF plan to defund social/behavioral science directorate"
+ },
+ "nucleic-acid-synthesis-screening": {
+  "events": [
+   {
+    "date": "2026-11-13",
+    "id": "nih-NOT-OD-27-007",
+    "source": "NIH Guide",
+    "title": "National Policy for Nucleic Acid Synthesis Screening",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-007.html"
+   },
+   {
+    "date": "Fri, 13 No",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-007.html",
+    "source": "NIH Guide",
+    "title": "National Policy for Nucleic Acid Synthesis Screening",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-007.html"
+   }
+  ],
+  "summary": "A National Policy for Nucleic Acid Synthesis Screening was issued on November 13, 2026. The policy is now in place, establishing federal screening expectations relevant to institutions conducting nucleic acid synthesis work.",
+  "title": "NIH policy for nucleic acid synthesis screening"
  },
  "pentagon-confucius-institutes-threat": {
   "events": [
