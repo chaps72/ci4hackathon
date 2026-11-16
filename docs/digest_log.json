@@ -1990,5 +1990,50 @@
     "agency": "Physics Today (AIP FYI)"
    }
   ]
+ },
+ {
+  "date": "2026-11-16",
+  "summary": "\ud83d\udfe1 2 moderate \u00b7 \ud83d\udcf0 4 press\n\nBottom line: Courts and Senate appropriators are pushing back on grant cuts and NSF rule changes, easing near-term funding risk ahead of the December 11 stopgap deadline.\n\n\ud83d\udd34 **Ongoing: Thakur grant terminations** \u2014 Supreme Court declined the administration's appeal, leaving ~$59M in UC research funding protected while diversity-related termination litigation continues [Reuters](https://www.yahoo.com/news/politics/articles/supreme-court-rejects-trump-appeal-144133929.html).\n\n\ud83d\udfe0 **Ongoing: Senate science funding** \u2014 Senate FY2027 bills propose ~$8.83B for NSF, far above the House's ~$7B and rejecting proposed cuts, signaling stronger prospects for research budgets [AIP](https://www.aip.org/fyi).\n\n\ud83d\udfe0 **Ongoing: NSF grant rules** \u2014 NSF will not proceed with changes easing grant cancellation and restricting publication-cost funding, reducing award uncertainty [Inside Higher Ed](https://www.insidehighered.com/news/quick-takes/2026/11/16/nsf-walks-back-changes-grant-rules).\n\nRoutine/informational: NIH extended its Parent K funding opportunities (NOT-OD-27-008), and the Senate HELP Committee set a November 18 vote on Jim O'Neill's NSF director nomination [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-008.html), [Inside Higher Ed](https://www.insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Supreme Court rejects Trump appeal defending diversity-related grant cuts \u2014 Reuters, 2026-11-16\n  https://www.yahoo.com/news/politics/articles/supreme-court-rejects-trump-appeal-144133929.html\n- **Ongoing:** Senate Science Funding Proposals Revealed \u2014 AIP (FYI), 2026-11-13\n  https://www.aip.org/fyi\n- **Ongoing:** NSF Walks Back Changes to Grant Rules \u2014 Inside Higher Ed, 2026-11-16\n  https://www.insidehighered.com/news/quick-takes/2026/11/16/nsf-walks-back-changes-grant-rules\n- **Ongoing:** NSF May Finally Get a Director. It's Unclear What That Would Change. \u2014 Inside Higher Ed, 2026-11-16\n  https://www.insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything\n\n\ud83d\udcc8 Trend watch\nToday's NSF rule reversal continues a sustained walk-back theme\u2014at least the 4th item on NSF's OMB-based grant-policy retreat in two weeks (AIP Nov 2, Cornell Nov 3, CASRAI Nov 8, plus today).\n\n\ud83c\udfdb\ufe0f Government affairs\nSenate appropriators released FY2027 bills proposing roughly $8.83 billion for NSF\u2014above the House's ~$7 billion and rejecting the administration's proposed cuts\u2014ahead of a December 11 stopgap deadline, while NSF reversed a proposed grant-rule overhaul that would have aligned with an OMB rule and the Senate HELP Committee scheduled a November 18 vote to advance Jim O'Neill's NSF director nomination. Separately, the Supreme Court declined to hear the administration's appeal defending roughly $59 million in diversity-related grant cuts, leaving a lower-court ruling protecting the funding in place.",
+  "items": [
+   {
+    "title": "Notice of Change: Extension of NIH Parent K Notice of Funding Opportunities",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-008.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change: Extension of NIH Parent K Notice of Funding Opportunities",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-008.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Supreme Court rejects Trump appeal defending diversity-related grant cuts",
+    "url": "https://www.yahoo.com/news/politics/articles/supreme-court-rejects-trump-appeal-144133929.html",
+    "level": "CRITICAL",
+    "agency": "Reuters"
+   },
+   {
+    "title": "Senate Science Funding Proposals Revealed",
+    "url": "https://www.aip.org/fyi",
+    "level": "HIGH",
+    "agency": "AIP (FYI)"
+   },
+   {
+    "title": "NSF Walks Back Changes to Grant Rules",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/11/16/nsf-walks-back-changes-grant-rules",
+    "level": "HIGH",
+    "agency": "Inside Higher Ed"
+   },
+   {
+    "title": "NSF May Finally Get a Director. It's Unclear What That Would Change.",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything",
+    "level": "INFO",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]

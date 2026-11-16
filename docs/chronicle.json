@@ -199,9 +199,16 @@
     "source": "News",
     "title": "Feds target $3.7B in research funds as part of DEI crackdown",
     "url": "https://justthenews.com/nation/states/center-square/feds-target-37b-research-funds-part-dei-crackdown"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-f5cf114ce558",
+    "source": "News",
+    "title": "Supreme Court rejects Trump appeal defending diversity-related grant cuts",
+    "url": "https://www.yahoo.com/news/politics/articles/supreme-court-rejects-trump-appeal-144133929.html"
    }
   ],
-  "summary": "In July 2026 the White House acknowledged using keyword lists to cancel billions of dollars in research grants, particularly in California, targeting topics like climate change, DEI, and gender. Lawsuits filed in September argue NIH's keyword-driven terminations violated grant applicants' First Amendment rights, and by October 31 the government was targeting $3.7B in research funds amid a broader DEI crackdown. The saga remains active in litigation, putting significant funding and applicant speech protections at stake.",
+  "summary": "The White House admitted in July 2026 to using keyword lists to terminate billions in research grants targeting climate change, DEI, and gender topics, prompting lawsuits arguing NIH violated applicants' First Amendment rights. By late October the administration was targeting $3.7B in funds under a DEI crackdown, and in November the Supreme Court rejected the Trump appeal defending the diversity-related cuts. This means the keyword-based terminations remain under active legal challenge, with the courts so far declining to shield the cuts.",
   "title": "Keyword-based research grant terminations"
  },
  "grant-witness-funding-tracker": {
@@ -726,9 +733,16 @@
     "source": "News",
     "title": "FYI science policy news: Leadership turns over at NSF",
     "url": "https://physicstoday.aip.org/news/fyi-science-policy-news-dec26"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-f15ba9f0eff3",
+    "source": "News",
+    "title": "NSF May Finally Get a Director. It's Unclear What That Would Change.",
+    "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything"
    }
   ],
-  "summary": "Science policy reporting on December 9, 2026 noted a turnover in leadership at NSF. The change signals a shift at the top of the agency, which may carry implications for its direction and ongoing disputes.",
+  "summary": "Coverage in November and December 2026 noted that NSF may finally get a director while questioning what difference that would make, followed by news of leadership turnover at the agency. The storyline is just emerging, with the practical impact of new NSF leadership still unclear.",
   "title": "NSF leadership turnover"
  },
  "nsf-metascience-office": {
@@ -753,9 +767,16 @@
     "source": "News",
     "title": "NSF Drops OMB-Based Grant Policy Changes After 3,000+ Comments",
     "url": "https://casrai.org/news/nsf-drops-omb-based-grant-policy-changes"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-43bda8b28771",
+    "source": "News",
+    "title": "NSF Walks Back Changes to Grant Rules",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/11/16/nsf-walks-back-changes-grant-rules"
    }
   ],
-  "summary": "NSF proposed a new metascience office and OMB-based grantmaking policy changes that researchers met with skepticism in September, followed by broader funding cuts and policy shifts in October. After receiving more than 3,000 public comments, NSF dropped the OMB-based grant policy changes in November. The reversal signals that organized community feedback can influence NSF policy decisions, though broader funding and metascience questions remain unsettled.",
+  "summary": "NSF's metascience plan and OMB-based grantmaking changes drew researcher skepticism beginning in September 2026 amid broader funding cuts and policy shifts. After receiving more than 3,000 comments, NSF dropped the OMB-based grant policy changes in November and walked back the grant rule changes. This signals that sustained community feedback successfully reversed the proposed grantmaking changes, at least for now.",
   "title": "NSF metascience office and grantmaking changes"
  },
  "nsf-social-science-directorate-defunding": {
@@ -1096,9 +1117,16 @@
     "source": "News",
     "title": "NSF walks back grant-policy changes based on OMB proposal",
     "url": "https://www.aip.org/newsletter/000001a1-8df7-d7ab-a1e3-cdff988f0000"
+   },
+   {
+    "date": "2026-11-13",
+    "id": "news-447cc935cf80",
+    "source": "News",
+    "title": "Senate Science Funding Proposals Revealed",
+    "url": "https://www.aip.org/fyi"
    }
   ],
-  "summary": "Beginning July 2026, the White House unveiled a sweeping science funding overhaul that called for reducing university research funding, steering money toward industry and AI, and giving political appointees more control over grants. The plan drew bipartisan Senate opposition, including a stopgap bill blocking the changes, and by November 2 NSF walked back grant-policy changes tied to the OMB proposal. The overhaul faces continued political resistance but has already raised fears of a 'chilling' effect and researcher exodus.",
+  "summary": "In late July 2026 the White House unveiled a science funding overhaul that called for reducing university research funding, steering money outside academia, and prioritizing AI, drawing bipartisan Senate pushback including an appropriations bill blocking the changes and objections to political control over funding. Through the fall, agencies advanced implementation (an NSF memo, a 'golden age' framing) amid funding cuts and researcher exodus, but by early November NSF walked back grant-policy changes tied to an OMB proposal and the Senate revealed its own funding proposals. The overhaul remains contested and partially rolled back, with its ultimate shape dependent on ongoing congressional appropriations battles.",
   "title": "White House science funding overhaul"
  },
  "trump-science-censorship-patterns": {
