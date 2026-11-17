@@ -740,9 +740,16 @@
     "source": "News",
     "title": "NSF May Finally Get a Director. It's Unclear What That Would Change.",
     "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-122dacaee1be",
+    "source": "News",
+    "title": "NSF May Finally Get a Director. It's Unclear What That Would Change.",
+    "url": "https://insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything"
    }
   ],
-  "summary": "Coverage in November and December 2026 noted that NSF may finally get a director while questioning what difference that would make, followed by news of leadership turnover at the agency. The storyline is just emerging, with the practical impact of new NSF leadership still unclear.",
+  "summary": "In November and December 2026, NSF moved toward finally installing a director amid broader leadership turnover, though observers noted it was unclear what practical change that would bring. The agency's leadership is in flux during a period of major funding and policy upheaval, leaving its direction uncertain.",
   "title": "NSF leadership turnover"
  },
  "nsf-metascience-office": {
@@ -1124,9 +1131,23 @@
     "source": "News",
     "title": "Senate Science Funding Proposals Revealed",
     "url": "https://www.aip.org/fyi"
+   },
+   {
+    "date": "2026-11-15",
+    "id": "news-f13320606392",
+    "source": "News",
+    "title": "Senate spending panel backs raises for science agencies and questions Trump policies",
+    "url": "https://www.science.org/content/article/senate-spending-panel-backs-raises-science-agencies-and-questions-trump-policies"
+   },
+   {
+    "date": "2026-11-17",
+    "id": "news-fc391262ab7f",
+    "source": "News",
+    "title": "Senate FY2027 Draft Proposes $48.99B for NIH",
+    "url": "https://casrai.org/news/senate-fy2027-labor-hhs-nih-funding-bill-2026"
    }
   ],
-  "summary": "In late July 2026 the White House unveiled a science funding overhaul that called for reducing university research funding, steering money outside academia, and prioritizing AI, drawing bipartisan Senate pushback including an appropriations bill blocking the changes and objections to political control over funding. Through the fall, agencies advanced implementation (an NSF memo, a 'golden age' framing) amid funding cuts and researcher exodus, but by early November NSF walked back grant-policy changes tied to an OMB proposal and the Senate revealed its own funding proposals. The overhaul remains contested and partially rolled back, with its ultimate shape dependent on ongoing congressional appropriations battles.",
+  "summary": "Beginning in July 2026, the White House unveiled a sweeping overhaul to reduce university research funding, steer money toward industry and AI, and give political appointees greater control, prompting bipartisan Senate pushback, a stopgap bill blocking the changes, and widespread researcher concern over a 'chilling' effect. By November, NSF had walked back some OMB-driven grant-policy changes, and Senate appropriators backed raises for science agencies, with a draft FY2027 proposal of $48.99B for NIH. The confrontation between the administration's restructuring agenda and congressional appropriators remains unresolved, leaving universities facing significant uncertainty over future funding and research autonomy.",
   "title": "White House science funding overhaul"
  },
  "trump-science-censorship-patterns": {
@@ -1137,9 +1158,16 @@
     "source": "News",
     "title": "Report Details 'Patterns' of Trump's Censorship of Science",
     "url": "https://www.insidehighered.com/news/government/science-research-policy/2026/11/03/report-details-patterns-trumps-censorship"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-4a8eb2237af9",
+    "source": "News",
+    "title": "Supreme Court declines Trump bid to revive DEI research funding cuts",
+    "url": "https://www.highereddive.com/news/supreme-court-declines-trump-bid-to-revive-dei-research-funding-cuts/874788/"
    }
   ],
-  "summary": "A November 3, 2026 report documented systematic 'patterns' of the Trump administration censoring and conditioning federal science funding. At this early stage the storyline rests on this single analysis, which frames censorship as a deliberate practice rather than isolated incidents, suggesting researchers should anticipate content-based constraints on federally funded work.",
+  "summary": "A November 2026 report documented 'patterns' of the Trump administration censoring science, and shortly after the Supreme Court declined Trump's bid to revive DEI-related research funding cuts. The administration's efforts to condition and constrain science funding are facing documented scrutiny and legal setbacks, though the underlying pressures on research remain active.",
   "title": "Analyses of Trump administration censorship and conditioning of science funding"
  },
  "us-science-brain-drain": {

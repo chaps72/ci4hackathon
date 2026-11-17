@@ -2035,5 +2035,92 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-11-17",
+  "summary": "\ud83d\udfe1 9 moderate \u00b7 \ud83d\udcf0 4 press\n\nCourts and Congress are pushing back on administration science-funding cuts, while several NIH policy shifts warrant near-term compliance attention.\n\n- \ud83d\udd34 **Ongoing:** **SCOTUS DEI funding** \u2014 The Supreme Court declined to revive the administration's bid to cut UC grants over disfavored topics, leaving the lower-court block intact and protecting threatened awards [Higher Ed Dive](https://www.highereddive.com/news/supreme-court-declines-trump-bid-to-revive-dei-research-funding-cuts/874788/).\n- \ud83d\udfe0 **Ongoing:** **NSF budget** \u2014 A Senate panel proposed an $80M NSF increase and rejected the administration's $4.6B cut, signaling a more favorable funding outlook [Science](https://www.science.org/content/article/senate-spending-panel-backs-raises-science-agencies-and-questions-trump-policies).\n- \ud83d\udfe0 **Ongoing:** **NIH FY2027** \u2014 Senate draft sets NIH at $48.99B and addresses university research funding terms [CASRAI](https://casrai.org/news/senate-fy2027-labor-hhs-nih-funding-bill-2026).\n- **New:** **NIH data-safety monitoring** \u2014 NIH seeks public input on updating its 1998 monitoring policy for clinical research [HHS](https://www.federalregister.gov/documents/2026/11/17/2026-23300/draft-policy-update-to-the-nih-policy-for-data-and-safety-monitoring).\n- **New:** **NIMH data-sharing rescissions** \u2014 NIH rescinded four prior autism/clinical data-sharing policies, affecting affected projects [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-050.html).\n\nInformational: NSF may soon get a confirmed director [Inside Higher Ed](https://insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything).",
+  "extra": "\u23f0 Deadlines & comment opportunities\n- [Draft Policy Update to the NIH Policy for Data and Safety Monitoring](https://www.federalregister.gov/documents/2026/11/17/2026-23300/draft-policy-update-to-the-nih-policy-for-data-and-safety-monitoring) \u2014 \u23f0 comment due 2027-01-06 \u00b7 \ud83d\udcac comment: https://www.federalregister.gov/documents/2026/11/17/2026-23300/draft-policy-update-to-the-nih-policy-for-data-and-safety-monitoring\n\n\ud83d\udcf0 From the research press\n- **Ongoing:** Supreme Court declines Trump bid to revive DEI research funding cuts \u2014 Higher Ed Dive, 2026-11-16\n  https://www.highereddive.com/news/supreme-court-declines-trump-bid-to-revive-dei-research-funding-cuts/874788/\n- **Ongoing:** Senate spending panel backs raises for science agencies and questions Trump policies \u2014 Science, 2026-11-15\n  https://www.science.org/content/article/senate-spending-panel-backs-raises-science-agencies-and-questions-trump-policies\n- **Ongoing:** Senate FY2027 Draft Proposes $48.99B for NIH \u2014 CASRAI (ResearchResearch), 2026-11-17\n  https://casrai.org/news/senate-fy2027-labor-hhs-nih-funding-bill-2026\n- **Ongoing:** NSF May Finally Get a Director. It's Unclear What That Would Change. \u2014 Inside Higher Ed, 2026-11-16\n  https://insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything\n\n\ud83d\udcc8 Trend watch\nToday's four NIMH/autism data-sharing rescissions extend a recurring NIH data-policy retrenchment seen repeatedly in the log (e.g., DMS implementation updates 7/29 and 10/5, National Death Index access 11/6, menopause CDE RFI 11/9), marking at least the 4th data-policy action in roughly six weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nSenate appropriators advanced FY2027 proposals rejecting the Trump administration's proposed cuts, backing an $80 million NSF increase and a $48.99 billion NIH program level, while criticizing noncompliance with a directive barring NSF directorate funding reductions. Separately, the Supreme Court declined to revive the administration's bid to cut DEI-related research funding, NSF may soon gain its first Senate-confirmed director since April 2025, and NIH is seeking input on data and safety monitoring policy updates while rescinding several NIMH data-sharing notices.",
+  "items": [
+   {
+    "title": "Draft Policy Update to the NIH Policy for Data and Safety Monitoring",
+    "url": "https://www.federalregister.gov/documents/2026/11/17/2026-23300/draft-policy-update-to-the-nih-policy-for-data-and-safety-monitoring",
+    "level": "MODERATE",
+    "agency": "Health and Human Services Department"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-20-010, &quot;Notice of Data Sharing Policy for Autism Data&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-050.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-15-012, &quot;Data Sharing Expectations for Clinical Research Funded by NIMH&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-055.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-14-015, &quot;Data Sharing Expectations for NIMH-funded Clinical Trials&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-070.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-09-005, &quot;Sharing Data via the National Database for Autism Research&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-075.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-20-010, \"Notice of Data Sharing Policy for Autism Data\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-050.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-15-012, \"Data Sharing Expectations for Clinical Research Funded by NIMH\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-055.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-14-015, \"Data Sharing Expectations for NIMH-funded Clinical Trials\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-070.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to rescind NOT-MH-09-005, \"Sharing Data via the National Database for Autism Research\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-MH-27-075.html",
+    "level": "MODERATE",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": [
+   {
+    "title": "Supreme Court declines Trump bid to revive DEI research funding cuts",
+    "url": "https://www.highereddive.com/news/supreme-court-declines-trump-bid-to-revive-dei-research-funding-cuts/874788/",
+    "level": "CRITICAL",
+    "agency": "Higher Ed Dive"
+   },
+   {
+    "title": "Senate spending panel backs raises for science agencies and questions Trump policies",
+    "url": "https://www.science.org/content/article/senate-spending-panel-backs-raises-science-agencies-and-questions-trump-policies",
+    "level": "HIGH",
+    "agency": "Science"
+   },
+   {
+    "title": "Senate FY2027 Draft Proposes $48.99B for NIH",
+    "url": "https://casrai.org/news/senate-fy2027-labor-hhs-nih-funding-bill-2026",
+    "level": "HIGH",
+    "agency": "CASRAI (ResearchResearch)"
+   },
+   {
+    "title": "NSF May Finally Get a Director. It's Unclear What That Would Change.",
+    "url": "https://insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything",
+    "level": "INFO",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]
