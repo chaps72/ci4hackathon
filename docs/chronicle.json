@@ -517,9 +517,16 @@
     "source": "News",
     "title": "NIH awarded more new grants in fiscal 2026, even as total awards fell",
     "url": "https://www.rdworldonline.com/nih-new-grants-fiscal-2026-total-awards/"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-00399815265e",
+    "source": "News",
+    "title": "Supreme Court rejects Trump's bid to appeal decision restoring terminated grants",
+    "url": "https://www.science.org/content/article/supreme-court-rejects-trump-s-bid-appeal-decision-restoring-terminated-grants"
    }
   ],
-  "summary": "Since July 2026, NIH under Director Bhattacharya has terminated grants misaligned with Trump administration priorities, including over 150 health research and health disparities grants, disrupting 1 in 30 clinical trials affecting more than 74,000 participants, with reports of censored research in Alzheimer's and kidney disease. While odds of winning grants have plummeted and funding has been reshaped, NIH awarded more new grants in fiscal 2026 even as total awards fell, leaving researchers facing heightened termination risk and funding uncertainty amid ongoing congressional questioning.",
+  "summary": "Beginning in mid-2026, the NIH under Director Bhattacharya resumed terminating grants misaligned with Trump administration priorities, cutting health disparities and other research, disrupting 1 in 30 clinical trials affecting over 74,000 participants, and prompting congressional scrutiny from senators McCormick and Fetterman. While FY2026 data showed funding was reshaped\u2014with more new grants awarded even as total awards fell\u2014the Supreme Court declined in November 2026 to hear Trump's appeal of a decision restoring terminated grants. This means the terminations faced a significant legal setback, though uncertainty around funding priorities and processes persists.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
@@ -979,9 +986,16 @@
     "source": "News",
     "title": "DOD Declares Foreign Partnerships Audit a Success",
     "url": "https://www.insidehighered.com/news/global/us-colleges-world/2026/10/26/dod-declares-foreign-partnerships-audit-success"
+   },
+   {
+    "date": "2026-11-17",
+    "id": "news-df986ee7a271",
+    "source": "News",
+    "title": "U.S. Departments of Education and State Urge Colleges and Universities to Protect America's Research Enterprise",
+    "url": "https://www.ed.gov/about/news/press-release/us-departments-of-education-and-state-urge-colleges-and-universities-protect-americas-research-enterprise"
    }
   ],
-  "summary": "In August 2026, the Pentagon ordered 30 U.S. universities to audit and report on their partnerships with foreign entities of concern, particularly Chinese research and military-linked institutions, giving them a two-week window to comply. By late October, institutions began severing foreign research ties, the Pentagon escalated with demands to cut ties with the Chinese military and threats of additional audits, and on October 26 the DOD declared the audit a success. This signals heightened federal scrutiny of international research collaborations and the likelihood of further audits, meaning research offices should proactively review their own foreign partnerships.",
+  "summary": "In August 2026, the Pentagon ordered 30 U.S. universities to audit and report within two weeks on their partnerships with foreign institutions of concern, particularly Chinese research and military-linked partners. By October the DOD declared the audit a success, with institutions severing foreign ties under threat of further audits, and in November the Departments of Education and State urged colleges to protect the U.S. research enterprise. This signals intensifying federal pressure on universities to cut foreign research collaborations, with additional audits hinted at.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "postdoc-visa-investigation": {

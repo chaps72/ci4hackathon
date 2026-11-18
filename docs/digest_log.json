@@ -2122,5 +2122,25 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-11-18",
+  "summary": "\ud83d\udcf0 2 press\n\nBottom line: A Supreme Court denial locks in restored research grants for now, while federal agencies press universities to tighten research-security controls.\n\n- \ud83d\udd34 **Ongoing: Grant terminations** \u2014 The Supreme Court declined to review a ruling that Trux... administration violated researchers' First Amendment rights by cutting UC and other grants on disfavored topics, leaving restoration orders in place as litigation continues [Science](https://www.science.org/content/article/supreme-court-rejects-trump-s-bid-appeal-decision-restoring-terminated-grants).\n- \ud83d\udfe0 **Ongoing: Research security** \u2014 Education and State issued a joint letter urging stronger safeguards against foreign interference, citing ~$9 billion in disclosed foreign funding (over $900 million from China, North Korea, and Russia), signaling heightened compliance scrutiny [U.S. Department of Education](https://www.ed.gov/about/news/press-release/us-departments-of-education-and-state-urge-colleges-and-universities-protect-americas-research-enterprise).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Supreme Court rejects Trump's bid to appeal decision restoring terminated grants \u2014 Science, 2026-11-16\n  https://www.science.org/content/article/supreme-court-rejects-trump-s-bid-appeal-decision-restoring-terminated-grants\n- **Ongoing:** U.S. Departments of Education and State Urge Colleges and Universities to Protect America' \u2014 U.S. Department of Education, 2026-11-17\n  https://www.ed.gov/about/news/press-release/us-departments-of-education-and-state-urge-colleges-and-universities-protect-americas-research-enterprise\n\n\ud83d\udcc8 Trend watch\nToday's Supreme Court rejection of Trump's bid to revive terminated/DEI-related grant cuts marks at least the 4th litigation item on grant terminations in roughly two weeks (CSU suit 11/4, Alaska restorations 11/10, Reuters/Higher Ed Dive SCOTUS coverage 11/16).\n\n\ud83c\udfdb\ufe0f Government affairs\nThe Supreme Court declined to review a lower-court ruling that the Trump administration violated researchers' First Amendment rights by terminating University of California and other university grants on disfavored topics, leaving the restored grants in place while litigation continues. The Departments of Education and State jointly urged universities to strengthen research-security safeguards against foreign interference, citing roughly $9 billion in disclosed foreign funding, including over $900 million from countries of concern such as China, North Korea, and Russia.",
+  "items": [],
+  "press": [
+   {
+    "title": "Supreme Court rejects Trump's bid to appeal decision restoring terminated grants",
+    "url": "https://www.science.org/content/article/supreme-court-rejects-trump-s-bid-appeal-decision-restoring-terminated-grants",
+    "level": "CRITICAL",
+    "agency": "Science"
+   },
+   {
+    "title": "U.S. Departments of Education and State Urge Colleges and Universities to Protect America's Research Enterprise",
+    "url": "https://www.ed.gov/about/news/press-release/us-departments-of-education-and-state-urge-colleges-and-universities-protect-americas-research-enterprise",
+    "level": "HIGH",
+    "agency": "U.S. Department of Education"
+   }
+  ]
  }
 ]
