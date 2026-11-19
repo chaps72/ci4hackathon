@@ -2142,5 +2142,43 @@
     "agency": "U.S. Department of Education"
    }
   ]
+ },
+ {
+  "date": "2026-11-19",
+  "summary": "\ud83d\udcf0 5 press\n\nFederal courts are increasingly curbing the administration's grant terminations, but keyword-based screening and FY2027 funding remain live risks.\n\n\ud83d\udd34 **Ongoing:** **Disfavored-terms injunction** \u2014 Researchers seek to block NIH's algorithmic screening of 200+ terms (e.g., \"gender,\" \"climate change\"), with a ruling likely by year-end that could affect our pending applications [Courthouse News](https://www.courthousenews.com/researchers-ask-to-block-trump-administration-from-terminating-grants-based-on-disfavored-terms/).\n\n\ud83d\udd34 **Ongoing:** **Supreme Court on UC grants** \u2014 The Court declined the appeal, preserving ~$1B in restored UC grants and signaling DEI/climate terminations remain legally vulnerable [Nature](https://www.nature.com/articles/d41586-026-03765-x).\n\n\ud83d\udfe0 **Ongoing:** **NIH text censorship** \u2014 Analysis finds spiking revisions stripping equity/diversity language from award text even as outright terminations slow [Grant Witness](https://grantwitness.org/nih/updates/2026-11-16-censorship).\n\n\ud83d\udfe0 **Ongoing:** **FY2027 appropriations** \u2014 Senate proposes modest NSF (~$8.83B)/NASA increases versus a House ~20% NSF cut, before the Dec. 11 deadline [AIP](https://www.aip.org/fyi/the-week-of-november-16-2026).\n\nRoutine: the Senate HELP Committee canceled its NSF director confirmation vote [Inside Higher Ed](https://www.insidehighered.com/news/quick-takes/2026/11/18/senate-committee-cancels-vote-nsf-director).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** US Supreme Court rebuffs White House effort to cut research grants \u2014 Nature, 2026-11-16\n  https://www.nature.com/articles/d41586-026-03765-x\n- **Ongoing:** Researchers ask to block Trump administration from terminating grants based on 'disfavored \u2014 Courthouse News Service, 2026-11-18\n  https://www.courthousenews.com/researchers-ask-to-block-trump-administration-from-terminating-grants-based-on-disfavored-terms/\n- **Ongoing:** At NIH, Censorship Continues Apace \u2014 Grant Witness, 2026-11-16\n  https://grantwitness.org/nih/updates/2026-11-16-censorship\n- **Ongoing:** Science Policy This Week: Nov 16, 2026 (Senate science funding proposals) \u2014 American Institute of Physics (FYI), 2026-11-16\n  https://www.aip.org/fyi/the-week-of-november-16-2026\n\n\ud83d\udcc8 Trend watch\nToday's court items on grant terminations/DEI cuts extend an ongoing litigation pattern\u2014the 4th-plus legal action over grant cancellations in roughly two weeks (CSU suit 11/4, NSF social-science suits 11/9\u201311/10, Supreme Court rejections 11/16).\n\n\ud83c\udfdb\ufe0f Government affairs\nSenate appropriators have proposed modest FY2027 increases for NSF (roughly $8.83 billion) and NASA science while a House bill seeks an approximately 20% NSF cut ahead of a December 11 funding deadline, and appropriators also told NSF it had \"failed to comply\" with direction limiting directorate cuts. On the executive and judicial front, the Supreme Court declined to hear the administration's appeal over terminated University of California grants\u2014preserving roughly a billion dollars in restored funding\u2014while NIH's keyword-based grant screening faces a pending preliminary injunction and the Senate HELP Committee canceled its vote on the NSF director nominee.",
+  "items": [],
+  "press": [
+   {
+    "title": "US Supreme Court rebuffs White House effort to cut research grants",
+    "url": "https://www.nature.com/articles/d41586-026-03765-x",
+    "level": "CRITICAL",
+    "agency": "Nature"
+   },
+   {
+    "title": "Researchers ask to block Trump administration from terminating grants based on 'disfavored terms'",
+    "url": "https://www.courthousenews.com/researchers-ask-to-block-trump-administration-from-terminating-grants-based-on-disfavored-terms/",
+    "level": "CRITICAL",
+    "agency": "Courthouse News Service"
+   },
+   {
+    "title": "At NIH, Censorship Continues Apace",
+    "url": "https://grantwitness.org/nih/updates/2026-11-16-censorship",
+    "level": "HIGH",
+    "agency": "Grant Witness"
+   },
+   {
+    "title": "Science Policy This Week: Nov 16, 2026 (Senate science funding proposals)",
+    "url": "https://www.aip.org/fyi/the-week-of-november-16-2026",
+    "level": "HIGH",
+    "agency": "American Institute of Physics (FYI)"
+   },
+   {
+    "title": "Senate Committee Cancels Vote on NSF Director",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/11/18/senate-committee-cancels-vote-nsf-director",
+    "level": "INFO",
+    "agency": "Inside Higher Ed"
+   }
+  ]
  }
 ]

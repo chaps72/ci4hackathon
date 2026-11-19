@@ -206,9 +206,16 @@
     "source": "News",
     "title": "Supreme Court rejects Trump appeal defending diversity-related grant cuts",
     "url": "https://www.yahoo.com/news/politics/articles/supreme-court-rejects-trump-appeal-144133929.html"
+   },
+   {
+    "date": "2026-11-18",
+    "id": "news-9cdf110466fb",
+    "source": "News",
+    "title": "Researchers ask to block Trump administration from terminating grants based on 'disfavored terms'",
+    "url": "https://www.courthousenews.com/researchers-ask-to-block-trump-administration-from-terminating-grants-based-on-disfavored-terms/"
    }
   ],
-  "summary": "The White House admitted in July 2026 to using keyword lists to terminate billions in research grants targeting climate change, DEI, and gender topics, prompting lawsuits arguing NIH violated applicants' First Amendment rights. By late October the administration was targeting $3.7B in funds under a DEI crackdown, and in November the Supreme Court rejected the Trump appeal defending the diversity-related cuts. This means the keyword-based terminations remain under active legal challenge, with the courts so far declining to shield the cuts.",
+  "summary": "The White House admitted in July 2026 to using federal keyword lists to cancel billions in research grants, targeting terms tied to climate change, DEI, and gender, prompting lawsuits arguing NIH violated applicants' First Amendment rights. The Supreme Court rejected Trump's appeal defending the diversity-related cuts on November 16, 2026, and researchers subsequently moved to block further terminations based on 'disfavored terms.' The keyword-driven approach remains legally contested even as the administration continues targeting billions in funds for DEI-related crackdowns.",
   "title": "Keyword-based research grant terminations"
  },
  "grant-witness-funding-tracker": {
@@ -524,9 +531,16 @@
     "source": "News",
     "title": "Supreme Court rejects Trump's bid to appeal decision restoring terminated grants",
     "url": "https://www.science.org/content/article/supreme-court-rejects-trump-s-bid-appeal-decision-restoring-terminated-grants"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-778d1f896cc9",
+    "source": "News",
+    "title": "US Supreme Court rebuffs White House effort to cut research grants",
+    "url": "https://www.nature.com/articles/d41586-026-03765-x"
    }
   ],
-  "summary": "Beginning in mid-2026, the NIH under Director Bhattacharya resumed terminating grants misaligned with Trump administration priorities, cutting health disparities and other research, disrupting 1 in 30 clinical trials affecting over 74,000 participants, and prompting congressional scrutiny from senators McCormick and Fetterman. While FY2026 data showed funding was reshaped\u2014with more new grants awarded even as total awards fell\u2014the Supreme Court declined in November 2026 to hear Trump's appeal of a decision restoring terminated grants. This means the terminations faced a significant legal setback, though uncertainty around funding priorities and processes persists.",
+  "summary": "Beginning in July 2026, NIH resumed terminating grants disfavored by the Trump administration, with Director Bhattacharya killing health disparities awards and disruptions hitting roughly 1 in 30 clinical trials affecting over 74,000 participants, drawing congressional scrutiny from senators including McCormick and Fetterman over 150+ canceled grants. While FY2026 data showed reshaped funding and some new awards even as totals fell, the saga reached a turning point on November 16, 2026, when the Supreme Court rejected Trump's appeal and let stand a decision restoring terminated grants. This represents a significant legal check on the administration's termination efforts, though uncertainty around funding continues.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
@@ -754,9 +768,16 @@
     "source": "News",
     "title": "NSF May Finally Get a Director. It's Unclear What That Would Change.",
     "url": "https://insidehighered.com/news/government/science-research-policy/2026/11/16/nsf-may-finally-get-director-will-anything"
+   },
+   {
+    "date": "2026-11-18",
+    "id": "news-4f40dc855b51",
+    "source": "News",
+    "title": "Senate Committee Cancels Vote on NSF Director",
+    "url": "https://www.insidehighered.com/news/quick-takes/2026/11/18/senate-committee-cancels-vote-nsf-director"
    }
   ],
-  "summary": "In November and December 2026, NSF moved toward finally installing a director amid broader leadership turnover, though observers noted it was unclear what practical change that would bring. The agency's leadership is in flux during a period of major funding and policy upheaval, leaving its direction uncertain.",
+  "summary": "Through November and December 2026, NSF faced leadership uncertainty, with reporting noting the agency might finally get a director while questioning what difference it would make. The Senate Committee canceled a scheduled vote on the NSF director nominee on November 18, and leadership turnover continued into December. The agency's top leadership remains unsettled, leaving its direction uncertain.",
   "title": "NSF leadership turnover"
  },
  "nsf-metascience-office": {
@@ -1159,9 +1180,16 @@
     "source": "News",
     "title": "Senate FY2027 Draft Proposes $48.99B for NIH",
     "url": "https://casrai.org/news/senate-fy2027-labor-hhs-nih-funding-bill-2026"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-c8e101517e37",
+    "source": "News",
+    "title": "Science Policy This Week: Nov 16, 2026 (Senate science funding proposals)",
+    "url": "https://www.aip.org/fyi/the-week-of-november-16-2026"
    }
   ],
-  "summary": "Beginning in July 2026, the White House unveiled a sweeping overhaul to reduce university research funding, steer money toward industry and AI, and give political appointees greater control, prompting bipartisan Senate pushback, a stopgap bill blocking the changes, and widespread researcher concern over a 'chilling' effect. By November, NSF had walked back some OMB-driven grant-policy changes, and Senate appropriators backed raises for science agencies, with a draft FY2027 proposal of $48.99B for NIH. The confrontation between the administration's restructuring agenda and congressional appropriators remains unresolved, leaving universities facing significant uncertainty over future funding and research autonomy.",
+  "summary": "Starting in July 2026, the White House unveiled a sweeping science funding overhaul aimed at reducing university research funding, steering money toward industry and AI, and giving political appointees more control, which drew bipartisan Senate opposition including stopgap legislation to block it. Researchers voiced concerns about politicization and 'chilling' effects, and NSF walked back some grant-policy changes tied to an OMB proposal in early November. By mid-November, the Senate advanced FY2027 proposals backing raises for science agencies and questioning Trump's policies, including a $48.99B draft for NIH, signaling legislative pushback against the overhaul.",
   "title": "White House science funding overhaul"
  },
  "trump-science-censorship-patterns": {
@@ -1179,9 +1207,16 @@
     "source": "News",
     "title": "Supreme Court declines Trump bid to revive DEI research funding cuts",
     "url": "https://www.highereddive.com/news/supreme-court-declines-trump-bid-to-revive-dei-research-funding-cuts/874788/"
+   },
+   {
+    "date": "2026-11-16",
+    "id": "news-0c87041ecbc8",
+    "source": "News",
+    "title": "At NIH, Censorship Continues Apace",
+    "url": "https://grantwitness.org/nih/updates/2026-11-16-censorship"
    }
   ],
-  "summary": "A November 2026 report documented 'patterns' of the Trump administration censoring science, and shortly after the Supreme Court declined Trump's bid to revive DEI-related research funding cuts. The administration's efforts to condition and constrain science funding are facing documented scrutiny and legal setbacks, though the underlying pressures on research remain active.",
+  "summary": "By November 2026, a report documented systematic 'patterns' in the Trump administration's censorship and conditioning of science funding, with observers noting censorship continued apace at NIH. On November 16, 2026, the Supreme Court declined Trump's bid to revive DEI research funding cuts. This suggests that despite judicial setbacks, the administration's broader censorship practices remained ongoing.",
   "title": "Analyses of Trump administration censorship and conditioning of science funding"
  },
  "us-science-brain-drain": {
