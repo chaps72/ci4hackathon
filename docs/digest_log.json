@@ -2180,5 +2180,37 @@
     "agency": "Inside Higher Ed"
    }
   ]
+ },
+ {
+  "date": "2026-11-20",
+  "summary": "\ud83d\udcf0 4 press\n\nBottom line: Federal pressure on research security and NSF continues, with new compliance exposure on foreign funding but relief on contested grant terms.\n\n- \ud83d\udfe0 **Ongoing: Foreign-ties audit** \u2014 Education and State urged presidents to audit foreign financial ties, flagging ~$900M from \"countries of concern\" and tying compliance to future federal funding eligibility, so expect disclosure scrutiny. [The Hill](https://www.yahoo.com/news/politics/articles/trump-administration-flags-900m-college-190612582.html)\n- \ud83d\udfe0 **Ongoing: NSF grant rules** \u2014 NSF reversed its October grant-rule changes, restoring prior budget and reporting flexibility across thousands of active awards after university objections. [CASRAI](https://casrai.org/news/nsf-walks-back-grant-rule-changes)\n- **Ongoing: SBE Directorate suit** \u2014 FABBS sued to block elimination of NSF's Social, Behavioral, and Economic Sciences Directorate, with social-science funding at stake. [FABBS](https://fabbs.org/news/2026/11/fabbs-files-lawsuit-to-save-sbe-directorate-at-nsf/)\n\nFor awareness: the Senate HELP Committee blocked Jim O'Neill's NSF nomination, leaving no confirmed director. [STAT News](https://www.statnews.com/2026/11/18/bill-cassidy-rejects-jim-oneill-lead-national-science-foundation/)",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Trump administration flags $900M in college research funds from 'countries of concern' \u2014 The Hill (via Yahoo News), 2026-11-17\n  https://www.yahoo.com/news/politics/articles/trump-administration-flags-900m-college-190612582.html\n- **Ongoing:** NSF Walks Back Contested Grant Rule Changes \u2014 CASRAI (COGR digest), 2026-11-18\n  https://casrai.org/news/nsf-walks-back-grant-rule-changes\n- **Ongoing:** FABBS Files Lawsuit to Save SBE Directorate at NSF \u2014 FABBS, 2026-11-17\n  https://fabbs.org/news/2026/11/fabbs-files-lawsuit-to-save-sbe-directorate-at-nsf/\n- **Ongoing:** Cassidy rejects Trump's pick to lead NSF, saying he failed to 'stand up for science' \u2014 STAT News, 2026-11-18\n  https://www.statnews.com/2026/11/18/bill-cassidy-rejects-jim-oneill-lead-national-science-foundation/\n\n\ud83d\udcc8 Trend watch\nToday's NSF items (walk-back of grant rules, SBE lawsuit, director rejection) extend an ongoing NSF turmoil pattern\u2014at least the 5th+ NSF grant-rule reversal item and 6th+ SBE-directorate lawsuit item across the past two weeks.\n\n\ud83c\udfdb\ufe0f Government affairs\nThe administration tied future federal funding eligibility to university audits of foreign financial ties, flagging roughly $900 million from \"countries of concern,\" while NSF reversed its contested October grant rule changes after university objections and faces litigation over plans to eliminate its Social, Behavioral, and Economic Sciences Directorate. On leadership, the Senate HELP Committee blocked Jim O'Neill's nomination to lead NSF, leaving the agency without a Senate-confirmed director.",
+  "items": [],
+  "press": [
+   {
+    "title": "Trump administration flags $900M in college research funds from 'countries of concern'",
+    "url": "https://www.yahoo.com/news/politics/articles/trump-administration-flags-900m-college-190612582.html",
+    "level": "HIGH",
+    "agency": "The Hill (via Yahoo News)"
+   },
+   {
+    "title": "NSF Walks Back Contested Grant Rule Changes",
+    "url": "https://casrai.org/news/nsf-walks-back-grant-rule-changes",
+    "level": "HIGH",
+    "agency": "CASRAI (COGR digest)"
+   },
+   {
+    "title": "FABBS Files Lawsuit to Save SBE Directorate at NSF",
+    "url": "https://fabbs.org/news/2026/11/fabbs-files-lawsuit-to-save-sbe-directorate-at-nsf/",
+    "level": "MODERATE",
+    "agency": "FABBS"
+   },
+   {
+    "title": "Cassidy rejects Trump's pick to lead NSF, saying he failed to 'stand up for science'",
+    "url": "https://www.statnews.com/2026/11/18/bill-cassidy-rejects-jim-oneill-lead-national-science-foundation/",
+    "level": "INFO",
+    "agency": "STAT News"
+   }
+  ]
  }
 ]

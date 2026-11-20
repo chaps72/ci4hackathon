@@ -775,9 +775,16 @@
     "source": "News",
     "title": "Senate Committee Cancels Vote on NSF Director",
     "url": "https://www.insidehighered.com/news/quick-takes/2026/11/18/senate-committee-cancels-vote-nsf-director"
+   },
+   {
+    "date": "2026-11-18",
+    "id": "news-1b53e1b0b554",
+    "source": "News",
+    "title": "Cassidy rejects Trump's pick to lead NSF, saying he failed to 'stand up for science'",
+    "url": "https://www.statnews.com/2026/11/18/bill-cassidy-rejects-jim-oneill-lead-national-science-foundation/"
    }
   ],
-  "summary": "Through November and December 2026, NSF faced leadership uncertainty, with reporting noting the agency might finally get a director while questioning what difference it would make. The Senate Committee canceled a scheduled vote on the NSF director nominee on November 18, and leadership turnover continued into December. The agency's top leadership remains unsettled, leaving its direction uncertain.",
+  "summary": "NSF faced a leadership vacuum in late 2026, with reports that it might finally get a director but uncertainty over what that would change. In November, the Senate committee canceled its vote on Trump's NSF director nominee after Cassidy rejected the pick for failing to 'stand up for science,' and by December leadership had turned over at the agency, leaving the top post unsettled.",
   "title": "NSF leadership turnover"
  },
  "nsf-metascience-office": {
@@ -809,9 +816,16 @@
     "source": "News",
     "title": "NSF Walks Back Changes to Grant Rules",
     "url": "https://www.insidehighered.com/news/quick-takes/2026/11/16/nsf-walks-back-changes-grant-rules"
+   },
+   {
+    "date": "2026-11-18",
+    "id": "news-6170a00a8af2",
+    "source": "News",
+    "title": "NSF Walks Back Contested Grant Rule Changes",
+    "url": "https://casrai.org/news/nsf-walks-back-grant-rule-changes"
    }
   ],
-  "summary": "NSF's metascience plan and OMB-based grantmaking changes drew researcher skepticism beginning in September 2026 amid broader funding cuts and policy shifts. After receiving more than 3,000 comments, NSF dropped the OMB-based grant policy changes in November and walked back the grant rule changes. This signals that sustained community feedback successfully reversed the proposed grantmaking changes, at least for now.",
+  "summary": "NSF's 2026 plans for a metascience office and OMB-based grantmaking changes drew researcher skepticism amid broader funding cuts and policy shifts. After receiving more than 3,000 public comments, NSF dropped the OMB-based grant policy changes in November and walked back the contested rule changes, leaving the metascience initiative scaled back under pressure.",
   "title": "NSF metascience office and grantmaking changes"
  },
  "nsf-social-science-directorate-defunding": {
@@ -850,9 +864,16 @@
     "source": "News",
     "title": "Researchers and Societies Sue NSF Over Planned Closure of Its Social Science Directorate",
     "url": "https://casrai.org/news/nsf-sbe-directorate-closure-lawsuit-2026"
+   },
+   {
+    "date": "2026-11-17",
+    "id": "news-69e20000d746",
+    "source": "News",
+    "title": "FABBS Files Lawsuit to Save SBE Directorate at NSF",
+    "url": "https://fabbs.org/news/2026/11/fabbs-files-lawsuit-to-save-sbe-directorate-at-nsf/"
    }
   ],
-  "summary": "Following NSF's plan to defund and close its social/behavioral science directorate, researchers, faculty, and scholarly societies filed suit in early November 2026 to block the move, with additional legal action reported through December 10, 2026. The dispute is now in litigation, leaving the directorate's future\u2014and funding for social and behavioral research\u2014uncertain pending the court's outcome.",
+  "summary": "In November 2026, researchers, faculty, and scholarly societies\u2014including FABBS\u2014filed lawsuits to block NSF's plan to dismantle or defund its Social, Behavioral, and Economic (SBE) sciences directorate. The litigation expanded into December, with additional researchers and societies suing over the planned closure. The dispute remains unresolved in the courts, with the directorate's fate hinging on the outcome.",
   "title": "NSF plan to defund social/behavioral science directorate"
  },
  "nucleic-acid-synthesis-screening": {
@@ -1014,9 +1035,16 @@
     "source": "News",
     "title": "U.S. Departments of Education and State Urge Colleges and Universities to Protect America's Research Enterprise",
     "url": "https://www.ed.gov/about/news/press-release/us-departments-of-education-and-state-urge-colleges-and-universities-protect-americas-research-enterprise"
+   },
+   {
+    "date": "2026-11-17",
+    "id": "news-1407d549d099",
+    "source": "News",
+    "title": "Trump administration flags $900M in college research funds from 'countries of concern'",
+    "url": "https://www.yahoo.com/news/politics/articles/trump-administration-flags-900m-college-190612582.html"
    }
   ],
-  "summary": "In August 2026, the Pentagon ordered 30 U.S. universities to audit and report within two weeks on their partnerships with foreign institutions of concern, particularly Chinese research and military-linked partners. By October the DOD declared the audit a success, with institutions severing foreign ties under threat of further audits, and in November the Departments of Education and State urged colleges to protect the U.S. research enterprise. This signals intensifying federal pressure on universities to cut foreign research collaborations, with additional audits hinted at.",
+  "summary": "Beginning in August 2026, the Pentagon ordered 30 U.S. universities to audit and report on their partnerships with foreign institutions of concern, particularly Chinese research and military-linked partners, giving them a two-week deadline. By late October, institutions had begun severing ties and the DOD declared the audit a success, though it hinted at additional audits and threats. In November, the administration escalated by flagging $900M in research funds tied to countries of concern and urging colleges to protect the research enterprise, signaling ongoing scrutiny rather than closure.",
   "title": "Pentagon audit of universities' foreign institutional ties"
  },
  "postdoc-visa-investigation": {
