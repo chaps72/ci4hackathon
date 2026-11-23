@@ -2212,5 +2212,37 @@
     "agency": "STAT News"
    }
   ]
+ },
+ {
+  "date": "2026-11-23",
+  "summary": "\ud83d\udfe0 4 high\n\nBottom line: Two NIH Guide notices (both effective 2026-11-23) adjust SBIR/STTR foreign-risk rules and rescind NCI minimum-effort guidance\u2014check affected awards.\n\n- \ud83d\udfe0 **New:** **SBIR/STTR Foreign Risk** \u2014 NIH updated the foreign risk notification and mitigation process for SBIR/STTR awards, so small-business subaward partners and investigators with foreign ties may face new disclosure steps [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-017.html).\n- \ud83d\udfe0 **New:** **NCI Minimum Effort Rescinded** \u2014 NIH rescinded NOT-CA-21-096, removing the minimum level-of-effort guidance for NCI-funded awards, easing effort-commitment constraints for cancer-research PIs [NIH](https://grants.nih.gov/grants/guide/notice-files/NOT-CA-27-002.html).",
+  "extra": "\ud83d\udcc8 Trend watch\nToday's two NIH rescission notices (NOT-CA-21-096) continue a wave of policy rescissions, marking at least the 5th such NIH rescission notice in a week (following four NIMH data-sharing rescissions on Nov 17).\n\n\ud83c\udfdb\ufe0f Government affairs\nThese items are primarily NIH administrative grants-policy notices with limited legislative, budget, or executive-branch signal. NIH issued agency-level policy updates to its SBIR/STTR foreign risk notification and mitigation process (NOT-OD-27-017) and rescinded prior NCI guidance on the minimum level of effort for NCI-funded awards (NOT-CA-27-002).",
+  "items": [
+   {
+    "title": "Notice of Change: Updates to SBIR and STTR Foreign Risk Notification and Mitigation Process",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-017.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to Rescind NOT-CA-21-096, &quot;Notice of Information: Guidance Regarding Minimum Level of Effort for NCI-Funded Awards&quot;",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-CA-27-002.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice to Rescind NOT-CA-21-096, \"Notice of Information: Guidance Regarding Minimum Level of Effort for NCI-Funded Awards\"",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-CA-27-002.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   },
+   {
+    "title": "Notice of Change: Updates to SBIR and STTR Foreign Risk Notification and Mitigation Process",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-017.html",
+    "level": "HIGH",
+    "agency": "National Institutes of Health"
+   }
+  ],
+  "press": []
  }
 ]

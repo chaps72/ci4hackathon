@@ -623,6 +623,26 @@
   "summary": "NIH has continued implementing modifications to its peer review practices through fall 2026, with the latest Trump administration proposal to change the research grant system drawing criticism from scientists in October. As of mid-October, NIH is reportedly considering hiding peer review scores, a change that has sparked concern among researchers. This signals ongoing uncertainty in how grant applications will be evaluated, which could affect how the office advises faculty on proposal strategy and expectations.",
   "title": "NIH modifications to peer review practices"
  },
+ "nih-sbir-sttr-foreign-risk": {
+  "events": [
+   {
+    "date": "2026-11-23",
+    "id": "nih-NOT-OD-27-017",
+    "source": "NIH Guide",
+    "title": "Notice of Change: Updates to SBIR and STTR Foreign Risk Notification and Mitigation Process",
+    "url": "https://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-017.html"
+   },
+   {
+    "date": "Mon, 23 No",
+    "id": "nihguide-http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-017.html",
+    "source": "NIH Guide",
+    "title": "Notice of Change: Updates to SBIR and STTR Foreign Risk Notification and Mitigation Process",
+    "url": "http://grants.nih.gov/grants/guide/notice-files/NOT-OD-27-017.html"
+   }
+  ],
+  "summary": "NIH issued a Notice of Change updating its foreign risk notification and mitigation process for SBIR and STTR programs on November 23, 2026. The updates are now in effect, meaning small-business grant applicants and awardees under these programs may face revised requirements for disclosing and mitigating foreign risk. The research office should review the notice to understand how the changes affect SBIR/STTR submissions and compliance obligations.",
+  "title": "NIH SBIR/STTR foreign risk notification and mitigation process"
+ },
  "nih-super-intelligence-policy": {
   "events": [
    {
