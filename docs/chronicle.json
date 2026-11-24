@@ -538,9 +538,16 @@
     "source": "News",
     "title": "US Supreme Court rebuffs White House effort to cut research grants",
     "url": "https://www.nature.com/articles/d41586-026-03765-x"
+   },
+   {
+    "date": "2026-11-22",
+    "id": "news-392b892292f1",
+    "source": "News",
+    "title": "Scientists are fighting for their halted funds. Trust of Black communities may be harder to win back",
+    "url": "https://www.washingtonpost.com/national/2026/11/22/nih-medical-grants-science-diversity-equity/5b77105e-e66c-11f1-8db0-6f1e3c389e7c_story.html"
    }
   ],
-  "summary": "Beginning in July 2026, NIH resumed terminating grants disfavored by the Trump administration, with Director Bhattacharya killing health disparities awards and disruptions hitting roughly 1 in 30 clinical trials affecting over 74,000 participants, drawing congressional scrutiny from senators including McCormick and Fetterman over 150+ canceled grants. While FY2026 data showed reshaped funding and some new awards even as totals fell, the saga reached a turning point on November 16, 2026, when the Supreme Court rejected Trump's appeal and let stand a decision restoring terminated grants. This represents a significant legal check on the administration's termination efforts, though uncertainty around funding continues.",
+  "summary": "Beginning in mid-2026, the NIH under Director Bhattacharya resumed terminating grants misaligned with Trump administration priorities, including health disparities, Alzheimer's, and kidney disease research, disrupting roughly 1 in 30 clinical trials and over 74,000 participants while funding odds plummeted. These actions drew congressional scrutiny from McCormick and Fetterman over 150 terminated grants, and in November the Supreme Court rejected the administration's bid to appeal a decision restoring terminated grants. While scientists are now fighting to recover halted funds, the terminations have reshaped NIH funding patterns and may have lasting effects on research continuity and trust among Black communities.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
@@ -802,9 +809,16 @@
     "source": "News",
     "title": "Cassidy rejects Trump's pick to lead NSF, saying he failed to 'stand up for science'",
     "url": "https://www.statnews.com/2026/11/18/bill-cassidy-rejects-jim-oneill-lead-national-science-foundation/"
+   },
+   {
+    "date": "2026-11-23",
+    "id": "news-87133bd56dae",
+    "source": "News",
+    "title": "Science Policy This Week: Nov 23, 2026",
+    "url": "https://www.aip.org/fyi/the-week-of-november-23-2026"
    }
   ],
-  "summary": "NSF faced a leadership vacuum in late 2026, with reports that it might finally get a director but uncertainty over what that would change. In November, the Senate committee canceled its vote on Trump's NSF director nominee after Cassidy rejected the pick for failing to 'stand up for science,' and by December leadership had turned over at the agency, leaving the top post unsettled.",
+  "summary": "Through late 2026, the NSF faced ongoing leadership uncertainty, with questions about whether a long-awaited director would meaningfully change the agency's direction. In mid-November, the Senate Committee canceled its vote on the NSF director nominee, and Senator Cassidy rejected Trump's pick for failing to 'stand up for science,' leaving leadership in flux as turnover continued into December.",
   "title": "NSF leadership turnover"
  },
  "nsf-metascience-office": {

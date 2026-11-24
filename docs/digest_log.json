@@ -2244,5 +2244,25 @@
    }
   ],
   "press": []
+ },
+ {
+  "date": "2026-11-24",
+  "summary": "\ud83d\udcf0 2 press\n\nBottom line: Federal research funding remains unstable\u2014leadership vacuums at NSF and FDA plus active NIH grant terminations warrant continued contingency planning for affected awards.\n\n- \ud83d\udfe0 **Ongoing: NSF/FDA leadership** \u2014 Administration picks to lead NSF and FDA faltered, and a court block on OMB's contested grant rule hinges on the continuing resolution holding past mid-December, so watch for near-term disruption to grant terms [AIP FYI](https://www.aip.org/fyi/the-week-of-november-23-2026).\n- \ud83d\udfe0 **Ongoing: NIH terminations** \u2014 NIH awarded ~2,000 fewer multiyear grants in 2026 than 2025 and halted health-disparities research, including a Pitt Alzheimer's study wasting over $8M, signaling heightened risk for equity-focused awards [AP via Washington Post](https://www.washingtonpost.com/national/2026/11/22/nih-medical-grants-science-diversity-equity/5b77105e-e66c-11f1-8db0-6f1e3c389e7c_story.html).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Scientists are fighting for their halted funds. Trust of Black communities may be harder t \u2014 Associated Press (via The Washington Post), 2026-11-22\n  https://www.washingtonpost.com/national/2026/11/22/nih-medical-grants-science-diversity-equity/5b77105e-e66c-11f1-8db0-6f1e3c389e7c_story.html\n- **Ongoing:** Science Policy This Week: Nov 23, 2026 \u2014 AIP FYI (American Institute of Physics), 2026-11-23\n  https://www.aip.org/fyi/the-week-of-november-23-2026\n\n\ud83d\udcc8 Trend watch\nToday's AP piece on scientists fighting for halted funds extends an ongoing grant-termination/restoration litigation thread\u2014at least the 4th such item in three weeks (CSU suit 11/4, two Supreme Court rejections of Trump's cut appeals 11/16, and the 11/18 motion to block terminations on \"disfavored terms\").\n\n\ud83c\udfdb\ufe0f Government affairs\nNIH grant terminations under Trump administration priorities have halted health-disparities research, with roughly 2,000 fewer multiyear grants awarded in 2026 than 2025 per AAMC data. The administration's leadership picks for NSF and FDA have faltered, a court block on OMB's contested grant rule hinges on the continuing resolution lasting past mid-December, and the Department of Energy's science advisory committee is being restructured.",
+  "items": [],
+  "press": [
+   {
+    "title": "Scientists are fighting for their halted funds. Trust of Black communities may be harder to win back",
+    "url": "https://www.washingtonpost.com/national/2026/11/22/nih-medical-grants-science-diversity-equity/5b77105e-e66c-11f1-8db0-6f1e3c389e7c_story.html",
+    "level": "HIGH",
+    "agency": "Associated Press (via The Washington Post)"
+   },
+   {
+    "title": "Science Policy This Week: Nov 23, 2026",
+    "url": "https://www.aip.org/fyi/the-week-of-november-23-2026",
+    "level": "HIGH",
+    "agency": "AIP FYI (American Institute of Physics)"
+   }
+  ]
  }
 ]
