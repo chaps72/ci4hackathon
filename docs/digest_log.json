@@ -2264,5 +2264,19 @@
     "agency": "AIP FYI (American Institute of Physics)"
    }
   ]
+ },
+ {
+  "date": "2026-11-25",
+  "summary": "\ud83d\udcf0 1 press\n\n**Bottom line:** NIH's termination of racial-disparity research grants continues to escalate, with affected studies now in litigation\u2014a direct financial and legal risk to active awards at peer institutions.\n\n\ud83d\udd34 **Ongoing: NIH Alzheimer's Disparity Cuts** \u2014 NIH terminated multiple Alzheimer's and racial health-disparity studies (including Pitt's final-year \"Think PHRESH\"), characterizing them as DEI-related, and researchers have joined lawsuits against NIH/HHS, signaling exposure for our own equity-focused awards and potential litigation pathways [AP](https://apnews.com/article/nih-medical-grants-science-diversity-equity).",
+  "extra": "\ud83d\udcf0 From the research press\n- **Ongoing:** Trump's research cuts threaten years of progress in studying Alzheimer's among Black Ameri \u2014 Associated Press, 2026-11-23\n  https://apnews.com/article/nih-medical-grants-science-diversity-equity\n\n\ud83d\udcc8 Trend watch\nToday's AP item on research cuts harming Alzheimer's studies in Black Americans extends an ongoing thread on grant terminations' impact on minority/DEI-related research, following the Nov 22 AP piece on halted funds and Black-community trust plus multiple grant-cancellation lawsuits and DEI-cut rulings (4th+ item in two weeks).\n\n\ud83c\udfdb\ufe0f Government affairs\nNIH, directing agency policy under the Trump administration's priorities, terminated multiple Alzheimer's and racial health disparities grants characterized as DEI-related, including a University of Pittsburgh study halted in its final year. Affected researchers have joined lawsuits challenging NIH and HHS over the terminations.",
+  "items": [],
+  "press": [
+   {
+    "title": "Trump's research cuts threaten years of progress in studying Alzheimer's among Black Americans",
+    "url": "https://apnews.com/article/nih-medical-grants-science-diversity-equity",
+    "level": "CRITICAL",
+    "agency": "Associated Press"
+   }
+  ]
  }
 ]

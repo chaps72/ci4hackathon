@@ -545,9 +545,16 @@
     "source": "News",
     "title": "Scientists are fighting for their halted funds. Trust of Black communities may be harder to win back",
     "url": "https://www.washingtonpost.com/national/2026/11/22/nih-medical-grants-science-diversity-equity/5b77105e-e66c-11f1-8db0-6f1e3c389e7c_story.html"
+   },
+   {
+    "date": "2026-11-23",
+    "id": "news-9fb83f2ade61",
+    "source": "News",
+    "title": "Trump's research cuts threaten years of progress in studying Alzheimer's among Black Americans",
+    "url": "https://apnews.com/article/nih-medical-grants-science-diversity-equity"
    }
   ],
-  "summary": "Beginning in mid-2026, the NIH under Director Bhattacharya resumed terminating grants misaligned with Trump administration priorities, including health disparities, Alzheimer's, and kidney disease research, disrupting roughly 1 in 30 clinical trials and over 74,000 participants while funding odds plummeted. These actions drew congressional scrutiny from McCormick and Fetterman over 150 terminated grants, and in November the Supreme Court rejected the administration's bid to appeal a decision restoring terminated grants. While scientists are now fighting to recover halted funds, the terminations have reshaped NIH funding patterns and may have lasting effects on research continuity and trust among Black communities.",
+  "summary": "Starting in July 2026, the Trump administration's NIH under Director Bhattacharya resumed terminating grants it disfavored\u2014particularly health disparities research\u2014disrupting 1 in 30 clinical trials affecting over 74,000 participants and drawing bipartisan scrutiny from senators like McCormick and Fetterman. In November 2026, the Supreme Court rejected the administration's bid to appeal a decision restoring the terminated grants, a significant legal setback for the cuts. Even so, lingering funding uncertainty and eroded trust\u2014especially among Black communities tied to Alzheimer's and other research\u2014mean the damage to research continuity may persist despite the favorable ruling.",
   "title": "NIH grant terminations under Trump priorities"
  },
  "nih-grants-per-pi-cap": {
